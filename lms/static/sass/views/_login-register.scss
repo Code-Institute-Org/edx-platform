@@ -383,7 +383,7 @@
             }
 
             &.error {
-                outline-color: $error-color;
+                outline-color: $red;
             }
         }
 
@@ -396,7 +396,7 @@
             display: block;
         }
 
-        .error, .label-required {
+        .error {
             color: $red;
         }
         /** FROM _accounts.scss - end **/
