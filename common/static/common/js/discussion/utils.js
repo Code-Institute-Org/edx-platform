@@ -37,7 +37,7 @@
             if (_.isUndefined(userId)) {
                 userId = this.user ? this.user.id : void 0;
             }
-            ta = _.union(this.roleIds['Community TA']);
+            ta = _.union(this.roleIds['Community TA'], this.roleIds['Group Moderator']);
             return _.include(ta, parseInt(userId));
         };
 

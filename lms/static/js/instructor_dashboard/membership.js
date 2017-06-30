@@ -92,13 +92,18 @@ such that the value can be defined later than this assignment (file load order).
         __extends(AuthListWidget, _super);  // eslint-disable-line no-use-before-define
         function AuthListWidget($container, rolename, $errorSection) {  // eslint-disable-line no-shadow
             var msg,
-                authlistwidget = this;
+                authlistwidget = this,
+                labels_list = [gettext('Username'), gettext('Email'), gettext('Revoke access')];
             this.rolename = rolename;
             this.$errorSection = $errorSection;
+            this.list_enabled = true;
+            if (this.rolename === 'Group Moderator') {
+                labels_list = [gettext('Username'), gettext('Email'), gettext('Group'), gettext('Revoke access')]
+            }
             AuthListWidget.__super__.constructor.call(this, $container, {  // eslint-disable-line no-underscore-dangle
                 title: $container.data('display-name'),
                 info: $container.data('info-text'),
-                labels: [gettext('Username'), gettext('Email'), gettext('Revoke access')],
+                labels: labels_list,
                 add_placeholder: gettext('Enter username or email'),
                 add_btn_label: $container.data('add-button-label'),
                 add_handler: function(input) {
@@ -138,12 +143,14 @@ such that the value can be defined later than this assignment (file load order).
         };
 
         AuthListWidget.prototype.reload_list = function() {
-            var authlistwidgetreloadlist = this;
+            var authlistwidgetreloadlist = this,
+                $selectedOption;
             return this.get_member_list(function(error, memberList) {
                 if (error !== null) {
                     return authlistwidgetreloadlist.show_errors(error);
                 }
                 authlistwidgetreloadlist.clear_rows();
+
                 return _.each(memberList, function(member) {
                     var $revokeBtn, labelTrans;
                     labelTrans = gettext('Revoke access');
@@ -161,20 +168,41 @@ such that the value can be defined later than this assignment (file load order).
                             return authlistwidgetreloadlist.reload_list();
                         });
                     });
+                    if (authlistwidgetreloadlist.rolename === 'Group Moderator') {
+                        if (member.group_name === null){
+                            // There is No discussion division scheme selected so the Group Moderator role
+                            // should be disabled
+                            authlistwidgetreloadlist.list_enabled = false;
+                            $selectedOption = $('select#member-lists-selector').children('option:selected');
+                            if ($selectedOption.text() === 'Discussion Group Community TA') {
+                                authlistwidgetreloadlist.show_errors(
+                                    gettext('This role requires a divided discussions scheme.')
+                                );
+                                authlistwidgetreloadlist.$('input[type="button"].add').addClass('is-disabled');
+                            }
+                            return;
+                        }
+
+                        authlistwidgetreloadlist.list_enabled = true;
+                        authlistwidgetreloadlist.$('input[type="button"].add').removeClass('is-disabled');
+                        return authlistwidgetreloadlist.add_row([member.username, member.email,
+                            member.group_name, $revokeBtn]
+                        );
+                    }
                     return authlistwidgetreloadlist.add_row([member.username, member.email, $revokeBtn]);
                 });
             });
         };
 
         AuthListWidget.prototype.clear_errors = function() {
-            var ref, result;
-            result = (this.$error_section) != null ? ref.text('') : undefined;
+            var result;
+            result = this.$errorSection !== undefined ? this.$errorSection.text('') : undefined;
             return result;
         };
 
         AuthListWidget.prototype.show_errors = function(msg) {
-            var ref, result;
-            result = (this.$error_section) != null ? ref.text(msg) : undefined;
+            var result;
+            result = this.$errorSection !== undefined ? this.$errorSection.text(msg) : undefined;
             return result;
         };
 
@@ -933,6 +961,7 @@ such that the value can be defined later than this assignment (file load order).
             this.$list_selector = this.$section.find('select#member-lists-selector');
             this.$auth_list_containers = this.$section.find('.auth-list-container');
             this.$auth_list_errors = this.$section.find('.member-lists-management .request-response-error');
+
             this.auth_lists = _.map(this.$auth_list_containers, function(authListContainer) {
                 var rolename;
                 rolename = $(authListContainer).data('rolename');
@@ -966,11 +995,28 @@ such that the value can be defined later than this assignment (file load order).
                 authList = $opt.data('auth_list');
                 authList.$container.addClass('active');
                 authList.re_view();
+
+                // On Change update the Group Moderation list
+                if ($opt.text() === 'Discussion Group Community TA') {
+                    if (!authList.list_enabled) {
+                        authList.show_errors(gettext('This role requires a divided discussions scheme.'));
+                        authList.$('input[type="button"].add').addClass('is-disabled');
+                    } else {
+                        authList.$('input[type="button"].add').removeClass('is-disabled');
+                    }
+                }
             });
             this.$list_selector.change();
         }
 
-        membership.prototype.onClickTitle = function() {};
+        membership.prototype.onClickTitle = function() {
+            var list;
+            // When the title is clicked refresh all the authorization lists as the member list
+            // may have changed since render.
+            for (list in this.auth_lists) {
+                this.auth_lists[list].re_view();
+            }
+        };
 
         return membership;
     }());
