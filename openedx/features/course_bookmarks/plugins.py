@@ -5,6 +5,7 @@ Platform plugins to support course bookmarks.
 from django.core.urlresolvers import reverse
 from django.utils.translation import ugettext as _
 from openedx.features.course_experience.course_tools import CourseTool
+from student.models import CourseEnrollment
 
 
 class CourseBookmarksTool(CourseTool):
@@ -14,9 +15,9 @@ class CourseBookmarksTool(CourseTool):
     @classmethod
     def is_enabled(cls, request, course_key):
         """
-        Always show the bookmarks tool.
+        The bookmarks tool is only enabled for enrolled users.
         """
-        return True
+        return CourseEnrollment.is_enrolled(request.user, course_key)
 
     @classmethod
     def title(cls):
