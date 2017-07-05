@@ -313,6 +313,7 @@ class SubsectionGradingPolicyTest(ProgressPageBaseTest):
         self.assertEqual(sr_text, self.progress_page.x_tick_sr_text(index))
         self.assertEqual([label, 'true' if label_hidden else None], self.progress_page.x_tick_label(index))
 
+    @attr('a11y')
     def test_axis_a11y(self):
         """
         Tests that the progress chart axes have appropriate a11y (screenreader) markup.
@@ -325,6 +326,9 @@ class SubsectionGradingPolicyTest(ProgressPageBaseTest):
             # Answer the first Lab problem (unit only contains a single problem)
             self._answer_problem_correctly()
             self.progress_page.visit()
+
+            # Verify the basic a11y of the progress page
+            self.progress_page.a11y_audit.check_for_accessibility_errors()
 
             # Verify that y-Axis labels are aria-hidden
             self.assertEqual(['100%', 'true'], self.progress_page.y_tick_label(0))

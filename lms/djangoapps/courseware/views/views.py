@@ -342,7 +342,7 @@ def course_info(request, course_id):
             'masquerade': masquerade,
             'supports_preview_menu': True,
             'studio_url': get_studio_url(course, 'course_info'),
-            'show_enroll_banner': not user_is_enrolled,
+            'show_enroll_banner': show_enroll_banner,
             'user_is_enrolled': user_is_enrolled,
             'dates_fragment': dates_fragment,
             'url_to_enroll': url_to_enroll,
