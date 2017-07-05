@@ -4,14 +4,19 @@ Tests for the course home page.
 import ddt
 
 from courseware.tests.factories import StaffFactory
+from ccx_keys.locator import CCXLocator
 from django.core.urlresolvers import reverse
 from django.utils.http import urlquote_plus
+from lms.djangoapps.ccx.tests.factories import CcxFactory
 from openedx.core.djangoapps.waffle_utils.testutils import WAFFLE_TABLES, override_waffle_flag
 from openedx.features.course_experience import SHOW_REVIEWS_TOOL_FLAG, UNIFIED_COURSE_TAB_FLAG
 from student.models import CourseEnrollment
-from student.tests.factories import UserFactory
+from student.tests.factories import AdminFactory, UserFactory
 from xmodule.modulestore import ModuleStoreEnum
-from xmodule.modulestore.tests.django_utils import SharedModuleStoreTestCase
+from xmodule.modulestore.tests.django_utils import (
+    TEST_DATA_SPLIT_MODULESTORE,
+    SharedModuleStoreTestCase
+)
 from xmodule.modulestore.tests.factories import CourseFactory, ItemFactory, check_mongo_calls
 
 from .helpers import add_course_mode
@@ -26,14 +31,14 @@ TEST_COURSE_UPDATES_TOOL = '/course/updates">'
 QUERY_COUNT_TABLE_BLACKLIST = WAFFLE_TABLES
 
 
-def course_home_url(course):
+def course_home_url(course, course_key=None):
     """
     Returns the URL for the course's home page
     """
     return reverse(
         'openedx.course_experience.course_home',
         kwargs={
-            'course_id': unicode(course.id),
+            'course_id': course_key if course_key else unicode(course.id),
         }
     )
 
@@ -193,6 +198,7 @@ class TestCourseHomePageAccess(CourseHomePageTestCase):
         self.assertContains(response, 'Learn About Verified Certificate', count=expected_count)
         self.assertContains(response, TEST_WELCOME_MESSAGE, count=expected_count)
 
+
     @override_waffle_flag(UNIFIED_COURSE_TAB_FLAG, active=False)
     @override_waffle_flag(SHOW_REVIEWS_TOOL_FLAG, active=True)
     @ddt.data(
@@ -234,3 +240,46 @@ class TestCourseHomePageAccess(CourseHomePageTestCase):
         url = course_home_url(self.course)
         response = self.client.get(url)
         self.assertContains(response, '/login?next={url}'.format(url=urlquote_plus(url)))
+
+
+class TestCcxCourseHomePage(CourseHomePageTestCase):
+    """
+    Test for unenrolled student tries to access ccx.
+    Note: Only CCX coach can enroll a student in CCX. In sum self-registration not allowed.
+    """
+    MODULESTORE = TEST_DATA_SPLIT_MODULESTORE
+
+    @classmethod
+    def setUpClass(cls):
+        super(TestCcxCourseHomePage, cls).setUpClass()
+        cls.course = CourseFactory.create()
+
+    def setUp(self):
+        super(TestCcxCourseHomePage, self).setUp()
+
+        # Create a CCX coach account
+        self.coach = coach = AdminFactory.create(password="test")
+        self.client.login(username=coach.username, password="test")
+
+    @override_waffle_flag(UNIFIED_COURSE_TAB_FLAG, active=True)
+    def test_ccx_redirect(self):
+        """
+        Verify that an unenrolled user cannot hit the course home page
+        but is instead redirected to the dashboard.
+        """
+
+        # Create a CCX course
+        ccx_course = CcxFactory(course_id=self.course.id, coach=self.coach)
+        ccx_locator = CCXLocator.from_course_locator(self.course.id, unicode(ccx_course.id))
+
+        # Log in a test user
+        user = UserFactory(password=TEST_PASSWORD)
+        self.client.login(username=user.username, password=TEST_PASSWORD)
+
+        # Request the course home page
+        url = course_home_url(ccx_course, course_key=ccx_locator)
+        response = self.client.get(url)
+
+        # Verify that it returns a redirect to the dashboard
+        expected_redirect_url = reverse('dashboard')
+        self.assertRedirects(response, expected_redirect_url, status_code=302, target_status_code=200)

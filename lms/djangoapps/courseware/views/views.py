@@ -46,6 +46,7 @@ from courseware.access import has_access, has_ccx_coach_role
 from courseware.access_response import StartDateError
 from courseware.access_utils import in_preview_mode, is_course_open_for_learner
 from courseware.courses import (
+    can_user_enroll_in_course,
     get_course,
     get_course_by_id,
     get_course_overview_with_access,
@@ -287,10 +288,10 @@ def course_info(request, course_id):
         # if user is not enrolled in a course then app will show enroll/get register link inside course info page.
         user_is_enrolled = CourseEnrollment.is_enrolled(user, course.id)
         show_enroll_banner = request.user.is_authenticated() and not user_is_enrolled
-        if show_enroll_banner and hasattr(course_key, 'ccx'):
-            # if course is CCX and user is not enrolled/registered then do not let him open course direct via link for
-            # self registration. Because only CCX coach can register/enroll a student. If un-enrolled user try
-            # to access CCX redirect him to dashboard.
+
+        # If the user is not enrolled but this is a course that does not support
+        # direct enrollment then redirect them to the dashboard.
+        if not user_is_enrolled and not can_user_enroll_in_course(course_key):
             return redirect(reverse('dashboard'))
 
         # Redirect the user if they are not yet allowed to view this course
@@ -341,7 +342,7 @@ def course_info(request, course_id):
             'masquerade': masquerade,
             'supports_preview_menu': True,
             'studio_url': get_studio_url(course, 'course_info'),
-            'show_enroll_banner': show_enroll_banner,
+            'show_enroll_banner': not user_is_enrolled,
             'user_is_enrolled': user_is_enrolled,
             'dates_fragment': dates_fragment,
             'url_to_enroll': url_to_enroll,
@@ -702,11 +703,9 @@ def course_about(request, course_id):
     """
     course_key = CourseKey.from_string(course_id)
 
-    if hasattr(course_key, 'ccx'):
-        # if un-enrolled/non-registered user try to access CCX (direct for registration)
-        # then do not show him about page to avoid self registration.
-        # Note: About page will only be shown to user who is not register. So that he can register. But for
-        # CCX only CCX coach can enroll students.
+    # If a user is not able to enroll in a course then redirect
+    # them away from the about page to the dashboard.
+    if not can_user_enroll_in_course(course_key):
         return redirect(reverse('dashboard'))
 
     with modulestore().bulk_operations(course_key):
