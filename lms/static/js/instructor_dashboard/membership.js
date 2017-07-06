@@ -93,17 +93,17 @@ such that the value can be defined later than this assignment (file load order).
         function AuthListWidget($container, rolename, $errorSection) {  // eslint-disable-line no-shadow
             var msg,
                 authlistwidget = this,
-                labels_list = [gettext('Username'), gettext('Email'), gettext('Revoke access')];
+                labelsList = [gettext('Username'), gettext('Email'), gettext('Revoke access')];
             this.rolename = rolename;
             this.$errorSection = $errorSection;
             this.list_enabled = true;
             if (this.rolename === 'Group Moderator') {
-                labels_list = [gettext('Username'), gettext('Email'), gettext('Group'), gettext('Revoke access')]
+                labelsList = [gettext('Username'), gettext('Email'), gettext('Group'), gettext('Revoke access')];
             }
             AuthListWidget.__super__.constructor.call(this, $container, {  // eslint-disable-line no-underscore-dangle
                 title: $container.data('display-name'),
                 info: $container.data('info-text'),
-                labels: labels_list,
+                labels: labelsList,
                 add_placeholder: gettext('Enter username or email'),
                 add_btn_label: $container.data('add-button-label'),
                 add_handler: function(input) {
@@ -147,11 +147,11 @@ such that the value can be defined later than this assignment (file load order).
                 $selectedOption;
             return this.get_member_list(function(error, memberList) {
                 if (error !== null) {
-                    return authlistwidgetreloadlist.show_errors(error);
+                    authlistwidgetreloadlist.show_errors(error);
                 }
                 authlistwidgetreloadlist.clear_rows();
 
-                return _.each(memberList, function(member) {
+                _.each(memberList, function(member) {
                     var $revokeBtn, labelTrans;
                     labelTrans = gettext('Revoke access');
                     $revokeBtn = $(_.template('<div class="revoke"><span class="icon fa fa-times-circle" aria-hidden="true"></span> <%- label %></div>')({  // eslint-disable-line max-len
@@ -160,16 +160,16 @@ such that the value can be defined later than this assignment (file load order).
                         class: 'revoke'
                     });
                     $revokeBtn.click(function() {
-                        return authlistwidgetreloadlist.modify_member_access(member.email, 'revoke', function(err) {
+                        authlistwidgetreloadlist.modify_member_access(member.email, 'revoke', function(err) {
                             if (err !== null) {
-                                return authlistwidgetreloadlist.show_errors(err);
+                                authlistwidgetreloadlist.show_errors(err);
                             }
                             authlistwidgetreloadlist.clear_errors();
-                            return authlistwidgetreloadlist.reload_list();
+                            authlistwidgetreloadlist.reload_list();
                         });
                     });
                     if (authlistwidgetreloadlist.rolename === 'Group Moderator') {
-                        if (member.group_name === null){
+                        if (member.group_name === null) {
                             // There is No discussion division scheme selected so the Group Moderator role
                             // should be disabled
                             authlistwidgetreloadlist.list_enabled = false;
@@ -180,16 +180,16 @@ such that the value can be defined later than this assignment (file load order).
                                 );
                                 authlistwidgetreloadlist.$('input[type="button"].add').addClass('is-disabled');
                             }
-                            return;
+                        } else {
+                            authlistwidgetreloadlist.list_enabled = true;
+                            authlistwidgetreloadlist.$('input[type="button"].add').removeClass('is-disabled');
+                            authlistwidgetreloadlist.add_row([member.username, member.email,
+                                member.group_name, $revokeBtn]
+                            );
                         }
-
-                        authlistwidgetreloadlist.list_enabled = true;
-                        authlistwidgetreloadlist.$('input[type="button"].add').removeClass('is-disabled');
-                        return authlistwidgetreloadlist.add_row([member.username, member.email,
-                            member.group_name, $revokeBtn]
-                        );
+                    } else {
+                        authlistwidgetreloadlist.add_row([member.username, member.email, $revokeBtn]);
                     }
-                    return authlistwidgetreloadlist.add_row([member.username, member.email, $revokeBtn]);
                 });
             });
         };
@@ -1013,7 +1013,7 @@ such that the value can be defined later than this assignment (file load order).
             var list;
             // When the title is clicked refresh all the authorization lists as the member list
             // may have changed since render.
-            for (list in this.auth_lists) {
+            for (list = 0; list < this.auth_lists.length; list++) {
                 this.auth_lists[list].re_view();
             }
         };
