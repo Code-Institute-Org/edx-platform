@@ -922,7 +922,6 @@ def list_course_role_members(request, course_id):
                 "email": "staff1@example.org",
                 "first_name": "Joe",
                 "last_name": "Shmoe",
-                "group_name": "Verified"
             }
         ]
     }
@@ -944,7 +943,7 @@ def list_course_role_members(request, course_id):
             'username': user.username,
             'email': user.email,
             'first_name': user.first_name,
-            'last_name': user.last_name
+            'last_name': user.last_name,
         }
 
     response_payload = {
@@ -2529,7 +2528,8 @@ def list_forum_members(request, course_id):
 
     response_payload = {
         'course_id': course_id.to_deprecated_string(),
-        rolename: map(extract_user_info, users)
+        rolename: map(extract_user_info, users),
+        'division_scheme': course_discussion_settings.division_scheme,
     }
     return JsonResponse(response_payload)
 
