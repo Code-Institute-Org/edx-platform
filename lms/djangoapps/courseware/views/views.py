@@ -46,7 +46,7 @@ from courseware.access import has_access, has_ccx_coach_role
 from courseware.access_response import StartDateError
 from courseware.access_utils import in_preview_mode, is_course_open_for_learner
 from courseware.courses import (
-    can_user_enroll_in_course,
+    can_self_enroll_in_course,
     get_course,
     get_course_by_id,
     get_course_overview_with_access,
@@ -291,7 +291,7 @@ def course_info(request, course_id):
 
         # If the user is not enrolled but this is a course that does not support
         # direct enrollment then redirect them to the dashboard.
-        if not user_is_enrolled and not can_user_enroll_in_course(course_key):
+        if not user_is_enrolled and not can_self_enroll_in_course(course_key):
             return redirect(reverse('dashboard'))
 
         # Redirect the user if they are not yet allowed to view this course
@@ -705,7 +705,7 @@ def course_about(request, course_id):
 
     # If a user is not able to enroll in a course then redirect
     # them away from the about page to the dashboard.
-    if not can_user_enroll_in_course(course_key):
+    if not can_self_enroll_in_course(course_key):
         return redirect(reverse('dashboard'))
 
     with modulestore().bulk_operations(course_key):

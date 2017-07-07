@@ -131,7 +131,7 @@ def check_course_access(course, user, action, check_if_enrolled=False):
             raise CourseAccessRedirect(reverse('about_course', args=[unicode(course.id)]))
 
 
-def can_user_enroll_in_course(course_key):
+def can_self_enroll_in_course(course_key):
     """
     Returns True if the user can enroll themselves in a course.
 

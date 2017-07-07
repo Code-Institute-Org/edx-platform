@@ -11,7 +11,7 @@ from django.views.decorators.csrf import ensure_csrf_cookie
 
 from courseware.access import has_access
 from courseware.courses import (
-    can_user_enroll_in_course,
+    can_self_enroll_in_course,
     get_course_info_section,
     get_course_with_access,
     is_enrolled_in_course_or_staff
@@ -115,7 +115,7 @@ class CourseHomeFragmentView(EdxFragmentView):
         else:
             # Redirect the user to the dashboard if they are not enrolled and
             # this is a course that does not support direct enrollment.
-            if not can_user_enroll_in_course(course_key):
+            if not can_self_enroll_in_course(course_key):
                 raise CourseAccessRedirect(reverse('dashboard'))
 
             # Set all the fragments
