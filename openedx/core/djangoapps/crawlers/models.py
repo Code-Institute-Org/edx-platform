@@ -39,6 +39,11 @@ class CrawlersConfig(ConfigurationModel):
         if (not req_user_agent) or (not crawler_agents):
             return False
 
+        # If crawler agent type mismatches with the req_user_agent type then
+        # cast crawler agent to the type of req_user_agent.
+        if not isinstance(crawler_agents[0], type(req_user_agent)):
+            crawler_agents = [crawler_agent.encode('iso-8859-1') for crawler_agent in crawler_agents]
+
         # We perform prefix matching of the crawler agent here so that we don't
         # have to worry about version bumps.
         return any(
