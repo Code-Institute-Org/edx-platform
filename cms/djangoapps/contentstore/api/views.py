@@ -161,7 +161,7 @@ class CourseImportView(CourseImportExportViewMixin, GenericAPIView):
                 error_code='internal_error'
             )
 
-    def get(self, request, course_id, filename):
+    def get(self, request, course_id):
         """
         Check the status of the specified task
         """
