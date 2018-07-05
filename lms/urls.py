@@ -821,7 +821,7 @@ urlpatterns += (
 )
 
 # Student Enrollment
-from student_enrollment.api import StudentEnrollment
+from student_enrollment.views import StudentEnrollment
 urlpatterns += (
     url(r'^enrollment/enroll/', StudentEnrollment.as_view()),
 )

@@ -6,6 +6,7 @@ from rest_framework.response import Response
 from ci_program.api import get_program_by_program_code
 from student_enrollment.utils import register_student, get_or_register_student
 from student_enrollment.serializers import EnrollmentSerializer
+
 from django.contrib.auth.models import User
 
 log = getLogger(__name__)
