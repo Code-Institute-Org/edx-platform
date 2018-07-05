@@ -131,6 +131,7 @@ from util.milestones_helpers import get_pre_requisite_courses_not_completed
 from util.password_policy_validators import validate_password_strength
 from xmodule.modulestore.django import modulestore
 from ci_program.models import Program
+from ci_program.api import is_student_enrolled_in_program
 
 log = logging.getLogger("edx.student")
 AUDIT_LOG = logging.getLogger("audit")
@@ -892,12 +893,18 @@ def dashboard(request):
 
     response = render_to_response('dashboard.html', context)
     set_user_info_cookie(response, request)
+    
+    program_url = 'program/' + user.program_set.last().marketing_slug
 
     if not user.program_set.exists():
         program = Program.objects.get(name="Fullstack Web Developer")
         program.enrolled_students.add(user)
+    
+    if is_student_enrolled_in_program("FS", user):
+        program_url = 'program/' + user.program_set.get(
+            name="Fullstack Web Developer").marketing_slug
 
-    return redirect('program/' + user.program_set.last().marketing_slug)
+    return redirect(program_url)
 
 
 def get_verification_error_reasons_for_display(verification_error_codes):

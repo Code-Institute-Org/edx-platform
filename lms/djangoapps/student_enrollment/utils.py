@@ -7,24 +7,29 @@ from django.contrib.auth.models import User
 from django.conf import settings
 from django.core.mail import get_connection
 from django.template.loader import render_to_string
+import requests
 from student.models import UserProfile
 
 
-def create_user_profile(user):
+def create_user_profile(user, full_name):
     """
     A small helper function for creating a user profile
 
     `user` is the User instance that we want to create a user profile for
+    `full_name` is the full name of the person that we are creating the
+        profile for
     """
     user_profile = UserProfile(user=user)
+    user_profile.full_name = full_name
     user_profile.save()
 
 
-def register_student(email, password=None):
+def register_student(email, full_name, password=None):
     """
     Register a new user with a randomly generated password
 
     `email` is the email address of the student
+    `full_name` is the full name of the student
     `password` is the password to be used when creating the new user. If
         a password is not provided then a password will be generated for
         that student.
@@ -37,16 +42,16 @@ def register_student(email, password=None):
     
     if password:
         user = User.objects.create_user(username, email, password)
-        create_user_profile(user)
+        create_user_profile(user, full_name)
         return user, None
     else:
         password = User.objects.make_random_password()
         user = User.objects.create_user(username, email, password)
-        create_user_profile(user)
+        create_user_profile(user, full_name)
         return user, password
 
 
-def get_or_register_student(user, password=None):
+def get_or_register_student(email, full_name, password=None):
     """
     Check to see if the user already exists within the LMS and creates
     the user if it doesn't already exist.
@@ -61,13 +66,14 @@ def get_or_register_student(user, password=None):
     Returns a user instance, the user's password and the enrollment type.
     """
     try:
-        user = User.objects.get(email=user.email)
-        if user.program_set.first().program_code == "5DCC":
+        user = User.objects.get(email=email)
+        try:
+            user.program_set.first().program_code == "5DCC"
             return user, None, 3
-        else:
+        except AttributeError:
             return user, None, 2
     except User.DoesNotExist:
-        user, password = register_student(user.email, password)
+        user, password = register_student(email, full_name, password)
         return user, password, 0
 
 

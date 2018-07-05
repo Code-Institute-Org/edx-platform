@@ -63,7 +63,7 @@ class StudentEnrollment(APIView):
             # Create the user and get their password so they can be
             # emailed to the student later
             log.info("Creating user for %s" % student.email)
-            user, password, _ = get_or_register_student(student)
+            user, password, _ = get_or_register_student(student.email, student.full_name)
             
             # If `None` was returned instead of a user instance then
             # respond with a 500 error and the corresponding failure
@@ -81,7 +81,7 @@ class StudentEnrollment(APIView):
             # Enroll the new student into the chosen program
             log.info("Enrolling %s into %s" % (student.email, program.name))
             program_enrollment_status = program.enroll_student_in_program(
-                user)
+                student.email)
             
             # If the enrollment was successful then continue as usual,
             # otherwise issue a 500 response

@@ -36,9 +36,12 @@ class Command(BaseCommand):
         zoho_students = get_students(status='(Lead Status: Enroll)')
 
         for student in zoho_students:
+            if not student.email:
+                continue 
 
             # Get the user, the user's password, and their enrollment type
-            user, password, enrollment_type = get_or_register_student(student)
+            user, password, enrollment_type = get_or_register_student(
+                student.email, student.email)
 
             # Get the code for the course the student is enrolling in
             program_to_enroll_in = parse_course_of_interest_code(
@@ -53,11 +56,12 @@ class Command(BaseCommand):
             program = Program.objects.get(program_code=program_to_enroll_in)
 
             # Enroll the student in the program
-            program_enrollment_status = program.enroll_student_in_program(user)
+            program_enrollment_status = program.enroll_student_in_program(
+                user.email)
 
             # Send the email
             email_sent_status = program.send_email(
-                user, program.name, enrollment_type, password)
+                user, enrollment_type, password)
 
             # Set the students access level (i.e. determine whether or
             # not a student is allowed to access to the LMS.
@@ -68,7 +72,7 @@ class Command(BaseCommand):
                 access.allowed_access = True
                 access.save()
             
-            post_to_zapier(settings.ZAPIER_ENROLLMENT_URL, user.email)
+            post_to_zapier(settings.ZAPIER_ENROLLMENT_URL, {"email": user.email})
 
             enrollment_status = EnrollmentStatusHistory(student=user, program=program, 
                                                         registered=bool(user),
