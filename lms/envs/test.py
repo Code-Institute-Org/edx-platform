@@ -33,7 +33,7 @@ from util.testing import patch_testcase, patch_sessions
 patch_testcase()
 patch_sessions()
 
-# Silence noisy logs to make troubleshooting easier when tests fail.
+# Silence noisy logs to make troubleshoot easier when tests fail.
 import logging
 LOG_OVERRIDES = [
     ('factory.generate', logging.ERROR),

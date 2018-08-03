@@ -2,13 +2,17 @@
 This module contains some handy utility functions for
 creating/registering users, as well as sending emails.
 """
+from logging import getLogger
 
 from django.contrib.auth.models import User
 from django.conf import settings
 from django.core.mail import get_connection
 from django.template.loader import render_to_string
 import requests
+
 from student.models import UserProfile
+
+log = getLogger(__name__)
 
 
 def create_user_profile(user, full_name):
@@ -67,13 +71,15 @@ def get_or_register_student(email, full_name, password=None):
     """
     try:
         user = User.objects.get(email=email)
+        log.info("Account for %s already exists" % email)
         try:
-            user.program_set.first().program_code == "5DCC"
+            user.studentenrollment_set.first().program_code == "5DCC"
             return user, None, 3
         except AttributeError:
             return user, None, 2
     except User.DoesNotExist:
         user, password = register_student(email, full_name, password)
+        log.info("New account created for %s" % email)
         return user, password, 0
 
 

@@ -20,7 +20,7 @@
 // where `BROWSER` could be Chrome or Firefox.
 //
 //
-// Troubleshooting tips:
+// troubleshoot tips:
 //
 // If you get an error like: "TypeError: __cov_KBCc7ZI4xZm8W2BC5NQLDg.s is undefined",
 // that means the patterns in sourceFiles and specFiles are matching the same file.

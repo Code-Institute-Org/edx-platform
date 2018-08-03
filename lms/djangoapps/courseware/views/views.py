@@ -864,6 +864,20 @@ def program_marketing(request, program_uuid):
 @cache_control(no_cache=True, no_store=True, must_revalidate=True)
 @ensure_valid_course_key
 @data_sharing_consent_required
+def support(request, course_id, student_id=None):
+    """ Display the support page. """
+    course_key = CourseKey.from_string(course_id)
+    
+    course = get_course_with_access(request.user, 'load', course_key)
+
+    return render_to_response('courseware/support.html', {"course": course, 'student': request.user})
+
+
+@transaction.non_atomic_requests
+@login_required
+@cache_control(no_cache=True, no_store=True, must_revalidate=True)
+@ensure_valid_course_key
+@data_sharing_consent_required
 def progress(request, course_id, student_id=None):
     """ Display the progress page. """
     course_key = CourseKey.from_string(course_id)

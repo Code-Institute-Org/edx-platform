@@ -1,0 +1,54 @@
+# -*- coding: utf-8 -*-
+from __future__ import unicode_literals
+
+from django.db import migrations, models
+from django.conf import settings
+
+
+class Migration(migrations.Migration):
+
+    dependencies = [
+        migrations.swappable_dependency(settings.AUTH_USER_MODEL),
+        ('ci_program', '0005_merge'),
+    ]
+
+    operations = [
+        migrations.SeparateDatabaseAndState(state_operations=[
+            migrations.CreateModel(
+                name='StudentEnrollment',
+                fields=[
+                    ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                    ('date_of_enrollment', models.DateTimeField(auto_now_add=True)),
+                ],
+            ),
+            migrations.RenameField(
+                model_name='program',
+                old_name='zoho_program_code',
+                new_name='program_code',
+            ),
+            migrations.RemoveField(
+                model_name='program',
+                name='number_of_modules',
+            ),
+            migrations.AddField(
+                model_name='program',
+                name='program_code_friendly_name',
+                field=models.CharField(max_length=50, null=True, blank=True),
+            ),
+            migrations.AlterField(
+                model_name='program',
+                name='enrolled_students',
+                field=models.ManyToManyField(to=settings.AUTH_USER_MODEL, through='ci_program.StudentEnrollment', blank=True),
+            ),
+            migrations.AddField(
+                model_name='studentenrollment',
+                name='program',
+                field=models.ForeignKey(to='ci_program.Program'),
+            ),
+            migrations.AddField(
+                model_name='studentenrollment',
+                name='student',
+                field=models.ForeignKey(to=settings.AUTH_USER_MODEL),
+            ),
+        ])
+    ]

@@ -121,9 +121,7 @@ def _update_certificate_context(context, user_certificate, platform_name):
 
     # Translators:  This text fragment appears after the student's name (displayed in a large font) on the certificate
     # screen.  The text describes the accomplishment represented by the certificate information displayed to the user
-    context['accomplishment_copy_description_full'] = _("successfully completed, received a passing grade, and was "
-                                                        "awarded this {platform_name} {certificate_type} "
-                                                        "Certificate of Completion in ").format(
+    context['accomplishment_copy_description_full'] = _("has been awarded Code Institute's").format(
         platform_name=platform_name,
         certificate_type=context.get("certificate_type"))
 
@@ -470,6 +468,7 @@ def _update_organization_context(context, course):
     context['organization_short_name'] = partner_short_name
     context['accomplishment_copy_course_org'] = partner_short_name
     context['organization_logo'] = organization_logo
+    context['course_name'] = "5 Day Coding Challenge"
 
 
 def render_cert_by_uuid(request, certificate_uuid):

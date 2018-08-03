@@ -38,6 +38,11 @@ site_status_msg = get_site_status_msg(course_id)
 
   <header id="global-navigation" class="header-global ${"slim" if course else ""}" >
     <!-- This file is only for demonstration, and is horrendous! -->
+    <div class="container">
+    
+    <div class="row" style="min-width:100%;margin:0;">
+      
+       <div class="col-xs-12 col-sm-10 offset-sm-1 main-header">
     <nav aria-label="${_('Global')}">
     <h1 class="logo">
       <a href="${marketing_link('ROOT')}">
@@ -161,6 +166,9 @@ site_status_msg = get_site_status_msg(course_id)
     </ol>
     % endif
   </nav>
+  </div>
+  </div>
+  </div>
 </header>
 % if course:
 <!--[if lte IE 8]>

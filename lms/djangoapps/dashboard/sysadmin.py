@@ -44,7 +44,7 @@ from student.roles import CourseInstructorRole, CourseStaffRole
 from xmodule.modulestore.django import modulestore
 from ci_program.models import Program
 
-ENROLL_ENDPOINT = 'https://courses.codeinstitute.net/enrollment/enroll/'
+ENROLL_ENDPOINT = 'https://ec2-54-229-66-187.eu-west-1.compute.amazonaws.com/enrollment/enroll/'
 LEGAL_CHARACTERS = string.ascii_letters + string.digits + ' @_.'
 
 log = logging.getLogger(__name__)
@@ -682,12 +682,14 @@ class Enrollment(SysadminDashboardView):
         username = email
         manual_override = input_data['manual_override']
         full_name = input_data['full_name']
+        api_key = settings.API_KEY
             
         resp = requests.post(ENROLL_ENDPOINT, data={
             'email': email,
             'course_code': program_code,
             'manual_override': manual_override,
-            'full_name': full_name
+            'full_name': full_name,
+            'api_key': api_key
         }, verify=False)
             
         return resp

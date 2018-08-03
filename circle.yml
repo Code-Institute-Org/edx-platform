@@ -34,7 +34,7 @@ dependencies:
     - pip install coveralls==1.0
 
     # Output the installed python packages to the console to help
-    # with troubleshooting any issues with python requirements.
+    # with troubleshoot any issues with python requirements.
     - pip freeze
 
 test:

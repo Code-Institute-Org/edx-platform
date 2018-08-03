@@ -52,7 +52,7 @@ class Command(BaseCommand):
             # If they are not enrolled in that program then we can skip this
             # email and move onto the next user
             try:
-                user.program_set.get(program_code=program_to_enroll_in)
+                user.studentenrollment_set.get(program_code=program_to_enroll_in)
             except ObjectDoesNotExist:
                 print("{} is not enrolled in this {}".format(
                     user.email, program_to_enroll_in))

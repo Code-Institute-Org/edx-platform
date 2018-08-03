@@ -772,7 +772,7 @@ class VideoPage(PageObject):
         state_selector = self.get_element_selector(CSS_CLASS_NAMES['video_container'])
         current_state = self.q(css=state_selector).attrs('class')[0]
 
-        # For troubleshooting purposes show what the current state is.
+        # For troubleshoot purposes show what the current state is.
         # The debug statements will only be displayed in the event of a failure.
         logging.debug("Current state of '{}' element is '{}'".format(state_selector, current_state))
 

@@ -1,130 +1,85 @@
-from datetime import date
 from logging import getLogger
-from rest_framework import status
-from rest_framework.views import APIView
-from rest_framework.response import Response
+
+from lms.djangoapps.student_enrollment.models import StudentEnrollment
 from ci_program.api import get_program_by_program_code
-from student_enrollment.utils import register_student, get_or_register_student
-from student_enrollment.serializers import EnrollmentSerializer
-from django.contrib.auth.models import User
 
 log = getLogger(__name__)
 
-FAILURE_CODES = (
-    (0, "Email already exists"),
-    (1, "Program code not found"),
-    (2, "User creation failed"),
-    (3, "Failed to enroll student in program"),
-    (4, "Failed to send email")
-)
 
-
-class Student:
+def enroll_student_in_program(code, user):
     """
-    A convenience class that we'll deserialize the student object
-    so we can store the data in this `Student` object
+    Enroll a student in a program.
+
+    `code` is the code of the program that we want to enroll the
+        student in
+    `user` is the instance of the user that we wish to enroll
+    Note that the student must already be registered to the platform
+
+    Returns the status of the enrollment
     """
+    program = get_program_by_program_code(code)
+    student_enrollment = StudentEnrollment.objects.get_or_create(
+        program=program, student=user, is_active=True)
 
-    def __init__(self, email, course_code, full_name, manual_override=False):
-        self.email = email
-        self.course_code = course_code
-        self.full_name = full_name
-        self.manual_override = manual_override
+    student_enrollment.save()
+    enrollment_status = student_enrollment.enroll()
+    
+    if enrollment_status:
+        log.info("%s successfully enrolled" % (user.email))
+        return enrollment_status
+    
+    log.warn("Enrollment for %s failed" % (user.email))
+    return enrollment_status
 
 
-class StudentEnrollment(APIView):
+def get_enrolled_students(code):
     """
-    The main API handler view class for the enrollment API. This API
-    will enroll a given student in a program using the email address
-    and program code provided.
+    Gets a list of the enrolled students enrolled in a given program
+
+    `code` is the code of the program that we want to get the list
+        of enrolled users from
+
+    Returns a collection of all `user` objects
     """
+    program = get_program_by_program_code(code)
+    return program.enrolled_students.all()
 
-    def post(self, request):
-        
-        log.info("Received request from enrollment API")
-        data = request.data
-        serializer = EnrollmentSerializer(data=data)
 
-        if serializer.is_valid():
-            
-            # Bind the deserialised data to an instance of the above
-            # `Student` object
-            student = Student(
-                serializer.data['email'],
-                serializer.data['course_code'],
-                serializer.data['full_name'],
-                serializer.data['manual_override']
-            )
-            
-            # Get the program using the code
-            program = get_program_by_program_code(student.course_code)
-            
-            # Create the user and get their password so they can be
-            # emailed to the student later
-            log.info("Creating user for %s" % student.email)
-            user, password, _ = get_or_register_student(student.email, student.full_name)
-            
-            # If `None` was returned instead of a user instance then
-            # respond with a 500 error and the corresponding failure
-            # reason
-            if user:
-                log.info("User created successfully for %s" % student.email)
-            else:
-                log.info("User creation failed for %s" % student.email)
-                return Response(
-                    {
-                        "enrollment_status": FAILURE_CODES[4][0],
-                        "reason": FAILURE_CODES[4][1]
-                    }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-            
-            # Enroll the new student into the chosen program
-            log.info("Enrolling %s into %s" % (student.email, program.name))
-            program_enrollment_status = program.enroll_student_in_program(
-                student.email)
-            
-            # If the enrollment was successful then continue as usual,
-            # otherwise issue a 500 response
-            if program_enrollment_status:
-                log.info("%s successfully enrolled in %s" % (
-                    student.email, program.name))
-            else:
-                log.info("Unable to enroll %s in %s" % (
-                    student.email, program.name))
-                return Response(
-                    {
-                        "enrollment_status": FAILURE_CODES[5][0],
-                        "reason": FAILURE_CODES[5][1]
-                    }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-            
-            # Send the email to the student
-            log.info("Sending login credentials to %s" % student.email)
-            email_sent_status = program.send_email(
-                user, 0, password)
-            
-            # Check to see if the email was sent and if theyn't then
-            # respond with a 500 error
-            if email_sent_status:
-                log.info("Email was successfully sent from the LMS")
-            else:
-                log.info("Email sending failure")
-                return Response(
-                    {
-                        "enrollment_status": FAILURE_CODES[6][0],
-                        "reason": FAILURE_CODES[6][1]
-                    }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-            
-            # Everything went well so return a status of 201 as well
-            # as some basic information
-            return Response(
-                {
-                    "enrollment_success": bool(program_enrollment_status),
-                    "email_success": bool(email_sent_status)
-                },
-                status=status.HTTP_201_CREATED
-            )
-        else:
-            log.warn("Data deserialisation unsuccessful - %s" % request.data)
-            print(request.data)
-            return Response(
-                status=status.HTTP_400_BAD_REQUEST
-            )
+def is_student_enrolled_in_program(code, email):
+    """
+    Check whether a given student is enrolled in a given program
+
+    `code` is the course code used as an identifier for a program
+    `email` is the email of the user that we want to check for
+
+    Returns True or False based on whether or not a student is enrolled
+        in the program
+    """
+    program = get_program_by_program_code(code)
+    return program.enrolled_students.filter(email=email).exists()
+
+
+def number_of_enrolled_students(code):
+    """
+    Get the number of students that are enrolled in a given program
+
+    `code` is the code of the program that we're interested in
+
+    Returns the total number of students enrolled
+    """
+    program = get_program_by_program_code(code)
+    return program.enrolled_students.count()
+
+
+def number_of_students_logged_into_access_program(code):
+    """
+    Get the number of students that have logged into the LMS to get
+    access to their course content.
+
+    `code` is the code of the program we are interested in.
+
+    Returns the total number of students that have logged
+        per-program
+    """
+    program = get_program_by_program_code(code)
+    return program.enrolled_students.exclude(last_login__isnull=True).count()

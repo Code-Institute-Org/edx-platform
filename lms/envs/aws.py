@@ -513,6 +513,8 @@ XBLOCK_FIELD_DATA_WRAPPERS = ENV_TOKENS.get(
     XBLOCK_FIELD_DATA_WRAPPERS
 )
 
+API_KEY = AUTH_TOKENS.get('API_KEY')
+
 ############### Mixed Related(Secure/Not-Secure) Items ##########
 LMS_SEGMENT_KEY = AUTH_TOKENS.get('SEGMENT_KEY')
 

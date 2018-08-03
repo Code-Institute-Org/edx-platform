@@ -1,8 +1,5 @@
 from django.contrib import admin
-from lms.djangoapps.student_enrollment.models import (
-    EnrollmentStatusHistory,
-    ProgramAccessStatus
-)
+from lms.djangoapps.student_enrollment.models import EnrollmentStatusHistory
 
 
 class EnrollmentStatusHistoryAdmin(admin.ModelAdmin):
@@ -16,4 +13,3 @@ class EnrollmentStatusHistoryAdmin(admin.ModelAdmin):
     )
 
 admin.site.register(EnrollmentStatusHistory, EnrollmentStatusHistoryAdmin)
-admin.site.register(ProgramAccessStatus)

@@ -1,7 +1,7 @@
 /* eslint-env node */
 
 // Karma config for cms suite.
-// Docs and troubleshooting tips in common/static/common/js/karma.common.conf.js
+// Docs and troubleshoot tips in common/static/common/js/karma.common.conf.js
 
 'use strict';
 var path = require('path');

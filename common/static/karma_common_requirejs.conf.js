@@ -1,5 +1,5 @@
 // Karma config for common-requirejs suite.
-// Docs and troubleshooting tips in common/static/common/js/karma.common.conf.js
+// Docs and troubleshoot tips in common/static/common/js/karma.common.conf.js
 
 /* eslint-env node */
 

@@ -413,6 +413,15 @@ urlpatterns += (
         CoursewareIndex.as_view(),
         name='courseware_position',
     ),
+    
+    # support page
+    url(
+        r'^courses/{}/support$'.format(
+            settings.COURSE_ID_PATTERN,
+        ),
+        'courseware.views.views.support',
+        name='support',
+    ),
 
     # progress page
     url(
@@ -821,7 +830,7 @@ urlpatterns += (
 )
 
 # Student Enrollment
-from student_enrollment.api import StudentEnrollment
+from student_enrollment.views import StudentEnrollment
 urlpatterns += (
     url(r'^enrollment/enroll/', StudentEnrollment.as_view()),
 )
