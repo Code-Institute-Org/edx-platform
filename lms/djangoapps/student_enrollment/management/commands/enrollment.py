@@ -33,7 +33,7 @@ class Command(BaseCommand):
         may already be registered in the system.
         """
 
-        zoho_students = get_students(status='(Lead Status: Enroll)')
+        zoho_students = get_students(status='(Lead Status:Enroll)')
 
         for student in zoho_students:
             if not student.email:

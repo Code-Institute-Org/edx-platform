@@ -20,7 +20,7 @@ def create_user_profile(user, full_name):
         profile for
     """
     user_profile = UserProfile(user=user)
-    user_profile.full_name = full_name
+    user_profile.name = full_name
     user_profile.save()
 
 
