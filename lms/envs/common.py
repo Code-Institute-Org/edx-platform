@@ -1249,9 +1249,6 @@ MIDDLEWARE_CLASSES = (
 
     # This must be last
     'openedx.core.djangoapps.site_configuration.middleware.SessionCookieDomainOverrideMiddleware',
-
-    # Elastic APM
-    'elasticapm.contrib.django.middleware.TracingMiddleware',
 )
 
 # Clickjacking protection can be enabled by setting this to 'DENY'
@@ -2261,9 +2258,6 @@ INSTALLED_APPS = (
     'ci_program',
     'lms.djangoapps.student_enrollment',
     'lms.djangoapps.learning_success',
-
-    # Elastic APM
-    'elasticapm.contrib.django',
 )
 
 ######################### CSRF #########################################
