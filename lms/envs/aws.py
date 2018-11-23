@@ -1054,9 +1054,3 @@ PROFILE_IMAGE_SIZES_MAP = ENV_TOKENS.get(
 ############## Settings for Learning Success ######################
 
 STRACKR_LMS_API_ENDPOINT = AUTH_TOKENS.get('STRACKR_LMS_API_ENDPOINT', None)
-
-ELASTIC_APM = {
-    'SERVICE_NAME': ENV_TOKENS.get('APM_SERVICE_NAME', ''),
-    'SECRET_TOKEN': AUTH_TOKENS.get('APM_SECRET_TOKEN', ''),
-    'SERVER_URL': ENV_TOKENS.get('APM_SERVER_URL', '')
-}

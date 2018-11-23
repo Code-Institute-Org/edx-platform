@@ -433,9 +433,6 @@ MIDDLEWARE_CLASSES = (
 
     # This must be last so that it runs first in the process_response chain
     'openedx.core.djangoapps.site_configuration.middleware.SessionCookieDomainOverrideMiddleware',
-
-    # Elastic APM
-    'elasticapm.contrib.django.middleware.TracingMiddleware',
 )
 
 # Clickjacking protection can be enabled by setting this to 'DENY'
@@ -1043,9 +1040,6 @@ INSTALLED_APPS = (
 
     # Waffle related utilities
     'openedx.core.djangoapps.waffle_utils',
-
-    # Elastic APM
-    'elasticapm.contrib.django',
 )
 
 
