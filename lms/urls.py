@@ -826,6 +826,12 @@ urlpatterns += (
     url(r'^enrollment/enroll/', StudentEnrollment.as_view()),
 )
 
+# Student Enrollment
+from challenges.views import hello
+urlpatterns += (
+    url(r'^challenges/webhook', hello),
+)
+
 # Embargo
 if settings.FEATURES.get('EMBARGO'):
     urlpatterns += (
