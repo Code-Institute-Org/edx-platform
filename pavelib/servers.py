@@ -97,6 +97,7 @@ def lms(options):
     ("port=", "p", "Port"),
     ("fast", "f", "Skip updating assets"),
 ])
+
 def studio(options):
     """
     Run the Studio server.
@@ -139,7 +140,7 @@ def devstack(args):
     if args.optimized:
         settings = OPTIMIZED_SETTINGS
         asset_settings = OPTIMIZED_ASSETS_SETTINGS
-    sh(django_cmd('cms', settings, 'reindex_course', '--setup'))
+    # sh(django_cmd('cms', settings, 'reindex_course', '--setup'))
     run_server(
         args.system[0],
         fast=args.fast,

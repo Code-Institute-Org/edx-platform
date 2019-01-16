@@ -4,33 +4,6 @@ A convience API for handle common interactions with the Program model.
 This is simply a set of functions that can be used elsewhere to abstract some
 of the complexities in certain aspects of the codebase, but also to remove the
 need to import the Program model elsewhere.
-
-    `get_all_programs` will return a Queryset containing every program object
-        stored in the `ci_program` model
-
-    `get_program_by_program_code` will retreive a specific program object
-        based on the `program_code`
-
-    `enroll_student_in_program` will enroll the provided `student` into the
-        provided `program` (both the `program` and `student` are instances).
-        Returns a True or False status to notify if the enrollment was
-        successful
-
-    `get_enrolled_students` returns the number of students enrolled in a given
-        program
-
-    `is_enrolled_in_program` will check to see if a student is enrolled in a
-        given program
-
-    `number_of_enrolled_students` will return the number of students enrolled
-        in a given program
-
-    `number_of_students_logged_into_access_program` will provide the total
-        number of students in a program that have logged into the LMS
-
-    `get_courses_locators_for_program` will return a list of the course
-        locators containing the locator for module contained within that
-        program
 """
 from django.contrib.auth.models import User
 from django.shortcuts import get_object_or_404
@@ -127,7 +100,7 @@ def number_of_students_logged_into_access_program(code):
     return program.enrolled_students.exclude(last_login__isnull=True).count()
 
 
-def get_courses_locators_for_program(code):
+def get_course_locators_for_program(code):
     """
     Get a list of CourseLocator objects for each module in a program
 
@@ -137,3 +110,10 @@ def get_courses_locators_for_program(code):
     """
     program = get_program_by_program_code(code)
     return program.get_course_locators()
+
+
+def get_courses_from_program(code):
+    """
+    """
+    program = get_program_by_program_code(code)
+    return program.get_courses()
