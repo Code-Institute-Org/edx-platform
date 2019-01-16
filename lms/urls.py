@@ -424,6 +424,15 @@ urlpatterns += (
         name='courseware_position',
     ),
 
+    # support page
+    url(
+        r'^courses/{}/support$'.format(
+            settings.COURSE_ID_PATTERN,
+        ),
+        'courseware.views.views.support',
+        name='support',
+    ),
+
     # progress page
     url(
         r'^courses/{}/progress$'.format(
