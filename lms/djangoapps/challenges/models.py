@@ -1,10 +1,14 @@
+import json
+
 from django.db import models
+from django.db import IntegrityError
 from django.contrib.auth.models import User
 
 from opaque_keys.edx.locator import CourseLocator, BlockUsageLocator
 from openedx.core.djangoapps.xmodule_django.models import LocationKeyField
 from xmodule.modulestore.django import modulestore
 from courseware.models import StudentModule, StudentModuleHistory
+from capa.correctmap import CorrectMap
 
 
 class Tag(models.Model):
@@ -39,13 +43,13 @@ class Challenge(models.Model):
     """
 
     LEVEL = (
-        (1, 'Required'),
-        (2, 'Optional'),
-        (3, 'Bonus'),
+        ('Required', 'Required'),
+        ('Optional', 'Optional'),
+        ('Bonus', 'Bonus'),
     )
 
     name = models.CharField(max_length=120, blank=False, null=False)
-    block_locator = LocationKeyField(max_length=120, blank=False, null=False)
+    block_locator = models.CharField(max_length=120, blank=False, null=False)
     tags = models.ManyToManyField(Tag, blank=False, null=False)
     level = models.CharField(max_length=50, choices=LEVEL, blank=False, null=False)
 
@@ -79,9 +83,103 @@ class Challenge(models.Model):
 
 
 class ChallengeSubmission(models.Model):
+    """
+    The `ChallengeSubmission` model will store all of the data regarding
+    the student's attempt to answer the challenge.
+
+    This data is mostly used for internal information of students'
+    challenge attempts.
+    
+    We'll use this data to determine a student's ability.
+
+    The actual challenges are considered to be problems by Open edX'
+    StudentModule table.
+
+    When saving a record in this table, we also update the record in the
+    `StudentModule` table so the data can be reflected on the student's
+    Progress page.
+
+    In addition to this, we also need to store the correct metadata in
+    the `state` field in order for the conditional module to work correct.
+
+    These behaviours are done here via some instance methods that allow us
+    to parse, manipulate and update the StudentModule record.
+    """
 
     student = models.ForeignKey(User)
     challenge = models.ForeignKey(Challenge)
     time_challenge_started = models.DateTimeField()
     time_challenge_submitted = models.DateTimeField()
     passed = models.BooleanField()
+
+    def get_state_dict(self, module_record):
+        """
+        Deserialize the `state` to a dictionary so we can easily manipulate
+        the `state` data.
+
+        `module_record` is the `StudentModule` instance the we wish to read
+            the state from
+        
+        Returns the contents of the `state` property as a dictionary
+        """
+        return json.loads(module_record.state)
+
+    def get_answer_id(self, state):
+        """
+        Retrieve the `answer_id` from the state dict, so we can add the
+        correct answer ID to the correctness mapping
+
+        `state` is the dictionary that contains the state of the student
+            activity
+        
+        Returns the `answer_id`
+        """
+        answer_id = state['input_state'].keys()[0]
+        return answer_id
+    
+    def create_correct_map(self, answer_id):
+        """
+        Create a new `CorrectMap` to be added to the `state` field of the
+        `StudentModule`.
+
+        `answer_id` is simply the ID of the answer. This will be used as
+            a key, with the `correct_map` as the value.
+
+        Returns a dictionary containing the `correct_map`
+        """
+        cmap = CorrectMap()
+        cmap.set(answer_id=answer_id, correctness='correct')
+        correct_map = {"correct_map": cmap.get_dict()}
+        return correct_map
+    
+    def update_module_state(self, module_record):
+        """
+        Get, parse and update the state dictionary.
+
+        `module_record` is the `StudentModule` instance
+
+        Returns a serialized version of the dictionary
+        """
+        state = self.get_state_dict(module_record)
+        answer_id = self.get_answer_id(state)
+        correct_map = self.create_correct_map(answer_id)
+        state.update(correct_map)
+        return json.dumps(state)
+
+    def save(self):
+        """
+        Save the ChallengeSubmission instance and update the relevant
+        `StudentModule` instance to reflect the student's progress.
+        """
+        course_key, block_location = self.challenge.get_course_key_and_block_location
+
+        grade = 1.0 if self.passed else 0
+
+        student_activity = StudentModule.objects.get(student=self.student,
+            module_state_key=block_location, course_id=course_key)
+        
+        student_activity.state = self.update_module_state(student_activity)
+        student_activity.grade = grade
+        student_activity.max_grade = 1.0
+
+        student_activity.save()

@@ -15,7 +15,10 @@ def hello(request):
     assignment_score = assignment_data['submission']['status']
     assignment_created_timestamp = assignment_data['submission']['time_created']
     assignment_submitted_timestamp = assignment_data['submission']['time_submitted']
-    assignment_passed = True if assignment_score == "completed" else False
+    assignment_passed = True if assignment_score == "complete" else False
+
+    print(assignment_score)
+    print(assignment_passed)
 
     try:
         student = User.objects.get(email="aaron@codeinstitute.net")
@@ -34,6 +37,8 @@ def hello(request):
         time_challenge_submitted=assignment_submitted_timestamp,
         passed=assignment_passed
     )
+
+    print(submission.passed)
     submission.save()
     
-    return HttpResponse('pong')
+    return HttpResponse(status=200)
