@@ -112,6 +112,9 @@ class ChallengeSubmission(models.Model):
     time_challenge_submitted = models.DateTimeField()
     passed = models.BooleanField()
 
+    class Meta:
+        unique_together = ('student', 'challenge')
+
     def get_state_dict(self, module_record):
         """
         Deserialize the `state` to a dictionary so we can easily manipulate
@@ -166,7 +169,7 @@ class ChallengeSubmission(models.Model):
         state.update(correct_map)
         return json.dumps(state)
 
-    def save(self):
+    def save(self, *args, **kwargs):
         """
         Save the ChallengeSubmission instance and update the relevant
         `StudentModule` instance to reflect the student's progress.
@@ -183,3 +186,4 @@ class ChallengeSubmission(models.Model):
         student_activity.max_grade = 1.0
 
         student_activity.save()
+        super(ChallengeSubmission, self).save(*args, **kwargs)
