@@ -826,10 +826,11 @@ urlpatterns += (
     url(r'^enrollment/enroll/', StudentEnrollment.as_view()),
 )
 
-# Challenge Webhook
-from challenges.views import challenge_handler
+# Challenge Endpoints
+from challenges.views import challenge_handler, has_completed_challenge
 urlpatterns += (
     url(r'^challenges/webhook', challenge_handler),
+    url(r'^challenges/has_completed_challenge', has_completed_challenge)
 )
 
 # Embargo
