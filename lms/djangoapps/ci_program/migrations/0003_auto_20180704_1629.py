@@ -8,15 +8,14 @@ from django.conf import settings
 class Migration(migrations.Migration):
 
     dependencies = [
-        migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ('ci_program', '0005_merge'),
+        ('ci_program', '0002_auto_20180313_1318'),
     ]
 
     operations = [
-        migrations.AddField(
+        migrations.RenameField(
             model_name='program',
-            name='program_code',
-            field=models.CharField(max_length=50, null=True, blank=True),
+            old_name='zoho_program_code',
+            new_name='program_code',
         ),
         migrations.RemoveField(
             model_name='program',
@@ -26,5 +25,10 @@ class Migration(migrations.Migration):
             model_name='program',
             name='program_code_friendly_name',
             field=models.CharField(max_length=50, null=True, blank=True),
+        ),
+        migrations.AlterField(
+            model_name='program',
+            name='enrolled_students',
+            field=models.ManyToManyField(to=settings.AUTH_USER_MODEL, blank=True),
         ),
     ]
