@@ -151,8 +151,8 @@ FEATURES = {
     'AUTOPLAY_VIDEOS': False,
 
     # If set to True, new Studio users won't be able to author courses unless
-    # edX has explicitly added them to the course creator group.
-    'ENABLE_CREATOR_GROUP': False,
+    # an Open edX admin has added them to the course creator group.
+    'ENABLE_CREATOR_GROUP': True,
 
     # whether to use password policy enforcement or not
     'ENFORCE_PASSWORD_POLICY': False,
@@ -535,6 +535,7 @@ EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 EMAIL_HOST = 'localhost'
 EMAIL_PORT = 25
 EMAIL_USE_TLS = False
+EMAIL_USE_SSL = False
 EMAIL_HOST_USER = ''
 EMAIL_HOST_PASSWORD = ''
 DEFAULT_FROM_EMAIL = 'registration@example.com'
@@ -543,7 +544,7 @@ SERVER_EMAIL = 'devops@example.com'
 ADMINS = ()
 MANAGERS = ADMINS
 
-EDX_PLATFORM_REVISION = os.environ.get('EDX_PLATFORM_REVISION')
+EDX_PLATFORM_REVISION = os.environ.get('EDX_PLATFORM_REVISION', 'cms')
 
 if not EDX_PLATFORM_REVISION:
     try:
