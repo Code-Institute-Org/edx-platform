@@ -830,6 +830,18 @@ urlpatterns += (
     url(r'^program/', include('ci_program.urls')),
 )
 
+# Student Enrollment
+from student_enrollment.views import StudentEnrollment
+urlpatterns += (
+    url(r'^enrollment/enroll/', StudentEnrollment.as_view()),
+)
+
+# Challenge Endpoints
+from challenges.views import challenge_handler, has_completed_challenge
+urlpatterns += (
+    url(r'^challenges/webhook', challenge_handler),
+    url(r'^challenges/has_completed_challenge', has_completed_challenge)
+)
 # Embargo
 if settings.FEATURES.get('EMBARGO'):
     urlpatterns += (

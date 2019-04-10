@@ -31,6 +31,8 @@ def index(request):
     '''
     Redirects to main page -- info page if user authenticated, or marketing if not
     '''
+    if not request.user.is_authenticated():
+        return redirect(reverse("signin_user"))
 
     if request.user.is_authenticated():
         # Only redirect to dashboard if user has

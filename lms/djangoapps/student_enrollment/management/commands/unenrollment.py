@@ -9,10 +9,7 @@ from student_enrollment.zoho import (
     parse_course_of_interest_code,
     update_student_record
 )
-from lms.djangoapps.student_enrollment.models import (
-    EnrollmentStatusHistory,
-    ProgramAccessStatus
-)
+from lms.djangoapps.student_enrollment.models import EnrollmentStatusHistory
 
 
 class Command(BaseCommand):

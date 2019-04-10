@@ -2258,6 +2258,7 @@ INSTALLED_APPS = (
     'ci_program',
     'lms.djangoapps.student_enrollment',
     'lms.djangoapps.learning_success',
+    'challenges'
 )
 
 ######################### CSRF #########################################
