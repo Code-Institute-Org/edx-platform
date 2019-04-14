@@ -18,7 +18,7 @@ from openedx.core.djangoapps.programs.models import ProgramsApiConfig
 from openedx.core.djangoapps.self_paced.models import SelfPacedConfiguration
 from openedx.core.djangoapps.site_configuration import helpers as configuration_helpers
 from openedx.features.enterprise_support.api import enterprise_enabled
-from student_enrollment.api import StudentEnrollment
+from student_enrollment.views import StudentEnrollment
 
 from openassessment.fileupload import views_filesystem
 
