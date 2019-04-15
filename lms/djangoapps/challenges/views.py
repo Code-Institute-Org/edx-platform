@@ -35,8 +35,7 @@ def challenge_handler(request):
     assignment_passed = True if assignment_score == "complete" else False
 
     try:
-        student = User.objects.get(
-            Q(email=student_email) | Q(profile__name=student_name))
+        student = User.objects.get(email=student_email)
     except User.DoesNotExist:
         pass
     
@@ -46,7 +45,9 @@ def challenge_handler(request):
         pass
     
     submission = get_submission_or_none(student, challenge)
-
+    
+    print(student, challenge, submission)
+    
     if not submission:
         submission = ChallengeSubmission(
             student=student, challenge=challenge,
