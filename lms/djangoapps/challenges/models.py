@@ -44,8 +44,8 @@ class Challenge(models.Model):
 
     LEVEL = (
         ('Required', 'Required'),
-        ('Optional', 'Optional'),
         ('Bonus', 'Bonus'),
+        ('Optional', 'Optional'),
     )
 
     name = models.CharField(max_length=120, blank=False, null=False)
