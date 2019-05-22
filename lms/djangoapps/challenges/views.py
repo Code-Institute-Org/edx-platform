@@ -4,8 +4,11 @@ from django.http import HttpResponse, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.models import User
 from django.db.models import Q
+from rest_framework import viewsets
+from rest_framework.response import Response
 
 from challenges.models import Challenge, ChallengeSubmission
+from challenges.serializers import ChallengeSubmissionSerializer
 
 
 def get_submission_or_none(student, challenge):
@@ -46,8 +49,6 @@ def challenge_handler(request):
     
     submission = get_submission_or_none(student, challenge)
     
-    print(student, challenge, submission)
-    
     if not submission:
         submission = ChallengeSubmission(
             student=student, challenge=challenge,
@@ -72,3 +73,16 @@ def has_completed_challenge(request):
         submission = False
 
     return JsonResponse({'submission': True if submission else False})
+
+
+class ChallengeSubmissionViewset(viewsets.ModelViewSet):
+    
+    queryset = ChallengeSubmission.objects.all()
+    serializer_class = ChallengeSubmissionSerializer
+    
+    def get(self, request):
+        user = User.objects.get(email=equest.GET.get("email"))
+        queryset = ChallengeSubmission.objects.filter(student=user)
+        serializer = ChallengeSubmissionSerializer(queryset, many=True)
+        return Response(serializer.data)
+        

@@ -1,4 +1,4 @@
-from django.core.management.base import BaseCommand, CommandError
+from django.core.management.base import BaseCommand
 from django.core.exceptions import ObjectDoesNotExist
 from django.contrib.auth.models import User
 from django.conf import settings
@@ -65,6 +65,7 @@ class Command(BaseCommand):
 
             # Set the students access level (i.e. determine whether or
             # not a student is allowed to access to the LMS.
+            # Deprecated...
             access, created = ProgramAccessStatus.objects.get_or_create(
                 user=user, program_access=True)
 

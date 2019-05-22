@@ -838,9 +838,11 @@ urlpatterns += (
 
 # Challenge Endpoints
 from challenges.views import challenge_handler, has_completed_challenge
+from challenges.urls import router
 urlpatterns += (
     url(r'^challenges/webhook', challenge_handler),
-    url(r'^challenges/has_completed_challenge', has_completed_challenge)
+    url(r'^challenges/has_completed_challenge', has_completed_challenge),
+    url(r'^submissions', include(router.urls))
 )
 # Embargo
 if settings.FEATURES.get('EMBARGO'):

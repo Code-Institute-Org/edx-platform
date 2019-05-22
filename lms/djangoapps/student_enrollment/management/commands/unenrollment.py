@@ -1,3 +1,6 @@
+"""
+NOTE: WIP NOT TESTED!!!
+"""
 from django.core.management.base import BaseCommand, CommandError
 from django.core.exceptions import ObjectDoesNotExist
 from django.contrib.auth.models import User

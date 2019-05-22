@@ -35,7 +35,6 @@ class Command(BaseCommand):
             course_enrollments = CourseEnrollment.objects.filter(
                 course_id=locator)
             for enrollment in course_enrollments:
-                print(enrollment.user)
                 if enrollment.user.last_login is None:
                     post_to_zapier(settings.ZAPIER_LOGIN_REMINDER,
                         {"email": enrollment.user.email})
