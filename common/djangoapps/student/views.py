@@ -900,7 +900,7 @@ def dashboard(request):
         program = Program.objects.get(name="Fullstack Web Developer")
         program.enrolled_students.add(user)
     
-    if is_student_enrolled_in_program("FS", user):
+    if user in Program.objects.get(program_code="FS").enrolled_students.all():
         program_url = 'program/' + user.program_set.get(
             name="Fullstack Web Developer").marketing_slug
 

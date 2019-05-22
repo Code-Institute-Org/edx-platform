@@ -215,7 +215,7 @@ class Program(TimeStampedModel):
         
         list_of_courses = []
         
-        for course_code in self.course_codes.all():
+        for course_code in self.course_codes.all().order_by('programcoursecode'):
             course_identifiers = course_code.key.split('+')
             locator = CourseLocator(
                 course_identifiers[0],

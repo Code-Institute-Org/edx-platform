@@ -33,7 +33,7 @@ class Command(BaseCommand):
         may already be registered in the system.
         """
 
-        zoho_students = get_students(status='(Lead Status: Enroll)')
+        zoho_students = get_students(status='(Lead Status:Enroll)')
 
         for student in zoho_students:
             if not student.email:
@@ -45,7 +45,7 @@ class Command(BaseCommand):
 
             # Get the code for the course the student is enrolling in
             program_to_enroll_in = parse_course_of_interest_code(
-                student.course_of_interest)
+                student.course_of_interest_code)
 
             # DITF is not current present in the Learning Platform so
             # we'll skip over it until then
