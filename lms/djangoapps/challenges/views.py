@@ -73,15 +73,4 @@ def has_completed_challenge(request):
 
     return JsonResponse({'submission': True if submission else False})
 
-
-class ChallengeSubmissionViewset(viewsets.ModelViewSet):
-    
-    queryset = ChallengeSubmission.objects.all()
-    serializer_class = ChallengeSubmissionSerializer
-    
-    def get(self, request):
-        user = User.objects.get(email=equest.GET.get("email"))
-        queryset = ChallengeSubmission.objects.filter(student=user)
-        serializer = ChallengeSubmissionSerializer(queryset, many=True)
-        return Response(serializer.data)
         
