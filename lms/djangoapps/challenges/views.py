@@ -8,7 +8,6 @@ from rest_framework import viewsets
 from rest_framework.response import Response
 
 from challenges.models import Challenge, ChallengeSubmission
-from challenges.serializers import ChallengeSubmissionSerializer
 
 
 def get_submission_or_none(student, challenge):
