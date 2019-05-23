@@ -1,8 +1,7 @@
-from rest_framework import routers
+from django.conf.urls import patterns, url
 
-from challenges.views import ChallengeSubmissionViewset
+urlpatterns = patterns(
+    'challenges.views',
 
-router = routers.DefaultRouter()
-router.register(r'', ChallengeSubmissionViewset, 'api')
-
-print(router.urls)
+    url(r'^webhook', 'challenge_handler'),
+)
