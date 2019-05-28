@@ -68,15 +68,15 @@ class Challenge(models.Model):
         block_locator = BlockUsageLocator(
             course_locator, block_type, block_id_partition)
         return course_locator, block_locator
-        
-    @classmethod
-    def get_all_challenges_by_module_name(cls, module_locator):
-        module_challenges = []
-        for challenge in cls.objects.all():
-            challenge_course_locator, _ = challenge.get_course_and_block_locators
-            if module_locator == challenge_course_locator:
-                module_challenges.append(challenge)
-        return module_challenges
+    
+    @property
+    def get_course_key_and_block_location(self):
+        course_locator, block_locator = self.get_course_and_block_locators
+        course_key = modulestore().get_course(
+            course_locator).location.course_key
+        block_location = modulestore().get_item(block_locator).location
+
+        return course_key, block_location
     
     def __str__(self):
         return "%s -> %s" % (self.name, self.block_locator)
