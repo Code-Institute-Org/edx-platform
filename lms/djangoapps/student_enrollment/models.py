@@ -11,6 +11,28 @@ from ci_program.models import Program
 from ci_program.api import get_courses_from_program, get_program_by_program_code
 
 
+class ProgramAccessStatus(models.Model):
+    """
+    Store a student's access to a program. This will allow us to
+    determine (mostly at the time of login), whether or not a student
+    can access the LMS.
+    `user` references the user in question
+    `program_access` is a boolean that indicates whether or the user
+        can gain access to the LMS
+    """
+
+    user = models.ForeignKey(User)
+    program_access = models.BooleanField()
+
+    def __unicode__(self):
+        return "Program is accessible for {}: {}".format(
+            self.user, self.program_access)
+    
+    def set_access_level(self, user, allowed_access):
+        access = self(user=user, program_access=allowed_access)
+        access.save()
+
+
 ENROLLMENT_TYPES = (
     (0, "ENROLLMENT_TYPE__ENROLLMENT"),
     (1, "ENROLLMENT_TYPE__UNENROLLMENT"),

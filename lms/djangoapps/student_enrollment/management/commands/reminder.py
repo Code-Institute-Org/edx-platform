@@ -15,7 +15,7 @@ from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 from student.models import CourseEnrollment
 from student_enrollment.utils import post_to_zapier
-from ci_program.api import get_courses_locators_for_program
+from ci_program.api import get_course_locators_for_program
 
 
 class Command(BaseCommand):
@@ -31,7 +31,7 @@ class Command(BaseCommand):
 
         TODO: Implement this same functionality for FS
         """
-        for locator in get_courses_locators_for_program("5DCC"):
+        for locator in get_course_locators_for_program("5DCC"):
             course_enrollments = CourseEnrollment.objects.filter(
                 course_id=locator)
             for enrollment in course_enrollments:
