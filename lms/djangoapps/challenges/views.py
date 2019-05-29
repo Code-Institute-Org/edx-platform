@@ -55,7 +55,11 @@ def challenge_handler(request):
             time_challenge_submitted=assignment_submitted_timestamp,
             passed=assignment_passed
         )
-        submission.save()
+    else:
+        submission.passed = assignment_passed
+        submission.attempts += 1
+        
+    submission.save()
     
     return HttpResponse(status=200)
 

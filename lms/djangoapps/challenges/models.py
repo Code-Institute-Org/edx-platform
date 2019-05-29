@@ -111,6 +111,7 @@ class ChallengeSubmission(models.Model):
     time_challenge_started = models.DateTimeField()
     time_challenge_submitted = models.DateTimeField()
     passed = models.BooleanField()
+    attempts = models.IntegerField(default=1)
 
     class Meta:
         unique_together = ('student', 'challenge')
