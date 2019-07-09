@@ -72,9 +72,11 @@ def has_completed_challenge(request):
     try:
         submission = ChallengeSubmission.objects.get(
             student=student, challenge__block_locator__contains=block_id)
+        attempts = submission.attempts
     except:
         submission = False
+        attempts = 0
 
-    return JsonResponse({'submission': True if submission else False})
+    return JsonResponse({'submission': True if submission else False, "attempts": attempts})
 
         
