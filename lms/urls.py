@@ -424,15 +424,6 @@ urlpatterns += (
         name='courseware_position',
     ),
 
-    # support page
-    url(
-        r'^courses/{}/support$'.format(
-            settings.COURSE_ID_PATTERN,
-        ),
-        'courseware.views.views.support',
-        name='support',
-    ),
-
     # progress page
     url(
         r'^courses/{}/progress$'.format(
@@ -837,6 +828,11 @@ urlpatterns += (
 # Program
 urlpatterns += (
     url(r'^program/', include('ci_program.urls')),
+)
+
+# Program
+urlpatterns += (
+    url(r'^/', include('ci_support.urls')),
 )
 
 # Embargo
