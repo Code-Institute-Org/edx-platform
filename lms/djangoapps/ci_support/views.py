@@ -10,6 +10,9 @@ from openedx.features.enterprise_support.api import data_sharing_consent_require
 from opaque_keys.edx.keys import CourseKey
 from courseware.courses import get_course_with_access
 from edxmako.shortcuts import render_to_response
+from lms.djangoapps.ci_support.utils import get_a_students_mentor
+from lms.djangoapps.ci_support.utils import get_mentor_details
+from lms.djangoapps.ci_support.utils import send_email_from_zapier
 
 
 @transaction.non_atomic_requests
@@ -54,6 +57,8 @@ def mentor(request, course_id, student_id=None):
     course_key = CourseKey.from_string(course_id)
 
     course = get_course_with_access(request.user, 'load', course_key)
+    
+    mentor = get_mentor_details(request.user.email)
 
     return render_to_response(
         "courseware/support/mentor.html",
@@ -106,6 +111,17 @@ def studentcare(request, course_id, student_id=None):
     course_key = CourseKey.from_string(course_id)
 
     course = get_course_with_access(request.user, 'load', course_key)
+    
+    if request.method == 'POST':
+        student_email = request.user.email
+        email_subject = request.POST["email-subject"]
+        email_body = request.POST["email-body"]
+        
+        resp = send_email_from_zapier({
+            'student_email': student_email,
+            'email_subject': email_subject,
+            'email_body': email_body
+        })
 
     return render_to_response(
         "courseware/support/student_care.html",
