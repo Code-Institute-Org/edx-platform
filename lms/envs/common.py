@@ -211,7 +211,7 @@ FEATURES = {
     ],
 
     # Turn off account locking if failed login attempts exceeds a limit
-    'ENABLE_MAX_FAILED_LOGIN_ATTEMPTS': True,
+    'ENABLE_MAX_FAILED_LOGIN_ATTEMPTS': False,
 
     # Hide any Personally Identifiable Information from application logs
     'SQUELCH_PII_IN_LOGS': True,
@@ -2259,6 +2259,7 @@ INSTALLED_APPS = (
     'ci_support',
     'lms.djangoapps.student_enrollment',
     'lms.djangoapps.learning_success',
+    'challenges'
 )
 
 ######################### CSRF #########################################

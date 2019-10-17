@@ -18,13 +18,6 @@ from openedx.core.lib.courses import course_image_url
 log = getLogger(__name__)
 
 
-def _choices(*values):
-    """
-    Helper for use with model field 'choices'.
-    """
-    return [(value, ) * 2 for value in values]
-
-
 class Program(TimeStampedModel):
     """
     Representation of a Program.
@@ -63,6 +56,7 @@ class Program(TimeStampedModel):
     program_code = models.CharField(max_length=50, null=True, blank=True)
     enrolled_students = models.ManyToManyField(
         User, blank=True)
+    # This is used for getting the path to the enrollment email files
     program_code_friendly_name = models.CharField(max_length=50, null=True, blank=True)
     
     @property
@@ -151,6 +145,7 @@ class Program(TimeStampedModel):
         number_of_modules = self.number_of_modules
         
         # Gather the information of each of the modules in the program
+        # Get the latest 5DCC for this specific student
         if self.program_code == "5DCC":
             student = User.objects.get(email=user.email)
             users_five_day_module = student.courseenrollment_set.filter(
@@ -193,6 +188,8 @@ class Program(TimeStampedModel):
     def get_course_locators(self):
         """
         Get the list of locators for each of the modules in a program
+        
+        CodeInstitute+HF101+2017_T1
         """
         list_of_locators = []
         
@@ -218,7 +215,7 @@ class Program(TimeStampedModel):
         
         list_of_courses = []
         
-        for course_code in self.course_codes.all():
+        for course_code in self.course_codes.all().order_by('programcoursecode'):
             course_identifiers = course_code.key.split('+')
             locator = CourseLocator(
                 course_identifiers[0],

@@ -1,4 +1,6 @@
 """
+NOTE: WIP NOT FULLY TESTED!!!
+
 A command that will notify the marketing team of the enrollment stats for the
 5DCC of the 5DCC on a weekly basis.
 

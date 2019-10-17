@@ -18,7 +18,7 @@ from openedx.core.djangoapps.programs.models import ProgramsApiConfig
 from openedx.core.djangoapps.self_paced.models import SelfPacedConfiguration
 from openedx.core.djangoapps.site_configuration import helpers as configuration_helpers
 from openedx.features.enterprise_support.api import enterprise_enabled
-from student_enrollment.api import StudentEnrollment
+from student_enrollment.views import StudentEnrollment
 
 from openassessment.fileupload import views_filesystem
 
@@ -830,6 +830,18 @@ urlpatterns += (
     url(r'^program/', include('ci_program.urls')),
 )
 
+# Student Enrollment
+from student_enrollment.views import StudentEnrollment
+urlpatterns += (
+    url(r'^enrollment/enroll/', StudentEnrollment.as_view()),
+)
+
+# Challenge Endpoints
+from challenges.views import challenge_handler, has_completed_challenge
+urlpatterns += (
+    url(r'^challenges/webhook', challenge_handler),
+    url(r'^challenges/has_completed_challenge', has_completed_challenge),
+)
 # Program
 urlpatterns += (
     url(r'^/', include('ci_support.urls')),

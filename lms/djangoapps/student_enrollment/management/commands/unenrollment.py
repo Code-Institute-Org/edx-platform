@@ -1,3 +1,6 @@
+"""
+NOTE: WIP NOT TESTED!!!
+"""
 from django.core.management.base import BaseCommand, CommandError
 from django.core.exceptions import ObjectDoesNotExist
 from django.contrib.auth.models import User
@@ -9,10 +12,7 @@ from student_enrollment.zoho import (
     parse_course_of_interest_code,
     update_student_record
 )
-from lms.djangoapps.student_enrollment.models import (
-    EnrollmentStatusHistory,
-    ProgramAccessStatus
-)
+from lms.djangoapps.student_enrollment.models import EnrollmentStatusHistory
 
 
 class Command(BaseCommand):
