@@ -830,6 +830,11 @@ urlpatterns += (
     url(r'^program/', include('ci_program.urls')),
 )
 
+# Program
+urlpatterns += (
+    url(r'^/', include('ci_support.urls')),
+)
+
 # Embargo
 if settings.FEATURES.get('EMBARGO'):
     urlpatterns += (

@@ -2256,6 +2256,7 @@ INSTALLED_APPS = (
 
     # CI-specific apps
     'ci_program',
+    'ci_support',
     'lms.djangoapps.student_enrollment',
     'lms.djangoapps.learning_success',
 )
