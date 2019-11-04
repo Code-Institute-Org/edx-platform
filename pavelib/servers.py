@@ -97,6 +97,7 @@ def lms(options):
     ("port=", "p", "Port"),
     ("fast", "f", "Skip updating assets"),
 ])
+
 def studio(options):
     """
     Run the Studio server.

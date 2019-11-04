@@ -36,8 +36,17 @@ need to import the Program model elsewhere.
         in
 """
 from django.http.response import Http404
+from django.contrib.auth.models import User
+from django.shortcuts import get_object_or_404
 
 from ci_program.models import Program
+
+
+def get_all_programs():
+    """
+    Get collection of all of program codes from the `Program` model
+    """
+    return Program.objects.all()
 
 
 def get_program_by_program_code(code):
@@ -49,77 +58,80 @@ def get_program_by_program_code(code):
     Returns an instance of the program. Raises a 404 if the program
         doesn't exist
     """
-    try:
-        return Program.objects.get(program_code=code)
-    except Program.DoesNotExist:
-        raise Http404("Program with code of %s was not found." % code)
+    return get_object_or_404(Program, program_code=code)
 
 
-def enroll_student_in_program(program, student):
+def enroll_student_in_program(code, email):
     """
     Enroll a student in a program.
 
-    `program` is the instance of the program that we want to enroll the
+    `code` is the code of the program that we want to enroll the
         student in
-    `student` is the instance of the user that we wish to enroll
+    `email` is the email of the user that we wish to enroll
+    Note that the student must already be registered to the platform
 
     Returns the status of the enrollment
     """
+    program = get_program_by_program_code(code)
+    student = get_object_or_404(User, email=email)
     enrollment_status = program.enroll_student_in_program(student)
     return enrollment_status
 
 
-def get_enrolled_students(program):
+def get_enrolled_students(code):
     """
     Gets a list of the enrolled students enrolled in a given program
 
-    `program` is an instance of the progam that we want to get the list
+    `code` is the code of the program that we want to get the list
         of enrolled users from
 
-    Returns a list of `user` objects
+    Returns a collection of all `user` objects
     """
-    return [user for user in program.enrolled_students.all()]
+    program = get_program_by_program_code(code)
+    return program.enrolled_students.all()
 
 
-def is_student_enrolled_in_program(code, student):
+def is_student_enrolled_in_program(code, email):
     """
-    Check to see if a given student is enrolled in a given program
+    Check whether a given student is enrolled in a given program
 
     `code` is the course code used as an identifier for a program
-    `student` is an instance of the user that we want to check for
+    `email` is the email of the user that we want to check for
 
     Returns True or False based on whether or not a student is enrolled
         in the program
     """
     program = get_program_by_program_code(code)
-    return student in get_enrolled_students(program)
+    return program.enrolled_students.filter(email=email).exists()
 
 
-def number_of_enrolled_students(program):
+def number_of_enrolled_students(code):
     """
-    Gets the number of students that are enrolled in a given program
+    Get the number of students that are enrolled in a given program
 
-    `program` is the instance of the program that we're interested in
+    `code` is the code of the program that we're interested in
 
     Returns the total number of students enrolled
     """
-    return len(program.enrolled_students.all())
+    program = get_program_by_program_code(code)
+    return program.enrolled_students.count()
 
 
-def number_of_students_logged_into_access_program(program):
+def number_of_students_logged_into_access_program(code):
     """
-    Gets the number of students that have logged into the LMS to get
+    Get the number of students that have logged into the LMS to get
     access to their course content.
 
-    `program` is a program instance.
+    `code` is the code of the program we are interested in.
 
     Returns the total number of students that have logged
         per-program
     """
-    return len([user for user in program.enrolled_students.all() if user.last_login])
+    program = get_program_by_program_code(code)
+    return program.enrolled_students.exclude(last_login__isnull=True).count()
 
 
-def get_courses_locators_for_program(code):
+def get_course_locators_for_program(code):
     """
     Get a list of CourseLocator objects for each module in a program
 
@@ -131,8 +143,8 @@ def get_courses_locators_for_program(code):
     return program.get_course_locators()
 
 
-def get_all_programs():
+def get_courses_from_program(code):
     """
-    Get a list of all of program codes from the `Program` model
     """
-    return Program.objects.all()
+    program = get_program_by_program_code(code)
+    return program.get_courses()

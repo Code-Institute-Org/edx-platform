@@ -207,12 +207,6 @@ class ConditionalModule(ConditionalFields, XModule, StudioEditableModule):
         """This is called by courseware.moduleodule_render, to handle
         an AJAX call.
         """
-        if not self.is_condition_satisfied():
-            context = {'module': self,
-                       'message': self.conditional_message}
-            html = self.system.render_template('conditional_module.html',
-                                               context)
-            return json.dumps({'html': [html], 'message': bool(self.conditional_message)})
 
         html = [child.render(STUDENT_VIEW).content for child in self.get_display_items()]
 
