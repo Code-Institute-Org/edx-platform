@@ -1,4 +1,4 @@
-from django.core.management.base import BaseCommand, CommandError
+from django.core.management.base import BaseCommand
 from django.core.exceptions import ObjectDoesNotExist
 from django.contrib.auth.models import User
 from django.conf import settings
@@ -33,24 +33,19 @@ class Command(BaseCommand):
         may already be registered in the system.
         """
 
-        zoho_students = get_students(status='(Lead Status: Enroll)')
+        zoho_students = get_students()
 
         for student in zoho_students:
-            if not student.email:
+            if not student['Email']:
                 continue 
 
             # Get the user, the user's password, and their enrollment type
             user, password, enrollment_type = get_or_register_student(
-                student.email, student.email)
+                student['Email'], student['Email'])
 
             # Get the code for the course the student is enrolling in
             program_to_enroll_in = parse_course_of_interest_code(
-                student.course_of_interest)
-
-            # DITF is not current present in the Learning Platform so
-            # we'll skip over it until then
-            if 'DITF' in program_to_enroll_in or not program_to_enroll_in:
-                continue
+                student['Course_of_Interest_Code'])
             
             # Get the Program that contains the th Zoho program code
             program = Program.objects.get(program_code=program_to_enroll_in)
@@ -65,6 +60,7 @@ class Command(BaseCommand):
 
             # Set the students access level (i.e. determine whether or
             # not a student is allowed to access to the LMS.
+            # Deprecated...
             access, created = ProgramAccessStatus.objects.get_or_create(
                 user=user, program_access=True)
 
