@@ -1,62 +1,56 @@
+from itertools import count
 import re
 import requests
 from django.conf import settings
 
+CLIENT_ID = settings.ZOHO_CLIENT_ID
+CLIENT_SECRET = settings.ZOHO_CLIENT_SECRET
+REFRESH_TOKEN = settings.ZOHO_REFRESH_TOKEN
+REFRESH_ENDPOINT = settings.ZOHO_REFRESH_ENDPOINT
+COQL_ENDPOINT = settings.ZOHO_COQL_ENDPOINT
 
-def to_snakecase(s):
-    """A helper for converting a string to camel_case"""
-    return s.lower().replace(' ', '_')
-
-
-class ZohoRecord:
-    """A convenience class to access a Zoho row by attribute names"""
-    def __init__(self, zoho_row):
-        try:
-            self.dict = {to_snakecase(field['val']): field['content']
-                         for field in zoho_row['FL'] if field != 'no'}
-        except TypeError:
-            print('failed to process row:', zoho_row)
-            raise
-
-    def __getattr__(self, attrname):
-        return self.dict.get(attrname, '')
-
-    def __str__(self):
-        fields = ', '.join('%s="%s"' % kv for kv in self.dict.items())
-        return 'ZohoRecord(%s)' % fields
-
-
-def fetch_all_zoho_records(endpoint, params):
-    """Exhaustively fetches from the Zoho API
-    Returns ZohoRecord objects for each matching record
+def get_students():
+    """Fetch from Zoho all students
+    with status of 'Enroll'
+    API documentation for this endpoint:
+    https://www.zohoapis.com/crm/v2/coql
     """
-    records = []
-    while True:
-        
-        response_dict = requests.get(endpoint, params).json()
-        if 'result' not in response_dict['response']:
-            break
-        student_list = response_dict['response']['result']['Contacts']['row']
-        for row in student_list:
-            records.append(ZohoRecord(row))
+    students = []
+    RECORDS_PER_PAGE = 200
+    auth_headers = get_auth_headers()
 
-        params['fromIndex'] += settings.ZOHO_RESPONSE_SIZE
-        params['toIndex'] += settings.ZOHO_RESPONSE_SIZE
-    
-    return records
+    for page in count():
+        query = ("""select Email, Full_Name, 
+                 Course_of_Interest_Code from Contacts 
+                 where Lead_Status = 'Enroll' and 
+                 Course_of_Interest_Code is not null
+                 limit {},{}""").format(
+                     page*RECORDS_PER_PAGE, RECORDS_PER_PAGE)
+        students_resp = requests.post(
+            COQL_ENDPOINT,
+            headers=auth_headers,
+            json={"select_query":query})
+        if students_resp.status_code != 200:
+            return students
+        students.append(students_resp.json()['data'][0])
+        if not students_resp.json()['info']['more_records']:
+            return students
 
 
-def get_students(status):
-    """Fetch from Zoho all emails for contacts with *Onboarding* status"""
-    endpoint = settings.ZOHO_ENDPOINT_PREFIX + '/Contacts/searchRecords'
-    params = {
-        'authtoken': settings.ZOHO_TOKEN,
-        'scope': 'crmapi',
-        'criteria': status,
-        'fromIndex': 1,
-        'toIndex': settings.ZOHO_RESPONSE_SIZE,
-    }
-    return fetch_all_zoho_records(endpoint, params)
+def get_access_token():
+    refresh_resp = requests.post(REFRESH_ENDPOINT, params={
+        "refresh_token": REFRESH_TOKEN,
+        "client_id": CLIENT_ID,
+        "client_secret": CLIENT_SECRET,
+        "grant_type": "refresh_token"
+    })
+    return refresh_resp.json()['access_token']
+
+
+def get_auth_headers():
+    access_token = get_access_token()
+    return {"Authorization": "Zoho-oauthtoken " + access_token}
+
 
 
 def parse_course_of_interest_code(course_of_interest_code):

@@ -842,7 +842,8 @@ urlpatterns += (
     url(r'^challenges/webhook', challenge_handler),
     url(r'^challenges/has_completed_challenge', has_completed_challenge),
 )
-# Program
+
+# Support
 urlpatterns += (
     url(r'^/', include('ci_support.urls')),
 )
