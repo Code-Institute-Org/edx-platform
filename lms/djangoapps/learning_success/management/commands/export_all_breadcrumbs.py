@@ -42,8 +42,6 @@ def harvest_course_tree(tree, output_dict, prefix=()):
     output_dict[block_id] = block_breadcrumbs
 
     children = tree.get_children()
-    #if len(children) > 0:
-    #    harvest_course_tree(children.pop(), output_dict, prefix=block_breadcrumbs)
     for subtree in children:
         harvest_course_tree(subtree, output_dict, prefix=block_breadcrumbs)
 
