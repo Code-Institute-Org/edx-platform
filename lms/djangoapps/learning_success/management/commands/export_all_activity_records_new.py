@@ -10,7 +10,7 @@ from datetime import datetime, timedelta
 import json
 
 import requests
-import pandas as pd
+
 
 PROGRAM_CODE = 'FS'  # Our Full-Stack program
 
@@ -115,12 +115,12 @@ def all_student_data(program):
             breadcrumbs = all_components.get(block_id)
             if breadcrumbs and len(breadcrumbs) == 3:  # lesson
                 # for each lesson learned, store latest timestamp
-                completed_lessons[breadcrumbs] = activity.modified
+                completed_lessons[breadcrumbs] = activity.created
 
             if breadcrumbs and len(breadcrumbs) >= 4:  # unit or inner block
                 unit_breadcrumbs = breadcrumbs[:4]
                 # for each unit learned, store latest timestamp
-                completed_units[unit_breadcrumbs] = activity.modified
+                completed_units[unit_breadcrumbs] = activity.created
 
                 # remember details of the latest unit overall
                 # we use 'created' (not 'modified') to ignore backward leaps
@@ -157,9 +157,8 @@ class Command(BaseCommand):
         """
         program = get_program_by_program_code(PROGRAM_CODE)
         student_data = list(all_student_data(program))
-        df = pd.DataFrame(student_data)
-        df.to_csv('student_data_created_date.csv', index=False)
-        #api_endpoint = settings.STRACKR_LMS_API_ENDPOINT
-        #resp = requests.post(api_endpoint, data=json.dumps(student_data))
+
+        api_endpoint = settings.STRACKR_LMS_API_ENDPOINT
+        resp = requests.post(api_endpoint, data=json.dumps(student_data))
         if resp.status_code != 200:
             raise CommandError(resp.text)
