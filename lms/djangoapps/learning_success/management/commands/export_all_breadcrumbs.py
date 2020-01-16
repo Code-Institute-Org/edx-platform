@@ -18,6 +18,8 @@ import requests
 # Pandas natively only supports sqlite3
 # '?charset=utf8' used to specify utf-8 encoding to avoid encoding errors
 
+LMS_TABLE = 'lms_breadcrumbs_v2'
+
 CONNECTION_STRING = 'mysql+mysqldb://%s:%s@%s:%d/%s%s' % (
     settings.RDS_DB_USER,
     settings.RDS_DB_PASS,
@@ -67,7 +69,8 @@ def get_breadcrumb_index(URL):
     df_breadcrumb_idx = df_breadcrumb_idx.T
     df_breadcrumb_idx = df_breadcrumb_idx.reset_index()
     df_breadcrumb_idx.rename(columns={'index':'order_index'}, inplace=True)
-    # Temporary until this is being renamed in the LMS
+
+    # TODO: remove following line, once the [beta] suffix is removed in the LMS
     df_breadcrumb_idx['module'] = df_breadcrumb_idx['module'].replace('Careers','Careers [Beta]')
     df_breadcrumb_idx = df_breadcrumb_idx.reset_index()
     return df_breadcrumb_idx[['module','lesson','order_index']]
@@ -83,14 +86,7 @@ class Command(BaseCommand):
         
         # Looping through the results because you cannot convert 
         # Variable length dict list to DataFrame, but list of lists
-        components = []
-        for k,v in all_components.iteritems():
-            temp = []
-            temp.append(k)
-            for item in v:
-                temp.append(item)
-            components.append(temp)
-
+        components = [[k] + v for k, v in d.iteritems()]
         df = pd.DataFrame(components)
         # Need to assign headers
         df.columns = ['uuid','module','section','lesson','unit','type','unknown_col']
@@ -101,7 +97,7 @@ class Command(BaseCommand):
         df = df.merge(df_breadcrumb_idx, on=['module', 'lesson'], how='left')
         
         engine = create_engine(CONNECTION_STRING, echo=False)
-        df.to_sql(name='lms_breadcrumbs_v2', con=engine, if_exists='replace',
+        df.to_sql(name=LMS_TABLE, con=engine, if_exists='replace',
                     dtype={'uuid': types.VARCHAR(length=255),
                             'order_index': types.INT
                     })
