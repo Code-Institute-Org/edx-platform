@@ -10,7 +10,6 @@ from datetime import datetime, timedelta
 import json
 
 import requests
-import pandas as pd
 
 PROGRAM_CODE = 'FS'  # Our Full-Stack program
 
@@ -157,9 +156,8 @@ class Command(BaseCommand):
         """
         program = get_program_by_program_code(PROGRAM_CODE)
         student_data = list(all_student_data(program))
-        df = pd.DataFrame(student_data)
-        df.to_csv('student_data_created_date.csv', index=False)
-        #api_endpoint = settings.STRACKR_LMS_API_ENDPOINT
-        #resp = requests.post(api_endpoint, data=json.dumps(student_data))
+
+        api_endpoint = settings.STRACKR_LMS_API_ENDPOINT
+        resp = requests.post(api_endpoint, data=json.dumps(student_data))
         if resp.status_code != 200:
             raise CommandError(resp.text)
