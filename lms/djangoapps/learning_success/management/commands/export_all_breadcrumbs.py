@@ -18,6 +18,8 @@ import requests
 # Pandas natively only supports sqlite3
 # '?charset=utf8' used to specify utf-8 encoding to avoid encoding errors
 
+LMS_TABLE = 'lms_breadcrumbs_v2'
+
 CONNECTION_STRING = 'mysql+mysqldb://%s:%s@%s:%s/%s%s' % (
     settings.RDS_DB_USER,
     settings.RDS_DB_PASS,
