@@ -89,7 +89,7 @@ class Command(BaseCommand):
         components = [[k] + v for k, v in d.iteritems()]
         df = pd.DataFrame(components)
         # Need to assign headers
-        df.columns = ['uuid','module','section','lesson','unit','type','unknown_col']
+        df.columns = ['uuid','module','section','lesson','unit','type']
         
         # Need to get lesson order from syllabus for ordering the modules
         # And not going back
