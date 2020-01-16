@@ -54,28 +54,43 @@ SELECTED_COLUMNS_DAYS = [
 ACTIVITIES_QUERY = """
 SELECT 
     a.student_id, 
+    a.date_joined,
+    a.last_login,
     b.email as student_email, 
     a.module_id, 
     a.course_id, 
     a.module_type, 
     a.created, 
     a.modified
-FROM courseware_studentmodule AS a
-LEFT JOIN auth_user AS b
-ON a.student_id = b.id
-WHERE b.is_active = TRUE;
+FROM 
+    courseware_studentmodule AS a
+LEFT JOIN 
+    auth_user AS b
+ON 
+    a.student_id = b.id
+WHERE 
+    b.is_active = TRUE;
 """
 
 ENROLLED_STUDENTS_QUERY = """
-SELECT user_end.email as student_email
-FROM ci_program_program_enrolled_students s_p_junction
-LEFT JOIN ci_program_program program_end
-ON s_p_junction.program_id = program_end.id
-LEFT JOIN auth_user user_end
-ON s_p_junction.user_id = user_end.id
-WHERE user_end.is_active = 1
-AND program_end.program_code = "FS"
-ORDER BY user_end.id DESC;
+SELECT 
+    user_end.id AS student_id
+FROM 
+    ci_program_program_enrolled_students s_p_junction
+LEFT JOIN 
+    ci_program_program program_end
+ON 
+    s_p_junction.program_id = program_end.id
+LEFT JOIN 
+    auth_user user_end
+ON 
+    s_p_junction.user_id = user_end.id
+WHERE 
+    user_end.is_active = 1
+AND 
+    program_end.program_code = "FS"
+ORDER BY 
+    user_end.id DESC;
 """
 
 BREADCRUMBS_QUERY = 'SELECT * FROM lms_breadcrumbs_v3;'
@@ -112,7 +127,7 @@ def remove_other_programs(df_lms, df_students):
     # Merging to then remove the non-overlapping student_emails
     start = time.time()
     print('Rows before: ' + str(df_lms.shape[0]))
-    df = df_lms.merge(df_students.drop_duplicates(), on=['student_email'], how='left', indicator=True)
+    df = df_lms.merge(df_students.drop_duplicates(), on=['student_id'], how='left', indicator=True)
     print('Rows after: ' + str(df.shape[0]))
     print('Execution time (in sec): %s' % (str(time.time() - start)))
     return df.loc[df['_merge'] == 'both']
