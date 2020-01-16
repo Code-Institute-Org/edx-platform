@@ -51,7 +51,7 @@ SELECTED_COLUMNS_DAYS = [
     'time_fraction'
 ]
 
-ACTIVITIES_QUERY = 'SELECT * FROM vw_activities_export;'
+ACTIVITIES_QUERY = 'SELECT * FROM vw_activity_export;'
 ENROLLED_STUDENTS_QUERY = 'SELECT * FROM vw_enrolled_students;'
 
 ACTIVITIES_QUERY2 = """
