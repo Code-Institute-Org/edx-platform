@@ -54,9 +54,9 @@ SELECTED_COLUMNS_DAYS = [
 ACTIVITIES_QUERY = """
 SELECT 
     a.student_id, 
-    a.date_joined,
-    a.last_login,
     b.email as student_email, 
+    b.date_joined,
+    b.last_login,
     a.module_id, 
     a.course_id, 
     a.module_type, 
