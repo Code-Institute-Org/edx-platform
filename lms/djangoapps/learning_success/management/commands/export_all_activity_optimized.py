@@ -53,7 +53,7 @@ SELECTED_COLUMNS_DAYS = [
 
 ACTIVITIES_QUERY = """
 SELECT 
-    a.student_id, 
+    COALESCE(a.student_id, b.id) AS student_id, 
     b.email as student_email, 
     b.date_joined,
     b.last_login,
@@ -61,10 +61,10 @@ SELECT
     a.course_id, 
     a.module_type, 
     a.created, 
-    a.modified
+    a.modified 
 FROM 
     courseware_studentmodule AS a
-LEFT JOIN 
+RIGHT OUTER JOIN 
     auth_user AS b
 ON 
     a.student_id = b.id
