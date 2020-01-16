@@ -51,10 +51,7 @@ SELECTED_COLUMNS_DAYS = [
     'time_fraction'
 ]
 
-ACTIVITIES_QUERY = 'SELECT * FROM vw_activity_export;'
-ENROLLED_STUDENTS_QUERY = 'SELECT * FROM vw_enrolled_students;'
-
-ACTIVITIES_QUERY2 = """
+ACTIVITIES_QUERY = """
 SELECT 
     COALESCE(a.student_id, b.id) AS student_id, 
     b.email as student_email, 
@@ -75,7 +72,7 @@ WHERE
     b.is_active = TRUE;
 """
 
-ENROLLED_STUDENTS_QUERY2 = """
+ENROLLED_STUDENTS_QUERY = """
 SELECT 
     user_end.id AS student_id
 FROM 
