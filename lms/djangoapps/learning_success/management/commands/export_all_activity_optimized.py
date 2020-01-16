@@ -51,18 +51,42 @@ SELECTED_COLUMNS_DAYS = [
     'time_fraction'
 ]
 
+ACTIVITIES_QUERY = """
+SELECT 
+    a.student_id, 
+    b.email as student_email, 
+    a.module_id, 
+    a.course_id, 
+    a.module_type, 
+    a.created, 
+    a.modified
+FROM courseware_studentmodule AS a
+LEFT JOIN auth_user AS b
+ON a.student_id = b.id
+WHERE b.is_active = TRUE;
+"""
+
+ENROLLED_STUDENTS_QUERY = """
+SELECT user_end.email as student_email
+FROM ci_program_program_enrolled_students s_p_junction
+LEFT JOIN ci_program_program program_end
+ON s_p_junction.program_id = program_end.id
+LEFT JOIN auth_user user_end
+ON s_p_junction.user_id = user_end.id
+WHERE user_end.is_active = 1
+AND program_end.program_code = "FS"
+ORDER BY user_end.id DESC;
+"""
+
+BREADCRUMBS_QUERY = 'SELECT * FROM lms_breadcrumbs_v3;'
+
 def extract_activities(mysql_engine):
     """
     Queries the LMS MySQL database for all student module activity and pre-processes some data points
     Returns a DataFrame
     """
     start = time.time()
-    query = (f'SELECT a.student_id, b.email as student_email, a.module_id, a.course_id, a.module_type, a.created, a.modified ' 
-            f'FROM courseware_studentmodule AS a '
-            f'LEFT JOIN auth_user AS b '
-            f'ON a.student_id = b.id '
-            f'WHERE b.is_active = TRUE;')
-    df = pd.read_sql_query(query, con=mysql_engine)
+    df = pd.read_sql_query(ACTIVITIES_QUERY, con=mysql_engine)
     df['breadcrumb'] = df['module_id'].str.rsplit('@', n=None, expand=True)[2]
     df['breadcrumb_type'] = df['module_id'].str.extract(r'@(.*)[+]block')
     print('Execution time (in sec): %s' % (str(time.time() - start)))
@@ -76,16 +100,7 @@ def extract_enrolled_students(mysql_engine):
     start = time.time()
     # Extracting all students who are in FS only
     # Using pandas instead of mysql because of server timeout
-    students_query = (f'SELECT user_end.email as student_email '
-                    f'FROM ci_program_program_enrolled_students s_p_junction '
-                    f'LEFT JOIN ci_program_program program_end '
-                    f'ON s_p_junction.program_id = program_end.id '
-                    f'LEFT JOIN auth_user user_end '
-                    f'ON s_p_junction.user_id = user_end.id '
-                    f'WHERE user_end.is_active = 1 '
-                    f'AND program_end.program_code = "FS" '
-                    f'ORDER BY user_end.id DESC;')
-    df = pd.read_sql_query(students_query, con=mysql_engine)
+    df = pd.read_sql_query(ENROLLED_STUDENTS_QUERY, con=mysql_engine)
     print('Execution time (in sec): %s' % (str(time.time() - start)))
     return df
 
@@ -107,8 +122,7 @@ def get_breadcrumbs(rds_engine):
     Queries the RDS database for the Breadcrumbs
     Returns a DataFrame
     """
-    breadcrumb_query = 'SELECT * FROM lms_breadcrumbs_v3;'
-    return pd.read_sql_query(breadcrumb_query, con=rds_engine)
+    return pd.read_sql_query(BREADCRUMBS_QUERY, con=rds_engine)
 
 def merge_lms_breadcumbs(df_lms, df_breadcrumbs):
     """
