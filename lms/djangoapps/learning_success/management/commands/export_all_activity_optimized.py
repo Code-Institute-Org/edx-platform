@@ -306,14 +306,13 @@ def aggregate_lesson_days_into(df):
     df.rename(columns={'amin':'days_into','amax':'days_into'}, inplace=True)  
     
     df.sort_values(['days_into'] + cols, ascending=[True, True, True, True], inplace=True)
-    print(cols[0:2])
+    df['days_into'] = df['days_into'].astype(int)
     df = df.groupby(cols[0:2]).apply(lambda x: ','.join(x.astype(str).days_into))
-    
     df = df.to_frame()
     
     df.rename(columns={df.columns[0] : 'days_into'}, inplace=True)
     df = df.reset_index()
-    #print(df)
+    
     df = df.pivot(index='student_id', columns='module', values='days_into')
     df.columns = [str(col) + '_days_into' for col in columns_to_lower(df).columns]
     return df.reset_index()
@@ -327,7 +326,7 @@ def aggregate_days_into(df):
     df = df.reset_index()
     df.rename(columns={'amin':'days_into','amax':'days_into'}, inplace=True)  
     df.sort_values(['days_into'] + cols, ascending=[True, True, True], inplace=True)
-    
+    df['days_into'] = df['days_into'].astype(int)
     df = df.groupby(cols[0]).apply(lambda x: ','.join(x.astype(str).days_into))
     #df.columns = [str(col) + '_days_into' for col in columns_to_lower(df).columns]
     df.reset_index()
