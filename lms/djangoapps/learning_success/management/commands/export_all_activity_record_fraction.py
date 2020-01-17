@@ -111,7 +111,7 @@ def cumulative_days_fractions(completed_fractions):
 
 def fractions_per_day(limit, completed_fractions):
 
-        fractions_days = {str(i) : 0 for i in range(limit)}
+        fractions_days = {str(i) : 0 for i in range(int(limit))}
         for item in completed_fractions:
             days_in = (timezone.now() - item['time_completed']).dt.days
             if days_in in fractions_days:
