@@ -13,6 +13,7 @@ import requests
 
 PROGRAM_CODE = 'FS'  # Our Full-Stack program
 BREADCRUMB_INDEX_URL = settings.LMS_SYLLABUS
+KEYS = ['module','section','lesson']
 
 
 def harvest_course_tree(tree, output_dict, prefix=()):
@@ -53,7 +54,7 @@ def get_lesson_fractions(url):
     #fractions = dict([(item['module'], item['fraction']) for item in syllabus])
     for item in syllabus.values():
         #print(item)
-        fractions[' - '.join([item[x] for x in keys])] = {
+        fractions[' - '.join([item[x] for x in KEYS])] = {
             'time_fraction' : item['time_fraction'],
             'cumulative_fraction' : item['cumulative_fraction']}
     return fractions
