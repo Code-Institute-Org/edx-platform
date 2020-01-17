@@ -130,7 +130,7 @@ def all_student_data(program):
         # We care about the lesson level (depth 3) and unit level (depth 4).
         # Dictionaries of breadcrumbs to timestamps of completion
         completed_lessons = {}
-        completion_fractions = {}
+        completed_fractions = {}
         completed_units = {}
         # Provide default values in cases where student hasn't started
         latest_unit_started = None
