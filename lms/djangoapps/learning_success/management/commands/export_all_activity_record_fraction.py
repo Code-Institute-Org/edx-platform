@@ -144,8 +144,8 @@ def all_student_data(program):
 
                 #Calculate fractions
                 fraction_key = ' - '.join(breadcrumbs[0:3])
-                default_fraction = 0
-                time_fraction, cumulative_fraction = default_fraction                
+                time_fraction = 0
+                cumulative_fraction = 0                
 
                 # Check if fractions for lesson exist, if not attribute 0
                 if fraction_key in lesson_fractions:
