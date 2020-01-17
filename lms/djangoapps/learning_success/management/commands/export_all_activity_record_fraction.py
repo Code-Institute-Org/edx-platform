@@ -109,12 +109,12 @@ def fourteen_days_fractions(completed_fractions):
 def cumulative_days_fractions(completed_fractions):
     return sum(item['time_fraction'] for item in completed_fractions)
 
-def fractions_per_day(limit, completed_fractions):
+def fractions_per_day(date_joined, limit, completed_fractions):
         print(limit)
         range_limit = 0 if limit == '' else int(limit)
         fractions_days = {i : 0 for i in range(range_limit)}
         for item in completed_fractions:
-            days_in = (timezone.now() - item['time_completed']).days
+            days_in = (item['time_completed'] - date_joined).days
             fractions_days[days_in] += item['time_fraction']
 
         return OrderedDict(sorted(fractions_days.items())).values()
@@ -192,7 +192,7 @@ def all_student_data(program):
             'days_into_data': days_into,
             'completed_fractions_14d' : fourteen_days_fractions(completed_fractions.values()),
             'cumulative_completed_fractions' : cumulative_days_fractions(completed_fractions.values()),
-            'fractions_per_day': fractions_per_day(max(days_into.split(',')), completed_fractions.values())
+            'fractions_per_day': fractions_per_day(first_active, max(days_into.split(',')), completed_fractions.values())
         }
 
         student_dict.update(completed_lessons_per_module(completed_lessons))
