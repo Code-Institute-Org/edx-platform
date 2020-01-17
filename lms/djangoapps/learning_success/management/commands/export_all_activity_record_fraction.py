@@ -5,7 +5,7 @@ from django.utils import timezone
 from opaque_keys.edx.locator import CourseLocator
 from xmodule.modulestore.django import modulestore
 
-from collections import Counter, defaultdict
+from collections import Counter, defaultdict, OrderedDict
 from datetime import datetime, timedelta
 import json
 
@@ -109,6 +109,18 @@ def fourteen_days_fractions(completed_fractions):
 def cumulative_days_fractions(completed_fractions):
     return sum(item['time_fraction'] for item in completed_fractions)
 
+def fractions_per_day(limit, completed_fractions):
+
+        fractions_days = {str(i) : 0 for i in range(limit)}
+        for item in completed_fractions:
+            days_in = (timezone.now() - item['time_completed']).dt.days
+            if days_in in fractions_days:
+                fractions_days[days_in] += item['time_fraction']
+            else:
+                fractions_days[days_in] = item['time_fraction']
+
+        return OrderedDict(sorted(fractions_days.items())).values()
+
 def all_student_data(program):
     """Yield a progress metadata dictionary for each of the students
 
@@ -168,6 +180,7 @@ def all_student_data(program):
                 latest_unit_started = activity.created
                 latest_unit_breadcrumbs = unit_breadcrumbs
 
+        days_into = days_into_data(first_active, completed_units.values())
         student_dict = {
             'email': student.email,
             'date_joined': format_date(first_active),
@@ -178,9 +191,10 @@ def all_student_data(program):
             'latest_lesson': latest_unit_breadcrumbs[2].encode('utf-8'),
             'latest_unit': latest_unit_breadcrumbs[3].encode('utf-8'),
             'units_in_30d': thirty_day_units(completed_units.values()),
-            'days_into_data': days_into_data(first_active, completed_units.values()),
+            'days_into_data': days_into,
             'completed_fractions_14d' : fourteen_days_fractions(completed_fractions.values()),
-            'cumulative_completed_fractions' : cumulative_days_fractions(completed_fractions.values())
+            'cumulative_completed_fractions' : cumulative_days_fractions(completed_fractions.values()),
+            'fractions_per_day': fractions_per_day(max(days_into.split(',')), completed_fractions.values())
         }
 
         student_dict.update(completed_lessons_per_module(completed_lessons))
@@ -199,10 +213,10 @@ class Command(BaseCommand):
         """
         program = get_program_by_program_code(PROGRAM_CODE)
         all_students = all_student_data(program)
-        student_data = [x for x, _ in zip(all_students, range(500))]
+        student_data = [x for x, _ in zip(all_students, range(10))]
         print(student_data)
 
-        api_endpoint = 'https://script.google.com/macros/s/AKfycbxszIgBOWeJpyUO9ucU7fF0JmkdOEjyawsPoweE-5qJAaUh5wkv/exec'
-        resp = requests.post(api_endpoint, data=json.dumps(student_data))
-        if resp.status_code != 200:
-            raise CommandError(resp.text)
+        #api_endpoint = 'https://script.google.com/macros/s/AKfycbxszIgBOWeJpyUO9ucU7fF0JmkdOEjyawsPoweE-5qJAaUh5wkv/exec'
+        #resp = requests.post(api_endpoint, data=json.dumps(student_data))
+        #if resp.status_code != 200:
+        #    raise CommandError(resp.text)
