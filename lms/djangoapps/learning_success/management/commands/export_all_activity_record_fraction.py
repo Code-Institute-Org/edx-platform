@@ -202,7 +202,7 @@ class Command(BaseCommand):
         student_data = [x for x, _ in zip(all_students, range(500))]
         print(student_data)
 
-        #api_endpoint = settings.STRACKR_LMS_API_ENDPOINT
-        #resp = requests.post(api_endpoint, data=json.dumps(student_data))
-        #if resp.status_code != 200:
-        #    raise CommandError(resp.text)
+        api_endpoint = 'https://script.google.com/macros/s/AKfycbxszIgBOWeJpyUO9ucU7fF0JmkdOEjyawsPoweE-5qJAaUh5wkv/exec'
+        resp = requests.post(api_endpoint, data=json.dumps(student_data))
+        if resp.status_code != 200:
+            raise CommandError(resp.text)
