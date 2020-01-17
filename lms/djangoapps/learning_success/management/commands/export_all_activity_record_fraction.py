@@ -112,7 +112,7 @@ def cumulative_days_fractions(completed_fractions):
 def fractions_per_day(date_joined, limit, completed_fractions):
         print(limit)
         range_limit = 0 if limit == '' else int(limit)
-        fractions_days = {(i + 1) : 0 for i in range(range_limit)}
+        fractions_days = {i : 0 for i in range(1000)}
         for item in completed_fractions:
             days_in = (item['time_completed'] - date_joined).days
             fractions_days[days_in] += item['time_fraction']
