@@ -199,7 +199,7 @@ class Command(BaseCommand):
         """
         program = get_program_by_program_code(PROGRAM_CODE)
         all_students = all_student_data(program)
-        student_data = [x for x, _ in zip(all_students, range(10))]
+        student_data = [x for x, _ in zip(all_students, range(500))]
         print(student_data)
 
         #api_endpoint = settings.STRACKR_LMS_API_ENDPOINT
