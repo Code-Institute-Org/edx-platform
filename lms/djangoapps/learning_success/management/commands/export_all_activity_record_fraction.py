@@ -141,12 +141,21 @@ def all_student_data(program):
             if breadcrumbs and len(breadcrumbs) == 3:  # lesson
                 # for each lesson learned, store latest timestamp
                 completed_lessons[breadcrumbs] = activity.modified
-                print(breadcrumbs)
-                print(type(breadcrumbs))
+
+                #Calculate fractions
+                fraction_key = ' - '.join(breadcrumbs[0:3])
+                default_fraction = 0
+                time_fraction, cumulative_fraction = default_fraction                
+
+                # Check if fractions for lesson exist, if not attribute 0
+                if fraction_key in lesson_fractions:
+                    time_fraction = lesson_fractions[' - '.join(breadcrumbs[0:3])]['time_fraction']
+                    cumulative_fraction = lesson_fractions[' - '.join(breadcrumbs[0:3])]['cumulative_fraction']
+
                 completed_fractions[breadcrumbs] = {
                     'time_completed' : activity.modified,
-                    'time_fraction' : lesson_fractions[' - '.join(breadcrumbs[0:3])]['time_fraction'],
-                    'cumulative_fraction' : lesson_fractions[' - '.join(breadcrumbs[0:3])]['cumulative_fraction']}
+                    'time_fraction' : time_fraction,
+                    'cumulative_fraction' : cumulative_fraction}
 
             if breadcrumbs and len(breadcrumbs) >= 4:  # unit or inner block
                 unit_breadcrumbs = breadcrumbs[:4]
