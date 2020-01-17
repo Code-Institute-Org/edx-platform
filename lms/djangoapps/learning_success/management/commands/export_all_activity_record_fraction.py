@@ -141,6 +141,8 @@ def all_student_data(program):
             if breadcrumbs and len(breadcrumbs) == 3:  # lesson
                 # for each lesson learned, store latest timestamp
                 completed_lessons[breadcrumbs] = activity.modified
+                print(breadcrumbs)
+                print(type(breadcrumbs))
                 completed_fractions[breadcrumbs] = {
                     'time_completed' : activity.modified,
                     'time_fraction' : lesson_fractions[' - '.breadcrumbs(test[0:3])]['time_fraction'],
