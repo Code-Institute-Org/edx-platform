@@ -43,7 +43,7 @@ def harvest_program(program):
     return all_blocks
 
 
-def lesson_fractions(url):
+def get_lesson_fractions(url):
     """Retrieve the course syllabus from Google Sheet with the ordering
 
     Returns a Dataframe to join to the rest of the breadcumbs
@@ -114,7 +114,7 @@ def all_student_data(program):
     Input is a pregenerated dictionary mapping block IDs in LMS to breadcrumbs
     """
     all_components = harvest_program(program)
-    lesson_fractions = lesson_fractions(BREADCRUMB_INDEX_URL)
+    lesson_fractions = get_lesson_fractions(BREADCRUMB_INDEX_URL)
 
     for student in program.enrolled_students.all():
         # A short name for the activities queryset
