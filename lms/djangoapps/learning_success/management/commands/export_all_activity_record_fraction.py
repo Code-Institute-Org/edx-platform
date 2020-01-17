@@ -110,9 +110,9 @@ def cumulative_days_fractions(completed_fractions):
     return sum(item['time_fraction'] for item in completed_fractions)
 
 def fractions_per_day(date_joined, limit, completed_fractions):
-        print(limit)
-        range_limit = 0 if limit == '' else int(limit)
-        fractions_days = {i : 0 for i in range(1000)}
+
+        range_limit = (datetime.now() - date_joined).days
+        fractions_days = {i : 0 for i in range(range_limit+1)}
         for item in completed_fractions:
             days_in = (item['time_completed'] - date_joined).days
             fractions_days[days_in] += item['time_fraction']
@@ -211,10 +211,10 @@ class Command(BaseCommand):
         """
         program = get_program_by_program_code(PROGRAM_CODE)
         all_students = all_student_data(program)
-        student_data = [x for x, _ in zip(all_students, range(10))]
+        student_data = [x for x, _ in zip(all_students, range(500))]
         print(student_data)
 
-        #api_endpoint = 'https://script.google.com/macros/s/AKfycbxszIgBOWeJpyUO9ucU7fF0JmkdOEjyawsPoweE-5qJAaUh5wkv/exec'
-        #resp = requests.post(api_endpoint, data=json.dumps(student_data))
-        #if resp.status_code != 200:
-        #    raise CommandError(resp.text)
+        api_endpoint = 'https://script.google.com/macros/s/AKfycbxszIgBOWeJpyUO9ucU7fF0JmkdOEjyawsPoweE-5qJAaUh5wkv/exec'
+        resp = requests.post(api_endpoint, data=json.dumps(student_data))
+        if resp.status_code != 200:
+            raise CommandError(resp.text)
