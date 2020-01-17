@@ -117,7 +117,7 @@ def fractions_per_day(date_joined, limit, completed_fractions):
             days_in = (item['time_completed'] - date_joined).days
             fractions_days[days_in] += item['time_fraction']
 
-        return OrderedDict(sorted(fractions_days.items())).values()
+        return ','.join(OrderedDict(sorted(fractions_days.items())).values())
 
 def all_student_data(program):
     """Yield a progress metadata dictionary for each of the students
@@ -192,7 +192,7 @@ def all_student_data(program):
             'days_into_data': days_into,
             'completed_fractions_14d' : fourteen_days_fractions(completed_fractions.values()),
             'cumulative_completed_fractions' : cumulative_days_fractions(completed_fractions.values()),
-            'fractions_per_day': fractions_per_day(first_active, max(days_into.split(',')), completed_fractions.values())
+            'fractions_per_day': str(fractions_per_day(first_active, max(days_into.split(',')), completed_fractions.values())
         }
 
         student_dict.update(completed_lessons_per_module(completed_lessons))
