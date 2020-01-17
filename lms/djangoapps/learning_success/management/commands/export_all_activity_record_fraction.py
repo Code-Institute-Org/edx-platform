@@ -141,7 +141,7 @@ def all_student_data(program):
                 # for each lesson learned, store latest timestamp
                 completed_lessons[breadcrumbs] = activity.modified
                 completed_fractions[breadcrumbs] = {
-                    'time_completed' : activity.modified
+                    'time_completed' : activity.modified,
                     'time_fraction' : lesson_fractions[' - '.breadcrumbs(test[0:3])]['time_fraction'],
                     'cumulative_fraction' : lesson_fractions[' - '.breadcrumbs(test[0:3])]['cumulative_fraction']}
 
