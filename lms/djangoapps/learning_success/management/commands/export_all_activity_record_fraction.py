@@ -145,8 +145,8 @@ def all_student_data(program):
                 print(type(breadcrumbs))
                 completed_fractions[breadcrumbs] = {
                     'time_completed' : activity.modified,
-                    'time_fraction' : lesson_fractions[' - '.breadcrumbs(test[0:3])]['time_fraction'],
-                    'cumulative_fraction' : lesson_fractions[' - '.breadcrumbs(test[0:3])]['cumulative_fraction']}
+                    'time_fraction' : lesson_fractions[' - '.join(breadcrumbs[0:3])]['time_fraction'],
+                    'cumulative_fraction' : lesson_fractions[' - '.join(breadcrumbs[0:3]]['cumulative_fraction']}
 
             if breadcrumbs and len(breadcrumbs) >= 4:  # unit or inner block
                 unit_breadcrumbs = breadcrumbs[:4]
