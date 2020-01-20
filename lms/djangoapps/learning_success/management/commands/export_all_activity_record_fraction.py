@@ -132,14 +132,22 @@ def completed_fraction_per_module(fractions, completed_fractions):
     for key, item in completed_fractions.items():
         accessor = format_module_field(key[0], '_fraction_within_14d') if item['time_completed'] > fourteen_days_ago else format_module_field(key[0], '_fraction_before_14d')
         if accessor in fractions:
-            fractions[accessor] += item['lesson_fraction']
-    
+            fractions[accessor] += item['lesson_fraction']        
+
     return fractions
 
 def create_fractions_dict(syllabus):
     fractions = {format_module_field(x['module'],'_fraction_within_14d') : 0 for x in syllabus.values()}
     fractions.update({format_module_field(x['module'],'_fraction_before_14d') : 0 for x in syllabus.values()})
     return fractions
+
+def completed_percent_per_module(suffix, fractions, lesson_fractions):
+    for item in lesson_fractions.values():
+        accessor = format_module_field(item['module'], suffix)
+        if accessor in fractions and item['fractions']['module_fraction'] != 0:
+            fractions[accessor] = fractions[accessor] / item['fractions']['module_fraction']
+
+    return(fractions)
 
 def all_student_data(program):
     """Yield a progress metadata dictionary for each of the students
@@ -220,10 +228,19 @@ def all_student_data(program):
             'days_into_data': days_into,
             'completed_fractions_14d' : fourteen_days_fractions(completed_fractions.values()),
             'cumulative_completed_fractions' : cumulative_days_fractions(completed_fractions.values()),
-            'fractions_per_day': fractions_per_day(first_active, max(days_into.split(',')), completed_fractions.values())
+            'fractions_per_day': fractions_per_day(first_active, max(days_into.split(',')), 
+                                                    completed_fractions.values())
         }
 
-        student_dict.update(completed_fraction_per_module(all_fractions, completed_fractions))
+        completed_fractions_per_module = completed_fraction_per_module(all_fractions, completed_fractions)
+        completed_percentage_per_module = completed_percent_per_module('_fraction_within_14d', 
+                                                                        completed_fractions_per_module, 
+                                                                        lesson_fractions)
+        completed_percentage_per_module = completed_percent_per_module('_fraction_before_14d', 
+                                                                        completed_fractions_per_module, 
+                                                                        lesson_fractions)
+
+        student_dict.update(completed_percentage_per_module)
 
         student_dict.update(completed_lessons_per_module(completed_lessons))
         student_dict.update(completed_units_per_module(completed_units))
