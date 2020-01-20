@@ -12,7 +12,8 @@ import json
 import requests
 
 PROGRAM_CODE = 'FS'  # Our Full-Stack program
-BREADCRUMB_INDEX_URL = settings.LMS_SYLLABUS
+#BREADCRUMB_INDEX_URL = settings.LMS_SYLLABUS
+BREADCRUMB_INDEX_URL = 'https://script.googleusercontent.com/macros/echo?user_content_key=nQYlQUlqFWxhrH2ITu41ILsNhWovbCn6rzpDwvI55vPX_ELD28eUw6uOQxKAjRdNfizvjJhGR-k5ygaDhkkTUHINOX6lajPym5_BxDlH2jW0nuo2oDemN9CCS2h10ox_1xSncGQajx_ryfhECjZEnEQSP7csxKn0t1V3GgshE7JUfwhMo_uIzAaeuTh-Wiw73Jga_wta1gNB9vltbVnHyrNWXXpZcC0PcR0u-4rQycng_yv4FLZ0jy8dbeoNsTeH&lib=MAv7pa2cKYU1hOso2iIKa1jrZePhk3q_B'
 KEYS = ['module','section','lesson']
 
 
@@ -52,12 +53,13 @@ def get_lesson_fractions(url):
     fractions = {}
     syllabus = requests.get(url).json()['LESSONS']
     #fractions = dict([(item['module'], item['fraction']) for item in syllabus])
-    for item in syllabus.values():
-        #print(item)
-        fractions[' - '.join([item[x] for x in KEYS])] = {
-            'time_fraction' : item['time_fraction'],
-            'cumulative_fraction' : item['cumulative_fraction']}
-    return fractions
+    #for item in syllabus.values():
+    #    #print(item)
+    #    fractions[' - '.join([item[x] for x in KEYS])] = {
+    #        'time_fraction' : item['time_fraction'],
+    #        'cumulative_fraction' : item['cumulative_fraction']}
+    #return fractions
+    return syllabus
 
 
 def format_date(value):
@@ -102,12 +104,16 @@ def lessons_days_into_per_module(first_active, breadcrumb_dict):
             days_into_data(first_active, timestamps)
             for module, timestamps in per_module_lessons_times.items()}
 
+
 def fourteen_days_fractions(completed_fractions):
     fourteen_days_ago = timezone.now() - timedelta(days=14)
-    return sum(item['time_fraction'] if item['time_completed'] > fourteen_days_ago else 0 for item in completed_fractions)
+    return sum(item['lesson_fraction'] if item['time_completed'] > fourteen_days_ago else 0 
+                for item in completed_fractions)
+
 
 def cumulative_days_fractions(completed_fractions):
-    return sum(item['time_fraction'] for item in completed_fractions)
+    return sum(item['lesson_fraction'] for item in completed_fractions)
+
 
 def fractions_per_day(date_joined, limit, completed_fractions):
 
@@ -115,9 +121,29 @@ def fractions_per_day(date_joined, limit, completed_fractions):
         fractions_days = {str(i) : '0' for i in range(range_limit+1)}
         for item in completed_fractions:
             days_in = str((item['time_completed'] - date_joined).days)
-            fractions_days[days_in] = str(float(fractions_days[days_in]) + item['time_fraction'])
+            fractions_days[days_in] = str(float(fractions_days[days_in]) + item['lesson_fraction'])
 
         return ','.join(OrderedDict(sorted(fractions_days.items())).values())
+
+
+def completed_fraction_per_module(completed_fractions):
+
+    fractions = {}
+
+    fourteen_days_ago = timezone.now() - timedelta(days=14)
+
+    for key, item in completed_fractions.items():
+        
+        accessor = key+'_fraction_within_14d' if item['time_completed'] > fourteen_days_ago
+                    key+'_fraction_before_14d'
+
+        if key in fractions:
+                fractions[accessor] += item['lesson_fraction']
+        else:
+            fractions[accessor] = item['lesson_fraction']
+    
+    return fractions
+
 
 def all_student_data(program):
     """Yield a progress metadata dictionary for each of the students
@@ -153,18 +179,22 @@ def all_student_data(program):
                 completed_lessons[breadcrumbs] = activity.modified
 
                 #Calculate fractions
-                fraction_key = ' - '.join(breadcrumbs[0:3])
-                time_fraction = 0
+                #fraction_key = ' - '.join(breadcrumbs[0:3])
+                lesson_fraction = 0
+                module_fraction = 0
                 cumulative_fraction = 0                
 
                 # Check if fractions for lesson exist, if not attribute 0
-                if fraction_key in lesson_fractions:
-                    time_fraction = lesson_fractions[' - '.join(breadcrumbs[0:3])]['time_fraction']
-                    cumulative_fraction = lesson_fractions[' - '.join(breadcrumbs[0:3])]['cumulative_fraction']
+                if block_id in lesson_fractions:
+                    lesson_fraction = lesson_fractions[block_id]['fractions']['lesson_fraction']
+                    module_fraction = lesson_fractions[block_id]['fractions']['module_fraction']
+                    cumulative_fraction = lesson_fractions[block_id]['fractions']['cumulative_fraction']
+                    
 
                 completed_fractions[breadcrumbs] = {
                     'time_completed' : activity.modified,
-                    'time_fraction' : time_fraction,
+                    'lesson_fraction' : lesson_fraction,
+                    'module_fraction' : module_fraction,
                     'cumulative_fraction' : cumulative_fraction}
 
             if breadcrumbs and len(breadcrumbs) >= 4:  # unit or inner block
@@ -195,6 +225,8 @@ def all_student_data(program):
             'fractions_per_day': fractions_per_day(first_active, max(days_into.split(',')), completed_fractions.values())
         }
 
+        student_dict.update(completed_fraction_per_module(completed_fractions))
+
         student_dict.update(completed_lessons_per_module(completed_lessons))
         student_dict.update(completed_units_per_module(completed_units))
         student_dict.update(
@@ -211,7 +243,7 @@ class Command(BaseCommand):
         """
         program = get_program_by_program_code(PROGRAM_CODE)
         all_students = all_student_data(program)
-        student_data = [x for x, _ in zip(all_students, range(500))]
+        student_data = [x for x, _ in zip(all_students, range(50))]
         print(student_data)
 
         api_endpoint = 'https://script.google.com/macros/s/AKfycbxszIgBOWeJpyUO9ucU7fF0JmkdOEjyawsPoweE-5qJAaUh5wkv/exec'
