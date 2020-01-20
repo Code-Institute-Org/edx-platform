@@ -131,7 +131,7 @@ def completed_fraction_per_module(fractions, completed_fractions):
     fourteen_days_ago = timezone.now() - timedelta(days=14)
     for key, item in completed_fractions.items():
         accessor = format_module_field(key[0], '_fraction_within_14d') if item['time_completed'] > fourteen_days_ago else format_module_field(key[0], '_fraction_before_14d')
-        if key in fractions:
+        if accessor in fractions:
             fractions[accessor] += item['lesson_fraction']
     
     return fractions
@@ -165,7 +165,7 @@ def all_student_data(program):
         completed_fractions = {}
         completed_units = {}
         all_fractions = create_fractions_dict(lesson_fractions)
-        
+
         # Provide default values in cases where student hasn't started
         latest_unit_started = None
         latest_unit_breadcrumbs = (u'',) * 4
