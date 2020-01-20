@@ -142,10 +142,10 @@ def create_fractions_dict(syllabus):
     return fractions
 
 def completed_percent_per_module(suffix, fractions, module_fractions):
-    for key, value in lessons.items():
-        accessor = format_module_field(key, suffix)
-        if accessor in fractions and value != 0:
-            fractions[accessor] = fractions[accessor] / value
+    for module, module_fraction in module_fractions.items():
+        accessor = format_module_field(module, suffix)
+        if accessor in fractions and module_fraction != 0:
+            fractions[accessor] = fractions[accessor] / module_fraction
 
     return fractions
 
