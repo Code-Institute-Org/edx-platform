@@ -141,13 +141,13 @@ def create_fractions_dict(syllabus):
     fractions.update({format_module_field(x['module'],'_fraction_before_14d') : 0 for x in syllabus.values()})
     return fractions
 
-def completed_percent_per_module(suffix, fractions, lesson_fractions):
-    for item in lesson_fractions.values():
-        accessor = format_module_field(item['module'], suffix)
-        if accessor in fractions and item['fractions']['module_fraction'] != 0:
-            fractions[accessor] = fractions[accessor] / item['fractions']['module_fraction']
+def completed_percent_per_module(suffix, fractions, module_fractions):
+    for key, value in lessons.items():
+        accessor = format_module_field(key, suffix)
+        if accessor in fractions and value != 0:
+            fractions[accessor] = fractions[accessor] / value
 
-    return(fractions)
+    return fractions
 
 def all_student_data(program):
     """Yield a progress metadata dictionary for each of the students
@@ -156,6 +156,8 @@ def all_student_data(program):
     """
     all_components = harvest_program(program)
     lesson_fractions = get_lesson_fractions(BREADCRUMB_INDEX_URL)
+    module_fractions = {item['module'] : item['fractions']['module_fraction'] 
+                            for item in lesson_fractions.values()}
 
     for student in program.enrolled_students.all():
         # A short name for the activities queryset
@@ -235,10 +237,10 @@ def all_student_data(program):
         completed_fractions_per_module = completed_fraction_per_module(all_fractions, completed_fractions)
         completed_percentage_per_module = completed_percent_per_module('_fraction_within_14d', 
                                                                         completed_fractions_per_module, 
-                                                                        lesson_fractions)
+                                                                        module_fractions)
         completed_percentage_per_module = completed_percent_per_module('_fraction_before_14d', 
                                                                         completed_fractions_per_module, 
-                                                                        lesson_fractions)
+                                                                        module_fractions)
 
         student_dict.update(completed_percentage_per_module)
 
