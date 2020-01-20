@@ -134,8 +134,8 @@ def completed_fraction_per_module(completed_fractions):
 
     for key, item in completed_fractions.items():
         
-        accessor = key+'_fraction_within_14d' if item['time_completed'] > fourteen_days_ago
-                    key+'_fraction_before_14d'
+        accessor = key+'_fraction_within_14d' if item['time_completed'] > fourteen_days_ago 
+                    else key+'_fraction_before_14d'
 
         if key in fractions:
                 fractions[accessor] += item['lesson_fraction']
