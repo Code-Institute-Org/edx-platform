@@ -137,8 +137,8 @@ def completed_fraction_per_module(fractions, completed_fractions):
     return fractions
 
 def create_fractions_dict(syllabus):
-    fractions = {format_module_field(x['module'],'_within_14d') : 0 for x in syllabus.values()}
-    fractions.update({format_module_field(x['module'],'_before_14d') : 0 for x in syllabus.values()})
+    fractions = {format_module_field(x['module'],'_fraction_within_14d') : 0 for x in syllabus.values()}
+    fractions.update({format_module_field(x['module'],'_fraction_before_14d') : 0 for x in syllabus.values()})
     return fractions
 
 def all_student_data(program):
@@ -165,7 +165,7 @@ def all_student_data(program):
         completed_fractions = {}
         completed_units = {}
         all_fractions = create_fractions_dict(lesson_fractions)
-        print(all_fractions)
+        
         # Provide default values in cases where student hasn't started
         latest_unit_started = None
         latest_unit_breadcrumbs = (u'',) * 4
