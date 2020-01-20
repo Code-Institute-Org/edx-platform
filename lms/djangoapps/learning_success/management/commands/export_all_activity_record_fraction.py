@@ -152,8 +152,8 @@ def completed_percent_per_module(suffix, fractions, module_fractions):
     for module, module_fraction in module_fractions.items():
         accessor = format_module_field(module, suffix)
         if accessor in fractions and module_fraction != 0:
-            fractions[accessor] = fractions[accessor] / (module_fraction + PROJECTS[module]
-                                                            if module in PROJECTS else 0.0)
+            fractions[accessor] = fractions[accessor] / (module_fraction + (PROJECTS[module]
+                                                            if module in PROJECTS else 0.0))
 
     return fractions
 
