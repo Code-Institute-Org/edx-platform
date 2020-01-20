@@ -126,23 +126,20 @@ def fractions_per_day(date_joined, limit, completed_fractions):
         return ','.join(OrderedDict(sorted(fractions_days.items())).values())
 
 
-def completed_fraction_per_module(completed_fractions):
-
-    fractions = {}
+def completed_fraction_per_module(fractions, completed_fractions):
 
     fourteen_days_ago = timezone.now() - timedelta(days=14)
-
     for key, item in completed_fractions.items():
-
         accessor = format_module_field(key[0], '_fraction_within_14d') if item['time_completed'] > fourteen_days_ago else format_module_field(key[0], '_fraction_before_14d')
-
         if key in fractions:
-                fractions[accessor] += item['lesson_fraction']
-        else:
-            fractions[accessor] = item['lesson_fraction']
+            fractions[accessor] += item['lesson_fraction']
     
     return fractions
 
+def create_fractions_dict(syllabus):
+    fractions = {format_module_field(x['module'],'_within_14d') : 0 for x in syllabus.values()}
+    fractions.update({format_module_field(x['module'],'_before_14d') : 0 for x in syllabus.values()})
+    return fractions
 
 def all_student_data(program):
     """Yield a progress metadata dictionary for each of the students
@@ -167,6 +164,7 @@ def all_student_data(program):
         completed_lessons = {}
         completed_fractions = {}
         completed_units = {}
+        all_fractions = create_fractions_dict(lesson_fractions)
         # Provide default values in cases where student hasn't started
         latest_unit_started = None
         latest_unit_breadcrumbs = (u'',) * 4
@@ -188,7 +186,7 @@ def all_student_data(program):
                     lesson_fraction = lesson_fractions[block_id]['fractions']['lesson_fraction']
                     module_fraction = lesson_fractions[block_id]['fractions']['module_fraction']
                     cumulative_fraction = lesson_fractions[block_id]['fractions']['cumulative_fraction']
-                    
+                
 
                 completed_fractions[breadcrumbs] = {
                     'time_completed' : activity.modified,
@@ -224,7 +222,7 @@ def all_student_data(program):
             'fractions_per_day': fractions_per_day(first_active, max(days_into.split(',')), completed_fractions.values())
         }
 
-        student_dict.update(completed_fraction_per_module(completed_fractions))
+        student_dict.update(completed_fraction_per_module(all_fractions, completed_fractions))
 
         student_dict.update(completed_lessons_per_module(completed_lessons))
         student_dict.update(completed_units_per_module(completed_units))
