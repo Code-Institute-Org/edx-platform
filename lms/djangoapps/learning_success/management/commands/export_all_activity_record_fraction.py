@@ -16,6 +16,13 @@ PROGRAM_CODE = 'FS'  # Our Full-Stack program
 BREADCRUMB_INDEX_URL = 'https://script.googleusercontent.com/macros/echo?user_content_key=nQYlQUlqFWxhrH2ITu41ILsNhWovbCn6rzpDwvI55vPX_ELD28eUw6uOQxKAjRdNfizvjJhGR-k5ygaDhkkTUHINOX6lajPym5_BxDlH2jW0nuo2oDemN9CCS2h10ox_1xSncGQajx_ryfhECjZEnEQSP7csxKn0t1V3GgshE7JUfwhMo_uIzAaeuTh-Wiw73Jga_wta1gNB9vltbVnHyrNWXXpZcC0PcR0u-4rQycng_yv4FLZ0jy8dbeoNsTeH&lib=MAv7pa2cKYU1hOso2iIKa1jrZePhk3q_B'
 KEYS = ['module','section','lesson']
 
+PROJECTS = {
+    'user_centric_frontend_development': 0.06,
+    'interactive_frontend_development': 0.06,
+    'data_centric_development': 0.07,
+    'full_stack_frameworks_with_django': 0.08
+}
+
 
 def harvest_course_tree(tree, output_dict, prefix=()):
     """Recursively harvest the breadcrumbs for each component in a tree
@@ -145,7 +152,8 @@ def completed_percent_per_module(suffix, fractions, module_fractions):
     for module, module_fraction in module_fractions.items():
         accessor = format_module_field(module, suffix)
         if accessor in fractions and module_fraction != 0:
-            fractions[accessor] = fractions[accessor] / module_fraction
+            fractions[accessor] = fractions[accessor] / (module_fraction + PROJECTS[module]
+                                                            if module in PROJECTS)
 
     return fractions
 
