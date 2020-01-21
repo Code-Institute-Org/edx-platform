@@ -51,6 +51,7 @@ def harvest_program(program):
         harvest_course_tree(course, all_blocks)
     return all_blocks
 
+
 def format_date(value):
     if isinstance(value, datetime):
         return value.isoformat()
@@ -259,12 +260,9 @@ class Command(BaseCommand):
         """POST the collected data to the api endpoint from the settings
         """
         program = get_program_by_program_code(PROGRAM_CODE)
-        #all_students = all_student_data(program)
-        #student_data = [x for x, _ in zip(all_students, range(50))]
-        #print(student_data)
         student_data = list(all_student_data(program))
 
-        api_endpoint = 'https://script.google.com/macros/s/AKfycbxszIgBOWeJpyUO9ucU7fF0JmkdOEjyawsPoweE-5qJAaUh5wkv/exec'
+        api_endpoint = settings.STRACKR_LMS_API_ENDPOINT
         resp = requests.post(api_endpoint, data=json.dumps(student_data))
         print(resp.content)
         if resp.status_code != 200:
