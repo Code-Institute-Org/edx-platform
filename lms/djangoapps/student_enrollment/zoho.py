@@ -9,6 +9,16 @@ REFRESH_TOKEN = settings.ZOHO_REFRESH_TOKEN
 REFRESH_ENDPOINT = settings.ZOHO_REFRESH_ENDPOINT
 COQL_ENDPOINT = settings.ZOHO_COQL_ENDPOINT
 
+STUDENTS_QUERY = """
+SELECT Email, Full_Name, Course_of_Interest_Code
+FROM Contacts
+WHERE Lead_Status = 'Enroll'
+AND Course_of_Interest_Code is not null
+LIMIT {page},{per_page}
+"""
+RECORDS_PER_PAGE = 200
+
+
 def get_students():
     """Fetch from Zoho all students
     with status of 'Enroll'
@@ -16,23 +26,21 @@ def get_students():
     https://www.zohoapis.com/crm/v2/coql
     """
     students = []
-    RECORDS_PER_PAGE = 200
     auth_headers = get_auth_headers()
 
     for page in count():
-        query = ("""select Email, Full_Name, 
-                 Course_of_Interest_Code from Contacts 
-                 where Lead_Status = 'Enroll' and 
-                 Course_of_Interest_Code is not null
-                 limit {},{}""").format(
-                     page*RECORDS_PER_PAGE, RECORDS_PER_PAGE)
+        query = STUDENTS_QUERY.format(page=page*RECORDS_PER_PAGE,
+                                    per_page=RECORDS_PER_PAGE)
         students_resp = requests.post(
             COQL_ENDPOINT,
             headers=auth_headers,
             json={"select_query":query})
         if students_resp.status_code != 200:
             return students
-        students.append(students_resp.json()['data'][0])
+
+        for student in students_resp.json()['data']:
+            students.append(student)
+
         if not students_resp.json()['info']['more_records']:
             return students
 
@@ -52,7 +60,6 @@ def get_auth_headers():
     return {"Authorization": "Zoho-oauthtoken " + access_token}
 
 
-
 def parse_course_of_interest_code(course_of_interest_code):
     """
     Course codes in Zoho are created based on the following criteria:
@@ -70,7 +77,7 @@ def parse_course_of_interest_code(course_of_interest_code):
 
     `course_of_interest_code` is the code that's retrieved from the
         student's Zoho record
-    
+
     Returns the course_identifier without the year/month/location
     """
     regex_matcher = "\d|\-.*$"
