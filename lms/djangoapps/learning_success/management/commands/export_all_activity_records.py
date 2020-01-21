@@ -5,14 +5,23 @@ from django.utils import timezone
 from opaque_keys.edx.locator import CourseLocator
 from xmodule.modulestore.django import modulestore
 
-from collections import Counter, defaultdict
+from collections import Counter, defaultdict, OrderedDict
 from datetime import datetime, timedelta
 import json
 
 import requests
 
-
 PROGRAM_CODE = 'FS'  # Our Full-Stack program
+#BREADCRUMB_INDEX_URL = settings.LMS_SYLLABUS
+BREADCRUMB_INDEX_URL = settings.BREADCRUMB_INDEX_URL
+KEYS = ['module','section','lesson']
+
+PROJECTS = {
+    'user_centric_frontend_development': 0.06,
+    'interactive_frontend_development': 0.06,
+    'data_centric_development': 0.07,
+    'full_stack_frameworks_with_django': 0.08
+}
 
 
 def harvest_course_tree(tree, output_dict, prefix=()):
@@ -41,7 +50,6 @@ def harvest_program(program):
         course = modulestore().get_course(course_locator)
         harvest_course_tree(course, all_blocks)
     return all_blocks
-
 
 def format_date(value):
     if isinstance(value, datetime):
@@ -86,12 +94,72 @@ def lessons_days_into_per_module(first_active, breadcrumb_dict):
             for module, timestamps in per_module_lessons_times.items()}
 
 
+def fourteen_days_fractions(completed_fractions):
+    fourteen_days_ago = timezone.now() - timedelta(days=14)
+    return sum(item['lesson_fraction'] if item['time_completed'] > fourteen_days_ago else 0 
+                for item in completed_fractions)
+
+
+def cumulative_days_fractions(completed_fractions):
+    return sum(item['lesson_fraction'] for item in completed_fractions)
+
+
+def fractions_per_day(date_joined, limit, completed_fractions):
+        """Creates an array of fractions completed for each day since the student started
+        
+        Returns a single string of all the array elements joined by a comma
+        """
+        range_limit = (timezone.now() - date_joined).days
+        # Needs to be string, then cast to float for calculation
+        # Then be converted back to string for join operation
+        fractions_days = {str(i) : '0' for i in range(range_limit + 1)}
+        for item in completed_fractions:
+            days_in = str((item['time_completed'] - date_joined).days)
+            fractions_days[days_in] = str(float(fractions_days[days_in]) 
+                                            + item['lesson_fraction'])
+        return ','.join(OrderedDict(sorted(fractions_days.items())).values())
+
+
+def completed_fraction_per_module(fractions, completed_fractions):
+    """Aggregates completed fractions witin last 14d and before that
+        
+    Returns a dict with module and the completed aggregations
+    """
+    fourteen_days_ago = timezone.now() - timedelta(days=14)
+    for key, item in completed_fractions.items():
+        accessor = format_module_field(key[0], '_fraction_within_14d') 
+                                        if item['time_completed'] > fourteen_days_ago 
+                                        else format_module_field(key[0], 
+                                        '_fraction_before_14d')
+        if accessor in fractions:
+            fractions[accessor] += item['lesson_fraction']
+    return fractions
+
+
+def create_fractions_dict(syllabus):
+    fractions = {format_module_field(x['module'],'_fraction_within_14d') : 0 for x in syllabus.values()}
+    fractions.update({format_module_field(x['module'],'_fraction_before_14d') : 0 for x in syllabus.values()})
+    return fractions
+
+
+def completed_percent_per_module(suffix, fractions, module_fractions):
+    for module, module_fraction in module_fractions.items():
+        accessor = format_module_field(module, suffix)
+        if accessor in fractions and module_fraction != 0:
+            fractions[accessor] = fractions[accessor] / (module_fraction + (PROJECTS[module]
+                                                            if module in PROJECTS else 0.0))
+    return fractions
+
+
 def all_student_data(program):
     """Yield a progress metadata dictionary for each of the students
 
     Input is a pregenerated dictionary mapping block IDs in LMS to breadcrumbs
     """
     all_components = harvest_program(program)
+    lesson_fractions = requests.get(BREADCRUMB_INDEX_URL).json()['LESSONS']
+    module_fractions = {item['module'] : item['fractions']['module_fraction'] 
+                            for item in lesson_fractions.values()}
 
     for student in program.enrolled_students.all():
         # A short name for the activities queryset
@@ -106,7 +174,10 @@ def all_student_data(program):
         # We care about the lesson level (depth 3) and unit level (depth 4).
         # Dictionaries of breadcrumbs to timestamps of completion
         completed_lessons = {}
+        completed_fractions = {}
         completed_units = {}
+        all_fractions = create_fractions_dict(lesson_fractions)
+
         # Provide default values in cases where student hasn't started
         latest_unit_started = None
         latest_unit_breadcrumbs = (u'',) * 4
@@ -116,6 +187,24 @@ def all_student_data(program):
             if breadcrumbs and len(breadcrumbs) == 3:  # lesson
                 # for each lesson learned, store latest timestamp
                 completed_lessons[breadcrumbs] = activity.modified
+
+                #Calculate fractions
+                lesson_fraction = 0
+                module_fraction = 0
+                cumulative_fraction = 0                
+
+                # Check if fractions for lesson exist, if keep default 0
+                if block_id in lesson_fractions:
+                    lesson_fraction = lesson_fractions[block_id]['fractions']['lesson_fraction']
+                    module_fraction = lesson_fractions[block_id]['fractions']['module_fraction']
+                    cumulative_fraction = lesson_fractions[block_id]['fractions']['cumulative_fraction']
+                
+
+                completed_fractions[breadcrumbs] = {
+                    'time_completed' : activity.modified,
+                    'lesson_fraction' : lesson_fraction,
+                    'module_fraction' : module_fraction,
+                    'cumulative_fraction' : cumulative_fraction}
 
             if breadcrumbs and len(breadcrumbs) >= 4:  # unit or inner block
                 unit_breadcrumbs = breadcrumbs[:4]
@@ -128,6 +217,7 @@ def all_student_data(program):
                 latest_unit_started = activity.created
                 latest_unit_breadcrumbs = unit_breadcrumbs
 
+        days_into = days_into_data(first_active, completed_units.values())
         student_dict = {
             'email': student.email,
             'date_joined': format_date(first_active),
@@ -138,9 +228,22 @@ def all_student_data(program):
             'latest_lesson': latest_unit_breadcrumbs[2].encode('utf-8'),
             'latest_unit': latest_unit_breadcrumbs[3].encode('utf-8'),
             'units_in_30d': thirty_day_units(completed_units.values()),
-            'days_into_data': days_into_data(first_active, completed_units.values()),
+            'days_into_data': days_into,
+            'completed_fractions_14d' : fourteen_days_fractions(completed_fractions.values()),
+            'cumulative_completed_fractions' : cumulative_days_fractions(completed_fractions.values()),
+            'fractions_per_day': fractions_per_day(first_active, max(days_into.split(',')), 
+                                                    completed_fractions.values())
         }
 
+        completed_fractions_per_module = completed_fraction_per_module(all_fractions, completed_fractions)
+        completed_percentage_per_module = completed_percent_per_module('_fraction_within_14d', 
+                                                                        completed_fractions_per_module, 
+                                                                        module_fractions)
+        completed_percentage_per_module = completed_percent_per_module('_fraction_before_14d', 
+                                                                        completed_fractions_per_module, 
+                                                                        module_fractions)
+
+        student_dict.update(completed_percentage_per_module)
         student_dict.update(completed_lessons_per_module(completed_lessons))
         student_dict.update(completed_units_per_module(completed_units))
         student_dict.update(
@@ -156,9 +259,13 @@ class Command(BaseCommand):
         """POST the collected data to the api endpoint from the settings
         """
         program = get_program_by_program_code(PROGRAM_CODE)
+        #all_students = all_student_data(program)
+        #student_data = [x for x, _ in zip(all_students, range(50))]
+        #print(student_data)
         student_data = list(all_student_data(program))
 
-        api_endpoint = settings.STRACKR_LMS_API_ENDPOINT
+        api_endpoint = 'https://script.google.com/macros/s/AKfycbxszIgBOWeJpyUO9ucU7fF0JmkdOEjyawsPoweE-5qJAaUh5wkv/exec'
         resp = requests.post(api_endpoint, data=json.dumps(student_data))
+        print(resp.content)
         if resp.status_code != 200:
             raise CommandError(resp.text)
