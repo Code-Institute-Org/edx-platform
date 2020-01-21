@@ -30,7 +30,7 @@ def get_students():
 
     for page in count():
         query = STUDENTS_QUERY.format(page=page*RECORDS_PER_PAGE,
-                                    per_page=RECORDS_PER_PAGE)
+                                      per_page=RECORDS_PER_PAGE)
         students_resp = requests.post(
             COQL_ENDPOINT,
             headers=auth_headers,
@@ -38,9 +38,7 @@ def get_students():
         if students_resp.status_code != 200:
             return students
 
-        for student in students_resp.json()['data']:
-            students.append(student)
-
+        students.extend(students_resp.json()['data'])
         if not students_resp.json()['info']['more_records']:
             return students
 
