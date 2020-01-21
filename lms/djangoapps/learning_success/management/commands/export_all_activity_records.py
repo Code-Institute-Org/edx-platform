@@ -264,6 +264,5 @@ class Command(BaseCommand):
 
         api_endpoint = settings.STRACKR_LMS_API_ENDPOINT
         resp = requests.post(api_endpoint, data=json.dumps(student_data))
-        print(resp.content)
         if resp.status_code != 200:
             raise CommandError(resp.text)
