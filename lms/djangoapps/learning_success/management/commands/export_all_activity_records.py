@@ -186,7 +186,7 @@ def completed_percent_per_module(suffix, fractions, module_fractions):
     return fractions
 
 
-def get_fractions(lesson_fractions, completed_fractions, block_id, crumbs, 
+def get_fractions(lesson_fractions, completed_fractions, block_id, breadcrumbs, 
                                                                 modified_time):
     """Combine block fractions from API with the student's modified time 
     of that block
