@@ -186,7 +186,13 @@ def completed_percent_per_module(suffix, fractions, module_fractions):
     return fractions
 
 
-def get_fractions(completed_fractions, block_id, crumbs, modified_time):
+def get_fractions(lesson_fractions, completed_fractions, block_id, breadcrumbs, 
+                                                                modified_time):
+    """Combine block fractions from API with the student's modified time 
+    of that block
+
+    Returns result dict
+    """
     lesson_fraction = 0
     module_fraction = 0
     cumulative_fraction = 0                
@@ -243,9 +249,9 @@ def all_student_data(program):
                 # for each lesson learned, store latest timestamp
                 completed_lessons[breadcrumbs] = activity.modified
 
-                #Calculate fractions
-                get_fractions(completed_fractions, block_id, breadcrumbs, 
-                                                            acitivty_modified)
+                # get timestamp and fractions for each breadcrumb
+                get_fractions(lesson_fractions, completed_fractions, block_id, 
+                                                breadcrumbs, activity.modified)
 
             if breadcrumbs and len(breadcrumbs) >= 4:  # unit or inner block
                 unit_breadcrumbs = breadcrumbs[:4]
