@@ -131,8 +131,8 @@ def fractions_per_day(date_joined, completed_fractions):
         return ','.join(OrderedDict(sorted(days.items())).values())
 
 
-def fractions_per_module(fraction_record, completed_fractions, days_ago=14):
-    """Aggregate completed fractions witin last n days and before that
+def fractions_per_module(fractions, completed_fractions, days_ago=14):
+    """Aggregate completed fractions witin last n days and the rest
         
     Returns a dict with module and the completed aggregations
     """
