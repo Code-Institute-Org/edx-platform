@@ -171,6 +171,7 @@ def all_student_data(program):
     """
     all_components = harvest_program(program)
     lesson_fractions = requests.get(BREADCRUMB_INDEX_URL).json()['LESSONS']
+    print(lesson_fractions)
     module_fractions = {item['module'] : item['fractions']['module_fraction'] 
                             for item in lesson_fractions.values()}
 
