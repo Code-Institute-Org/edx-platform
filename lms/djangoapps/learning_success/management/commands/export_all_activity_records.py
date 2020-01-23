@@ -186,6 +186,26 @@ def completed_percent_per_module(suffix, fractions, module_fractions):
     return fractions
 
 
+def get_fractions(completed_fractions, block_id, crumbs, modified_time):
+    lesson_fraction = 0
+    module_fraction = 0
+    cumulative_fraction = 0                
+
+    # Check if fractions for lesson exist, if not keep default 0
+    if block_id in lesson_fractions:
+        lesson = lesson_fractions[block_id]
+        lesson_fraction = lesson['fractions']['lesson_fraction']
+        module_fraction = lesson['fractions']['module_fraction']
+        cumulative_fraction = lesson['fractions']['cumulative_fraction']
+    
+    completed_fractions[breadcrumbs] = {
+        'time_completed' : modified_time,
+        'lesson_fraction' : lesson_fraction,
+        'module_fraction' : module_fraction,
+        'cumulative_fraction' : cumulative_fraction}
+
+
+
 def all_student_data(program):
     """Yield a progress metadata dictionary for each of the students
 
@@ -225,22 +245,8 @@ def all_student_data(program):
                 completed_lessons[breadcrumbs] = activity.modified
 
                 #Calculate fractions
-                lesson_fraction = 0
-                module_fraction = 0
-                cumulative_fraction = 0                
-
-                # Check if fractions for lesson exist, if keep default 0
-                if block_id in lesson_fractions:
-                    lesson_fraction = lesson_fractions[block_id]['fractions']['lesson_fraction']
-                    module_fraction = lesson_fractions[block_id]['fractions']['module_fraction']
-                    cumulative_fraction = lesson_fractions[block_id]['fractions']['cumulative_fraction']
-                
-
-                completed_fractions[breadcrumbs] = {
-                    'time_completed' : activity.modified,
-                    'lesson_fraction' : lesson_fraction,
-                    'module_fraction' : module_fraction,
-                    'cumulative_fraction' : cumulative_fraction}
+                get_fractions(completed_fractions, block_id, breadcrumbs, 
+                                                            acitivty_modified)
 
             if breadcrumbs and len(breadcrumbs) >= 4:  # unit or inner block
                 unit_breadcrumbs = breadcrumbs[:4]
