@@ -145,7 +145,7 @@ def fractions_per_module(fractions, completed_fractions, days_ago=14):
             else format_module_field(module[0], 
                                         '_fraction_before_%sd' % (days_ago)))
 
-        if accessor in fractions:
+        if key in fractions:
             fractions[key] += fraction['lesson_fraction']
     return fractions
 
