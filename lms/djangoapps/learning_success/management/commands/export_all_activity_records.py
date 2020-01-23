@@ -131,25 +131,31 @@ def fractions_per_day(date_joined, completed_fractions):
         return ','.join(OrderedDict(sorted(days.items())).values())
 
 
-def completed_fraction_per_module(fractions, completed_fractions):
-    """Aggregates completed fractions witin last 14d and before that
+def fractions_per_module(fractions, completed_fractions, days_ago=14):
+    """Aggregate completed fractions within last n days and the rest
         
     Returns a dict with module and the completed aggregations
     """
-    fourteen_days_ago = timezone.now() - timedelta(days=14)
-    for key, item in completed_fractions.items():
-        accessor = format_module_field(key[0], '_fraction_within_14d') 
-                                        if item['time_completed'] > fourteen_days_ago 
-                                        else format_module_field(key[0], 
-                                        '_fraction_before_14d')
+    n_days_ago = timezone.now() - timedelta(days=days_ago)
+    for module, fraction in completed_fractions.items():
+        accessor = (
+            format_module_field(module[0], '_fraction_within_%sd' % (days_ago))
+            if fraction['time_completed'] > n_days_ago 
+            else format_module_field(module[0], 
+                                        '_fraction_before_%sd' % (days_ago)))
+
         if accessor in fractions:
-            fractions[accessor] += item['lesson_fraction']
+            fractions[accessor] += fraction['lesson_fraction']
     return fractions
 
 
-def create_fractions_dict(syllabus):
-    fractions = {format_module_field(x['module'],'_fraction_within_14d') : 0 for x in syllabus.values()}
-    fractions.update({format_module_field(x['module'],'_fraction_before_14d') : 0 for x in syllabus.values()})
+def create_fractions_dict(modules, days_ago=14):
+    fractions = {format_module_field(
+        module['module'],'_fraction_within_%sd' % (days_ago)) : 0 
+        for module in modules.values()}
+    fractions.update({format_module_field(
+        module['module'],'_fraction_before_%sd' % (days_ago)) : 0 
+        for module in modules.values()})
     return fractions
 
 
@@ -248,9 +254,9 @@ def all_student_data(program):
                 first_active, completed_fractions.values())
         }
 
-        completed_fractions_per_module = completed_fraction_per_module(all_fractions, completed_fractions)
+        fractions_per_module = fractions_per_module(all_fractions, completed_fractions)
         completed_percentage_per_module = completed_percent_per_module('_fraction_within_14d', 
-                                                                        completed_fractions_per_module, 
+                                                                        fractions_per_module, 
                                                                         module_fractions)
         completed_percentage_per_module = completed_percent_per_module('_fraction_before_14d', 
                                                                         completed_fractions_per_module, 
