@@ -15,6 +15,7 @@ PROGRAM_CODE = 'FS'  # Our Full-Stack program
 BREADCRUMB_INDEX_URL = settings.BREADCRUMB_INDEX_URL
 KEYS = ['module','section','lesson']
 
+# TODO: Find a way how to retrieve these dynamically
 PROJECTS = {
     'user_centric_frontend_development': 0.06,
     'interactive_frontend_development': 0.06,
