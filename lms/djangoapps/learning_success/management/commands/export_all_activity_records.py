@@ -150,26 +150,26 @@ def fractions_per_module(fractions, completed_fractions, days_ago=14):
     return fractions
 
 
-def create_fractions_dict(modules, days_ago=14):
+def create_fractions_dict(lessons, days_ago=14):
     """ Create data structure to store fractions for each module 
 
     Returns dict with an entry for each module for fractions completed
     within the last n days and the rest
     """
     fractions = {format_module_field(
-        module['module'],'_fraction_within_%sd' % (days_ago)) : 0 
-        for module in modules.values()}
+        lesson['module'],'_fraction_within_%sd' % (days_ago)) : 0 
+        for lesson in lessons.values()}
     fractions.update({format_module_field(
-        module['module'],'_fraction_before_%sd' % (days_ago)) : 0 
-        for module in modules.values()})
+        lesson['module'],'_fraction_before_%sd' % (days_ago)) : 0 
+        for lesson in lessons.values()})
     return fractions
 
 
 def completed_percent_per_module(suffix, fractions, module_fractions):
     for module, module_fraction in module_fractions.items():
-        accessor = format_module_field(module, suffix)
-        if accessor in fractions and module_fraction != 0:
-            fractions[accessor] = fractions[accessor] / (module_fraction + (PROJECTS[module]
+        key = format_module_field(module, suffix)
+        if key in fractions and module_fraction != 0:
+            fractions[key] = fractions[key] / (module_fraction + (PROJECTS[module]
                                                             if module in PROJECTS else 0.0))
     return fractions
 
