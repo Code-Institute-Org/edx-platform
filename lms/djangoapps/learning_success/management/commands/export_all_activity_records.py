@@ -150,27 +150,39 @@ def fractions_per_module(fractions, completed_fractions, days_ago=14):
     return fractions
 
 
-def create_fractions_dict(modules, days_ago=14):
+def create_fractions_dict(lessons, days_ago=14):
     """ Create data structure to store fractions for each module 
 
     Returns dict with an entry for each module for fractions completed
     within the last n days and the rest
     """
     fractions = {format_module_field(
-        module['module'],'_fraction_within_%sd' % (days_ago)) : 0 
-        for module in modules.values()}
+        lesson['module'],'_fraction_within_%sd' % (days_ago)) : 0 
+        for lesson in lessons.values()}
     fractions.update({format_module_field(
-        module['module'],'_fraction_before_%sd' % (days_ago)) : 0 
-        for module in modules.values()})
+        lesson['module'],'_fraction_before_%sd' % (days_ago)) : 0 
+        for lesson in lessons.values()})
     return fractions
 
 
 def completed_percent_per_module(suffix, fractions, module_fractions):
+    """Calculate the % of the module completed (not overall) from the overall
+    fraction completed of the course
+
+    Calculation Logic:
+    For the sum of the completed fractions in each module calculate 
+    the % of fraction completed / (overall module fraction + project
+    fraction for that module) to get how much % of the module was completed
+    
+    This is used for the progress bars on the student profile
+
+    Returns dict with % completed per module
+    """
     for module, module_fraction in module_fractions.items():
-        accessor = format_module_field(module, suffix)
-        if accessor in fractions and module_fraction != 0:
-            fractions[accessor] = fractions[accessor] / (module_fraction + (PROJECTS[module]
-                                                            if module in PROJECTS else 0.0))
+        key = format_module_field(module, suffix)
+        if key in fractions and module_fraction != 0:
+            fractions[key] = fractions[key] / (module_fraction 
+            + (PROJECTS[module] if module in PROJECTS else 0.0))
     return fractions
 
 
@@ -261,8 +273,7 @@ def all_student_data(program):
                 first_active, completed_fractions.values())
         }
 
-        completed_fractions_per_module = fractions_per_module(all_fractions, 
-                                            completed_fractions)
+        completed_fractions_per_module = fractions_per_module(all_fractions, completed_fractions)
         completed_percentage_per_module = completed_percent_per_module('_fraction_within_14d', 
                                                                         completed_fractions_per_module, 
                                                                         module_fractions)
