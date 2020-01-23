@@ -108,15 +108,17 @@ def n_days_fractions(completed_fractions, days_ago=0):
         for item in completed_fractions)
 
 
-def fractions_per_day(date_joined, limit, completed_fractions):
-        """Creates an array of fractions completed for each day since the student started
+def fractions_per_day(date_joined, completed_fractions):
+        """Create a list of fractions completed for 
+        each day since the student started
         
-        Returns a single string of all the array elements joined by a comma
+        Returns a comma separated string of fractions 
+        per day in the student lifecyle
         """
-        range_limit = (timezone.now() - date_joined).days
+        days_since_joined = (timezone.now() - date_joined).days
         # Needs to be string, then cast to float for calculation
         # Then be converted back to string for join operation
-        fractions_days = {str(i) : '0' for i in range(range_limit + 1)}
+        fractions_days = {str(i) : '0' for i in range(days_since_joined + 1)}
         for item in completed_fractions:
             days_in = str((item['time_completed'] - date_joined).days)
             fractions_days[days_in] = str(float(fractions_days[days_in]) 
@@ -221,7 +223,6 @@ def all_student_data(program):
                 latest_unit_started = activity.created
                 latest_unit_breadcrumbs = unit_breadcrumbs
 
-        days_into = days_into_data(first_active, completed_units.values())
         student_dict = {
             'email': student.email,
             'date_joined': format_date(first_active),
@@ -232,11 +233,14 @@ def all_student_data(program):
             'latest_lesson': latest_unit_breadcrumbs[2].encode('utf-8'),
             'latest_unit': latest_unit_breadcrumbs[3].encode('utf-8'),
             'units_in_30d': thirty_day_units(completed_units.values()),
-            'days_into_data': days_into,
-            'completed_fractions_14d' : n_days_fractions(completed_fractions.values(), 14),
-            'cumulative_completed_fractions' : n_days_fractions(completed_fractions.values()),
-            'fractions_per_day': fractions_per_day(first_active, max(days_into.split(',')), 
-                                                    completed_fractions.values())
+            'days_into_data': days_into_data(
+                first_active, completed_units.values()),
+            'completed_fractions_14d' : n_days_fractions(
+                completed_fractions.values(), 14),
+            'cumulative_completed_fractions' : n_days_fractions(
+                completed_fractions.values()),
+            'fractions_per_day': fractions_per_day(
+                first_active, completed_fractions.values())
         }
 
         completed_fractions_per_module = completed_fraction_per_module(all_fractions, completed_fractions)
