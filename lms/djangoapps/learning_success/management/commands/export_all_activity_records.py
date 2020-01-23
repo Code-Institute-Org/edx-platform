@@ -101,10 +101,10 @@ def n_days_fractions(completed_fractions, days_ago=0):
 
     Returns the sum of fractions as float
     """
-    fourteen_days_ago = timezone.now() - timedelta(days=days_ago)
+    period_start = timezone.now() - timedelta(days=days_ago)
     return sum(
         item['lesson_fraction'] 
-        if item['time_completed'] > fourteen_days_ago or days_ago == 0 else 0 
+        if item['time_completed'] > period_start or days_ago == 0 else 0 
         for item in completed_fractions)
 
 
