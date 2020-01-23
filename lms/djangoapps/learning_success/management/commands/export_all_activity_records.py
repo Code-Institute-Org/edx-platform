@@ -131,19 +131,20 @@ def fractions_per_day(date_joined, completed_fractions):
         return ','.join(OrderedDict(sorted(days.items())).values())
 
 
-def completed_fraction_per_module(fractions, completed_fractions):
-    """Aggregates completed fractions witin last 14d and before that
+def fractions_per_module(fraction_record, completed_fractions, days_ago=14):
+    """Aggregate completed fractions witin last n days and before that
         
     Returns a dict with module and the completed aggregations
     """
-    fourteen_days_ago = timezone.now() - timedelta(days=14)
-    for key, item in completed_fractions.items():
-        accessor = format_module_field(key[0], '_fraction_within_14d') 
-                                        if item['time_completed'] > fourteen_days_ago 
-                                        else format_module_field(key[0], 
-                                        '_fraction_before_14d')
+    n_days_ago = timezone.now() - timedelta(days=days_ago)
+    for module, fraction in completed_fractions.items():
+        accessor = format_module_field(
+                module[0], '_fraction_within_%sd' % (days_ago)) 
+            if fraction['time_completed'] > n_days_ago 
+            else format_module_field(
+                module[0], '_fraction_before_%sd' % (days_ago))
         if accessor in fractions:
-            fractions[accessor] += item['lesson_fraction']
+            fractions[accessor] += fraction['lesson_fraction']
     return fractions
 
 
@@ -248,7 +249,7 @@ def all_student_data(program):
                 first_active, completed_fractions.values())
         }
 
-        completed_fractions_per_module = completed_fraction_per_module(all_fractions, completed_fractions)
+        completed_fractions_per_module = fractions_per_module(all_fractions, completed_fractions)
         completed_percentage_per_module = completed_percent_per_module('_fraction_within_14d', 
                                                                         completed_fractions_per_module, 
                                                                         module_fractions)
@@ -272,7 +273,8 @@ class Command(BaseCommand):
         """POST the collected data to the api endpoint from the settings
         """
         program = get_program_by_program_code(PROGRAM_CODE)
-        student_data = list(all_student_data(program))
+        all_students = all_student_data(program)
+        student_data = [x for x, _ in zip(all_students, range(50))]
 
         api_endpoint = settings.STRACKR_LMS_API_ENDPOINT
         resp = requests.post(api_endpoint, data=json.dumps(student_data))
