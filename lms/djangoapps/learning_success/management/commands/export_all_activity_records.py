@@ -12,7 +12,6 @@ import json
 import requests
 
 PROGRAM_CODE = 'FS'  # Our Full-Stack program
-#BREADCRUMB_INDEX_URL = settings.LMS_SYLLABUS
 BREADCRUMB_INDEX_URL = settings.BREADCRUMB_INDEX_URL
 KEYS = ['module','section','lesson']
 
