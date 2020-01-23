@@ -261,7 +261,8 @@ def all_student_data(program):
                 first_active, completed_fractions.values())
         }
 
-        fractions_per_module = fractions_per_module(all_fractions, completed_fractions)
+        completed_fractions_per_module = fractions_per_module(all_fractions, 
+                                            completed_fractions)
         completed_percentage_per_module = completed_percent_per_module('_fraction_within_14d', 
                                                                         fractions_per_module, 
                                                                         module_fractions)
