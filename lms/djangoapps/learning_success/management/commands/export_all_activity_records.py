@@ -138,10 +138,11 @@ def fractions_per_module(fraction_record, completed_fractions, days_ago=14):
     """
     n_days_ago = timezone.now() - timedelta(days=days_ago)
     for module, fraction in completed_fractions.items():
-        accessor = format_module_field(module[0], 
-        '_fraction_within_%sd' % (days_ago))
-        if fraction['time_completed'] > n_days_ago else format_module_field(
-            module[0], '_fraction_before_%sd' % (days_ago))
+        accessor = (
+            format_module_field(module[0], '_fraction_within_%sd' % (days_ago))
+            if fraction['time_completed'] > n_days_ago 
+            else format_module_field(module[0], 
+                                        '_fraction_before_%sd' % (days_ago)))
 
         if accessor in fractions:
             fractions[accessor] += fraction['lesson_fraction']
