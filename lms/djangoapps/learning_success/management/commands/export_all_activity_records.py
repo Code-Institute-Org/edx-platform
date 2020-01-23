@@ -132,24 +132,30 @@ def fractions_per_day(date_joined, completed_fractions):
 
 
 def fractions_per_module(fractions, completed_fractions, days_ago=14):
-    """Aggregate completed fractions within last n days and the rest
+    """Separate and sum completed fractions into those in last n days 
+    and the rest
         
-    Returns a dict with module and the completed aggregations
+    Returns a dict with module and the completed sums
     """
     n_days_ago = timezone.now() - timedelta(days=days_ago)
     for module, fraction in completed_fractions.items():
-        accessor = (
+        key = (
             format_module_field(module[0], '_fraction_within_%sd' % (days_ago))
             if fraction['time_completed'] > n_days_ago 
             else format_module_field(module[0], 
                                         '_fraction_before_%sd' % (days_ago)))
 
         if accessor in fractions:
-            fractions[accessor] += fraction['lesson_fraction']
+            fractions[key] += fraction['lesson_fraction']
     return fractions
 
 
 def create_fractions_dict(modules, days_ago=14):
+    """ Create data structure to store fractions for each module 
+
+    Returns dict with an entry for each module for fractions completed
+    within the last n days and the rest
+    """
     fractions = {format_module_field(
         module['module'],'_fraction_within_%sd' % (days_ago)) : 0 
         for module in modules.values()}
