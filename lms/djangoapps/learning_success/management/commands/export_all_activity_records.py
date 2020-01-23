@@ -111,19 +111,24 @@ def n_days_fractions(completed_fractions, days_ago=0):
 def fractions_per_day(date_joined, completed_fractions):
         """Create a list of fractions completed for 
         each day since the student started
-        
+
+        1) Create a dict where the keys are all the days in the student life
+        2) Loop through all completed fractions for the student and
+        calculate on which day in their lifecyle each fraction was completed
+        3) Add each fraction to that day in their lifecyle
+
         Returns a comma separated string of fractions 
         per day in the student lifecyle
         """
         days_since_joined = (timezone.now() - date_joined).days
         # Needs to be string, then cast to float for calculation
         # Then be converted back to string for join operation
-        fractions_days = {str(i) : '0' for i in range(days_since_joined + 1)}
-        for item in completed_fractions:
-            days_in = str((item['time_completed'] - date_joined).days)
-            fractions_days[days_in] = str(float(fractions_days[days_in]) 
-                                            + item['lesson_fraction'])
-        return ','.join(OrderedDict(sorted(fractions_days.items())).values())
+        days = {str(day) : '0' for day in range(days_since_joined + 1)}
+        for fraction in completed_fractions:
+            days_in = str((fraction['time_completed'] - date_joined).days)
+            days[days_in] = str(float(days[days_in]) 
+                                            + fraction['lesson_fraction'])
+        return ','.join(OrderedDict(sorted(days.items())).values())
 
 
 def completed_fraction_per_module(fractions, completed_fractions):
