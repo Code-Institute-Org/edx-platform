@@ -95,14 +95,17 @@ def lessons_days_into_per_module(first_active, breadcrumb_dict):
             for module, timestamps in per_module_lessons_times.items()}
 
 
-def fourteen_days_fractions(completed_fractions):
-    fourteen_days_ago = timezone.now() - timedelta(days=14)
-    return sum(item['lesson_fraction'] if item['time_completed'] > fourteen_days_ago else 0 
-                for item in completed_fractions)
+def n_days_fractions(completed_fractions, days_ago=0):
+    """Sum fractions completed for the n previous days
+    If days_ago is 0 (by default) it will sum all completed fractions
 
-
-def cumulative_days_fractions(completed_fractions):
-    return sum(item['lesson_fraction'] for item in completed_fractions)
+    Returns the sum of fractions as float
+    """
+    fourteen_days_ago = timezone.now() - timedelta(days=days_ago)
+    return sum(
+        item['lesson_fraction'] 
+        if item['time_completed'] > fourteen_days_ago or days_ago == 0 else 0 
+        for item in completed_fractions)
 
 
 def fractions_per_day(date_joined, limit, completed_fractions):
@@ -230,8 +233,8 @@ def all_student_data(program):
             'latest_unit': latest_unit_breadcrumbs[3].encode('utf-8'),
             'units_in_30d': thirty_day_units(completed_units.values()),
             'days_into_data': days_into,
-            'completed_fractions_14d' : fourteen_days_fractions(completed_fractions.values()),
-            'cumulative_completed_fractions' : cumulative_days_fractions(completed_fractions.values()),
+            'completed_fractions_14d' : n_days_fractions(completed_fractions.values(), 14),
+            'cumulative_completed_fractions' : n_days_fractions(completed_fractions.values()),
             'fractions_per_day': fractions_per_day(first_active, max(days_into.split(',')), 
                                                     completed_fractions.values())
         }
