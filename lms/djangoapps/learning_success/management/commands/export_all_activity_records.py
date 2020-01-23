@@ -145,7 +145,7 @@ def fractions_per_module(fractions, completed_fractions, days_ago=14):
             else format_module_field(module[0], 
                                         '_fraction_before_%sd' % (days_ago)))
 
-        if accessor in fractions:
+        if key in fractions:
             fractions[key] += fraction['lesson_fraction']
     return fractions
 
@@ -260,9 +260,9 @@ def all_student_data(program):
                 first_active, completed_fractions.values())
         }
 
-        fractions_per_module = fractions_per_module(all_fractions, completed_fractions)
+        completed_fractions_per_module = fractions_per_module(all_fractions, completed_fractions)
         completed_percentage_per_module = completed_percent_per_module('_fraction_within_14d', 
-                                                                        fractions_per_module, 
+                                                                        completed_fractions_per_module, 
                                                                         module_fractions)
         completed_percentage_per_module = completed_percent_per_module('_fraction_before_14d', 
                                                                         completed_fractions_per_module, 
