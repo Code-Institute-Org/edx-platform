@@ -246,7 +246,7 @@ def all_student_data(program):
 
                 #Calculate fractions
                 get_fractions(completed_fractions, block_id, breadcrumbs, 
-                                                            acitivty.modified)
+                                                            activity.modified)
 
             if breadcrumbs and len(breadcrumbs) >= 4:  # unit or inner block
                 unit_breadcrumbs = breadcrumbs[:4]
