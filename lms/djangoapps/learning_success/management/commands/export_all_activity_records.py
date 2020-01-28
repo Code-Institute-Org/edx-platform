@@ -125,7 +125,9 @@ def all_student_data(program):
                 # remember details of the latest unit overall
                 # we use 'created' (not 'modified') to ignore backward leaps
                 # to old units; sadly, there's no way to ignore forward leaps
-                latest_unit_started = activity.created
+                if (latest_unit_started == None or 
+                    activity.created > latest_unit_started):
+                    latest_unit_started = activity.created
                 latest_unit_breadcrumbs = unit_breadcrumbs
 
         student_dict = {
