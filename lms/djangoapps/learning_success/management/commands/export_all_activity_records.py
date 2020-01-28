@@ -127,7 +127,7 @@ def fractions_per_day(date_joined, completed_fractions):
         for fraction in completed_fractions:
             days_in = str((fraction['time_completed'] - date_joined).days)
             days[days_in] = str(float(days[days_in]) 
-                                            + fraction['lesson_fraction'])
+                                + fraction['lesson_fraction'])
         return ','.join(OrderedDict(sorted(days.items())).values())
 
 
@@ -143,7 +143,7 @@ def fractions_per_module(fractions, completed_fractions, days_ago=14):
             format_module_field(module[0], '_fraction_within_%sd' % (days_ago))
             if fraction['time_completed'] > n_days_ago 
             else format_module_field(module[0], 
-                                        '_fraction_before_%sd' % (days_ago)))
+                                     '_fraction_before_%sd' % (days_ago)))
 
         if key in fractions:
             fractions[key] += fraction['lesson_fraction']
@@ -220,7 +220,7 @@ def all_student_data(program):
     all_components = harvest_program(program)
     lesson_fractions = requests.get(BREADCRUMB_INDEX_URL).json()['LESSONS']
     module_fractions = {item['module'] : item['fractions']['module_fraction'] 
-                            for item in lesson_fractions.values()}
+                        for item in lesson_fractions.values()}
 
     for student in program.enrolled_students.all():
         # A short name for the activities queryset
@@ -251,7 +251,7 @@ def all_student_data(program):
 
                 # get timestamp and fractions for each breadcrumb
                 get_fractions(lesson_fractions, completed_fractions, block_id, 
-                                                breadcrumbs, activity.modified)
+                              breadcrumbs, activity.modified)
 
             if breadcrumbs and len(breadcrumbs) >= 4:  # unit or inner block
                 unit_breadcrumbs = breadcrumbs[:4]
@@ -284,13 +284,14 @@ def all_student_data(program):
                 first_active, completed_fractions.values())
         }
 
-        completed_fractions_per_module = fractions_per_module(all_fractions, completed_fractions)
-        completed_percentage_per_module = completed_percent_per_module('_fraction_within_14d', 
-                                                                        completed_fractions_per_module, 
-                                                                        module_fractions)
-        completed_percentage_per_module = completed_percent_per_module('_fraction_before_14d', 
-                                                                        completed_fractions_per_module, 
-                                                                        module_fractions)
+        completed_fractions_per_module = fractions_per_module(all_fractions, 
+            completed_fractions)
+        completed_percentage_per_module = completed_percent_per_module(
+            '_fraction_within_14d', completed_fractions_per_module, 
+            module_fractions)
+        completed_percentage_per_module = completed_percent_per_module(
+            '_fraction_before_14d', completed_fractions_per_module, 
+            module_fractions)
 
         student_dict.update(completed_percentage_per_module)
         student_dict.update(completed_lessons_per_module(completed_lessons))
