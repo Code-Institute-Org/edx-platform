@@ -15,14 +15,6 @@ PROGRAM_CODE = 'FS'  # Our Full-Stack program
 BREADCRUMB_INDEX_URL = settings.BREADCRUMB_INDEX_URL
 KEYS = ['module','section','lesson']
 
-# TODO: Find a way how to retrieve these dynamically
-PROJECTS = {
-    'user_centric_frontend_development': 0.06,
-    'interactive_frontend_development': 0.06,
-    'data_centric_development': 0.07,
-    'full_stack_frameworks_with_django': 0.08
-}
-
 
 def harvest_course_tree(tree, output_dict, prefix=()):
     """Recursively harvest the breadcrumbs for each component in a tree
@@ -281,7 +273,8 @@ class Command(BaseCommand):
         """POST the collected data to the api endpoint from the settings
         """
         program = get_program_by_program_code(PROGRAM_CODE)
-        student_data = list(all_student_data(program))
+        all_students = all_student_data(program)
+        student_data = [x for x, _ in zip(all_students, range(100))]
 
         api_endpoint = settings.STRACKR_LMS_API_ENDPOINT
         resp = requests.post(api_endpoint, data=json.dumps(student_data))
