@@ -211,7 +211,6 @@ def get_fractions(lesson_fractions, completed_fractions, block_id, breadcrumbs,
         'cumulative_fraction' : cumulative_fraction}
 
 
-
 def all_student_data(program):
     """Yield a progress metadata dictionary for each of the students
 
