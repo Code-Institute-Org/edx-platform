@@ -165,27 +165,6 @@ def create_fractions_dict(lessons, days_ago=14):
     return fractions
 
 
-def completed_percent_per_module(suffix, fractions, module_fractions):
-    """Calculate the % of the module completed (not overall) from the overall
-    fraction completed of the course
-
-    Calculation Logic:
-    For the sum of the completed fractions in each module calculate 
-    the % of fraction completed / (overall module fraction + project
-    fraction for that module) to get how much % of the module was completed
-    
-    This is used for the progress bars on the student profile
-
-    Returns dict with % completed per module
-    """
-    for module, module_fraction in module_fractions.items():
-        key = format_module_field(module, suffix)
-        if key in fractions and module_fraction != 0:
-            fractions[key] = fractions[key] / (module_fraction 
-            + (PROJECTS[module] if module in PROJECTS else 0.0))
-    return fractions
-
-
 def get_fractions(lesson_fractions, completed_fractions, block_id, breadcrumbs, 
                                                                 modified_time):
     """Combine block fractions from API with the student's modified time 
@@ -285,14 +264,8 @@ def all_student_data(program):
 
         completed_fractions_per_module = fractions_per_module(all_fractions, 
             completed_fractions)
-        completed_percentage_per_module = completed_percent_per_module(
-            '_fraction_within_14d', completed_fractions_per_module, 
-            module_fractions)
-        completed_percentage_per_module = completed_percent_per_module(
-            '_fraction_before_14d', completed_fractions_per_module, 
-            module_fractions)
 
-        student_dict.update(completed_percentage_per_module)
+        student_dict.update(completed_fractions_per_module)
         student_dict.update(completed_lessons_per_module(completed_lessons))
         student_dict.update(completed_units_per_module(completed_units))
         student_dict.update(
