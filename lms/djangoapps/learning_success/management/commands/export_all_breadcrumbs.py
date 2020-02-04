@@ -18,7 +18,7 @@ import requests
 # Pandas natively only supports sqlite3
 # '?charset=utf8' used to specify utf-8 encoding to avoid encoding errors
 
-LMS_TABLE = 'lms_breadcrumbs_v2'
+LMS_TABLE = 'lms_breadcrumbs_v3'
 
 CONNECTION_STRING = 'mysql+mysqldb://%s:%s@%s:%d/%s%s' % (
     settings.RDS_DB_USER,
@@ -65,7 +65,7 @@ def get_breadcrumb_index(URL):
     Returns a Dataframe to join to the rest of the breadcumbs
     """
     breadcrumb_index = requests.get(URL).json()
-    df_breadcrumb_idx = pd.DataFrame(breadcrumb_index['lessons'])
+    df_breadcrumb_idx = pd.DataFrame(breadcrumb_index['LESSONS'])
     df_breadcrumb_idx = df_breadcrumb_idx.T
     df_breadcrumb_idx = df_breadcrumb_idx.reset_index()
     df_breadcrumb_idx.rename(columns={'index':'order_index'}, inplace=True)
