@@ -87,17 +87,19 @@ def lessons_days_into_per_module(first_active, breadcrumb_dict):
             for module, timestamps in per_module_lessons_times.items()}
 
 
-def n_days_fractions(completed_fractions, days_ago=0):
+def n_days_fractions(completed_fractions, days_ago=None):
     """Sum fractions completed for the n previous days
-    If days_ago is 0 (by default) it will sum all completed fractions
 
     Returns the sum of fractions as float
     """
-    period_start = timezone.now() - timedelta(days=days_ago)
+    if days_ago == None:
+        period_start = datetime.utcfromtimestamp(0)
+    else:
+        period_start = timezone.now() - timedelta(days=days_ago)
     return sum(
-        item['lesson_fraction'] 
-        if item['time_completed'] > period_start or days_ago == 0 else 0 
-        for item in completed_fractions)
+        item['lesson_fraction']
+        for item in completed_fractions
+        if item['time_completed'] > period_start)
 
 
 def fractions_per_day(date_joined, completed_fractions):
@@ -234,6 +236,9 @@ def all_student_data(program):
                 latest_unit_started = activity.created
                 latest_unit_breadcrumbs = unit_breadcrumbs
 
+
+        completed_fractions_last14d = n_days_fractions(
+                completed_fractions.values(), 14)
         student_dict = {
             'email': student.email,
             'date_joined': format_date(first_active),
@@ -246,8 +251,9 @@ def all_student_data(program):
             'units_in_30d': thirty_day_units(completed_units.values()),
             'days_into_data': days_into_data(
                 first_active, completed_units.values()),
-            'completed_fractions_14d' : n_days_fractions(
-                completed_fractions.values(), 14),
+            'completed_fractions_14d' : completed_fractions_last14d,
+            'completed_fractions_28d' : n_days_fractions(
+                completed_fractions.values(), 28) - completed_fractions_last14d,
             'cumulative_completed_fractions' : n_days_fractions(
                 completed_fractions.values()),
             'fractions_per_day': fractions_per_day(
