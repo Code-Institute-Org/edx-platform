@@ -92,7 +92,7 @@ def n_days_fractions(completed_fractions, days_ago=None):
 
     Returns the sum of fractions as float
     """
-    if days_ago == None:
+    if days_ago is None:
         period_start = datetime.utcfromtimestamp(0)
     else:
         period_start = timezone.now() - timedelta(days=days_ago)
