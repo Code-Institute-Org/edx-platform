@@ -281,7 +281,8 @@ class Command(BaseCommand):
         """POST the collected data to the api endpoint from the settings
         """
         program = get_program_by_program_code(PROGRAM_CODE)
-        student_data = list(all_student_data(program))
+        all_students = all_student_data(program)
+        student_data = [x for x, _ in zip(all_students, range(10))]
 
         api_endpoint = settings.STRACKR_LMS_API_ENDPOINT
         resp = requests.post(api_endpoint, data=json.dumps(student_data))
