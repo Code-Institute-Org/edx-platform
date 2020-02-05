@@ -9,11 +9,13 @@ from collections import Counter, defaultdict, OrderedDict
 from datetime import datetime, timedelta
 import json
 
+import pytz
 import requests
 
 PROGRAM_CODE = 'FS'  # Our Full-Stack program
 BREADCRUMB_INDEX_URL = settings.BREADCRUMB_INDEX_URL
 KEYS = ['module','section','lesson']
+utc=pytz.UTC
 
 
 def harvest_course_tree(tree, output_dict, prefix=()):
@@ -93,7 +95,7 @@ def n_days_fractions(completed_fractions, days_ago=None):
     Returns the sum of fractions as float
     """
     if days_ago is None:
-        period_start = datetime.utcfromtimestamp(0)
+        period_start = utc.localize(datetime.utcfromtimestamp(0))
     else:
         period_start = timezone.now() - timedelta(days=days_ago)
     return sum(
