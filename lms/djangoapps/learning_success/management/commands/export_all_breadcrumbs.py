@@ -86,7 +86,7 @@ class Command(BaseCommand):
         
         # Looping through the results because you cannot convert 
         # Variable length dict list to DataFrame, but list of lists
-        components = [[k] + v for k, v in d.iteritems()]
+        components = [[k] + v for k, v in all_components.iteritems()]
         df = pd.DataFrame(components)
         # Need to assign headers
         df.columns = ['uuid','module','section','lesson','unit','type']
