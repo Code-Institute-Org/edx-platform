@@ -20,7 +20,7 @@ import requests
 
 LMS_TABLE = 'lms_breadcrumbs_v3'
 
-CONNECTION_STRING = 'mysql+mysqldb://%s:%s@%s:%d/%s%s' % (
+CONNECTION_STRING = 'mysql+mysqldb://%s:%s@%s:%s/%s%s' % (
     settings.RDS_DB_USER,
     settings.RDS_DB_PASS,
     settings.RDS_DB_ENDPOINT,
