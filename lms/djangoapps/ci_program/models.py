@@ -291,7 +291,7 @@ class Program(TimeStampedModel):
 
         return email_successfully_sent
 
-    def enroll_student_in_program(self, student_email):
+    def enroll_student_in_program(self, student_email, exclude=[]):
         """
         Enroll a student in a program.
 
@@ -301,10 +301,16 @@ class Program(TimeStampedModel):
 
         `student` is the user instance that we which to enroll in the program
 
+        `exclude` is a dict of course codes (formatted as a string) which can 
+        be used to exclude specific courses from the auto-enrollment process
+
         Returns True if the student was successfully enrolled in all of the courses,
             otherwise return False
         """
         for course in self.get_courses():
+            if str(course.display_name) in exclude:
+                continue
+
             enroll_email(course.id, student_email, auto_enroll=True)
             cea, _ = CourseEnrollmentAllowed.objects.get_or_create(
                 course_id=course.id, email=student_email)
