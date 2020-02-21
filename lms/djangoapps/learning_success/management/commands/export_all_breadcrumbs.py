@@ -71,12 +71,13 @@ def harvest_course_tree_new(tree, output_list, prefix=()):
     block = {}
     block['block_id'] = tree.location.block_id
     block['block_name'] = tree.display_name
-    block['block_type'] = block_types.get(tree.category) or 'component'
+    block['block_type'] = BLOCK_TYPES.get(tree.category) or 'component'
     block['module'] = get_safely(block_breadcrumbs, 0)
     block['section'] = get_safely(block_breadcrumbs, 1)
     block['lesson'] = get_safely(block_breadcrumbs, 2)
     block['unit'] = get_safely(block_breadcrumbs, 3)
     block['breadcrumbs'] = ' - '.join(block_breadcrumbs)
+    block['lms_category'] = tree.category
 
     output_list.append(block)
 
