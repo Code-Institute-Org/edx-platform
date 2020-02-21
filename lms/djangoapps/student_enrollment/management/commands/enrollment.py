@@ -13,6 +13,8 @@ from student_enrollment.zoho import (
 from lms.djangoapps.student_enrollment.models import EnrollmentStatusHistory
 from lms.djangoapps.student_enrollment.models import ProgramAccessStatus
 
+EXCLUDE_COURSES = ['course-v1:code_institute+cc_101+2018_T1']
+
 
 class Command(BaseCommand):
     help = 'Enroll students in their relevant programs'
@@ -52,7 +54,8 @@ class Command(BaseCommand):
 
             # Enroll the student in the program
             program_enrollment_status = program.enroll_student_in_program(
-                user.email)
+                user.email,
+                exclude_courses=EXCLUDE_COURSES)
 
             # Send the email
             email_sent_status = program.send_email(
