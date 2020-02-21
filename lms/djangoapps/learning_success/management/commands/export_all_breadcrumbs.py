@@ -18,7 +18,7 @@ import requests
 # Pandas natively only supports sqlite3
 # '?charset=utf8' used to specify utf-8 encoding to avoid encoding errors
 
-LMS_TABLE = 'lms_breadcrumbs_v3'
+LMS_TABLE = 'lms_breadcrumbs_v4'
 
 CONNECTION_STRING = 'mysql+mysqldb://%s:%s@%s:%s/%s%s' % (
     settings.RDS_DB_USER,
@@ -29,8 +29,14 @@ CONNECTION_STRING = 'mysql+mysqldb://%s:%s@%s:%s/%s%s' % (
     '?charset=utf8')
 
 BREADCRUMB_INDEX_URL = settings.LMS_SYLLABUS
-
 PROGRAM_CODE = 'FS'  # Our Full-Stack program
+BLOCK_TYPES = {
+    'course': 'module',
+    'chapter': 'section',
+    'sequential': 'lesson',
+    'vertical': 'unit'
+}
+
 
 def harvest_course_tree(tree, output_dict, prefix=()):
     """Recursively harvest the breadcrumbs for each component in a tree
@@ -47,59 +53,32 @@ def harvest_course_tree(tree, output_dict, prefix=()):
     for subtree in children:
         harvest_course_tree(subtree, output_dict, prefix=block_breadcrumbs)
 
+
+def get_safely(breadcrumbs, index):
+    try:
+        return breadcrumbs[index]
+    except IndexError as e:
+        return None
+
+
 def harvest_course_tree_new(tree, output_list, prefix=()):
     """Recursively harvest the breadcrumbs for each component in a tree
 
     Populates output_dict
     """
-    block_name = tree.display_name
-    block_category = tree.category
     block_breadcrumbs = prefix + (tree.display_name,)
-    block_id = tree.location.block_id
-    module = None
-    section = None
-    lesson = None
-    unit = None
 
-    breadcrumbs = block_breadcrumbs
+    block = {}
+    block['block_id'] = tree.location.block_id
+    block['block_name'] = tree.display_name
+    block['block_type'] = block_types.get(tree.category) or 'component'
+    block['module'] = get_safely(block_breadcrumbs, 0)
+    block['section'] = get_safely(block_breadcrumbs, 1)
+    block['lesson'] = get_safely(block_breadcrumbs, 2)
+    block['unit'] = get_safely(block_breadcrumbs, 3)
+    block['breadcrumbs'] = ' - '.join(block_breadcrumbs)
 
-    if block_category == 'course':
-        block_type = 'module'
-        module = block_name
-    elif block_category == 'chapter':
-        block_type = 'section'
-        module = breadcrumbs[0]
-        section = block_name
-    elif block_category == 'sequential':
-        print(breadcrumbs)
-        block_type = 'lesson'
-        module = breadcrumbs[0]
-        section = breadcrumbs[1]
-        lesson = block_name
-    elif block_category == 'vertical':
-        block_type = 'unit'
-        module = breadcrumbs[0]
-        section = breadcrumbs[1]
-        lesson = breadcrumbs[2]
-        unit = block_name
-    else:
-        block_type = 'component'
-        module = breadcrumbs[0]
-        section = breadcrumbs[1]
-        lesson = breadcrumbs[2]
-        unit = breadcrumbs[3]
-    
-    temp_dict = {}
-    temp_dict['block_id'] = block_id
-    temp_dict['block_name'] = block_name
-    temp_dict['block_type'] = block_type
-    temp_dict['module'] = module
-    temp_dict['section'] = section
-    temp_dict['lesson'] = lesson
-    temp_dict['unit'] = unit
-    temp_dict['breadcrumbs'] = ' - '.join(block_breadcrumbs)
-
-    output_list.append(temp_dict)
+    output_list.append(block)
 
     children = tree.get_children()
     for subtree in children:
@@ -117,6 +96,7 @@ def harvest_program(program):
         harvest_course_tree_new(course, all_blocks)
     return all_blocks
 
+
 def get_breadcrumb_index(URL):
     """Retrieve the course syllabus from Google Sheet with the ordering
 
@@ -128,7 +108,8 @@ def get_breadcrumb_index(URL):
     df_breadcrumb_idx = df_breadcrumb_idx.reset_index()
     df_breadcrumb_idx.rename(columns={'index':'order_index'}, inplace=True)
     # TODO: remove following line, once the [beta] suffix is removed in the LMS
-    df_breadcrumb_idx['module'] = df_breadcrumb_idx['module'].replace('Careers','Careers [Beta]')
+    df_breadcrumb_idx['module'] = df_breadcrumb_idx['module'].replace(
+        'Careers','Careers [Beta]')
     df_breadcrumb_idx = df_breadcrumb_idx.reset_index()
     return df_breadcrumb_idx[['module','lesson','order_index','time_fraction']]
 
@@ -148,4 +129,7 @@ class Command(BaseCommand):
         df = df.merge(df_breadcrumb_idx, on=['module', 'lesson'], how='left')
         
         engine = create_engine(CONNECTION_STRING, echo=False)
-        df.to_sql(name='lms_breadcrumbs_v3', con=engine, if_exists='replace', dtype={'order_index': types.INT})
+        df.to_sql(name=LMS_TABLE, 
+                  con=engine, 
+                  if_exists='replace', 
+                  dtype={'order_index': types.INT})
