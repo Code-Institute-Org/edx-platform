@@ -52,7 +52,8 @@ class Command(BaseCommand):
 
             # Enroll the student in the program
             program_enrollment_status = program.enroll_student_in_program(
-                user.email)
+                user.email, 
+                exclude=['course-v1:code_institute+cc_101+2018_T1'])
 
             # Send the email
             email_sent_status = program.send_email(

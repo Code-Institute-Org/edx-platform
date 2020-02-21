@@ -291,7 +291,7 @@ class Program(TimeStampedModel):
 
         return email_successfully_sent
 
-    def enroll_student_in_program(self, student_email, exclude):
+    def enroll_student_in_program(self, student_email, exclude=[]):
         """
         Enroll a student in a program.
 
