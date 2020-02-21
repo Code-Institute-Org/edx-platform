@@ -291,7 +291,7 @@ class Program(TimeStampedModel):
 
         return email_successfully_sent
 
-    def enroll_student_in_program(self, student_email, exclude=[]):
+    def enroll_student_in_program(self, student_email, exclude):
         """
         Enroll a student in a program.
 
@@ -308,7 +308,7 @@ class Program(TimeStampedModel):
             otherwise return False
         """
         for course in self.get_courses():
-            if str(course.display_name) in exclude:
+            if str(course.id) in exclude:
                 continue
 
             enroll_email(course.id, student_email, auto_enroll=True)
