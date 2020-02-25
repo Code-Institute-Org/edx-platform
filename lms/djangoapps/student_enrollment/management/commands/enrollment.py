@@ -13,7 +13,16 @@ from student_enrollment.zoho import (
 from lms.djangoapps.student_enrollment.models import EnrollmentStatusHistory
 from lms.djangoapps.student_enrollment.models import ProgramAccessStatus
 
-EXCLUDE_COURSES = ['course-v1:code_institute+cc_101+2018_T1']
+"""
+Students starting the Full Stack Developer course should initially not be
+enrolled into the Careers module. It should be made available after the submission
+of the Interactive Frontend Development. See "Enroll student in careers module" 
+Zap. 
+
+This collection is used to store any courses that should be excluded from the
+initial student onboarding/enrollment process like the Careers module.
+"""
+EXCLUDED_FROM_ONBOARDING = ['course-v1:code_institute+cc_101+2018_T1']
 
 
 class Command(BaseCommand):
@@ -55,7 +64,7 @@ class Command(BaseCommand):
             # Enroll the student in the program
             program_enrollment_status = program.enroll_student_in_program(
                 user.email,
-                exclude_courses=EXCLUDE_COURSES)
+                exclude_courses=EXCLUDED_FROM_ONBOARDING)
 
             # Send the email
             email_sent_status = program.send_email(

@@ -301,8 +301,9 @@ class Program(TimeStampedModel):
 
         `student` is the user instance that we which to enroll in the program
 
-        `exclude` is a dict of course codes (formatted as a string) which can 
-        be used to exclude specific courses from the auto-enrollment process
+        `exclude_courses` is a collection of course codes (formatted as a string) 
+        which can be used to exclude specific courses from the auto-enrollment 
+        process
 
         Returns True if the student was successfully enrolled in all of the courses,
             otherwise return False
