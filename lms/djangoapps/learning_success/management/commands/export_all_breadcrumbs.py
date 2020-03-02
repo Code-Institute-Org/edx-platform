@@ -30,11 +30,13 @@ CONNECTION_STRING = 'mysql+mysqldb://%s:%s@%s:%s/%s%s' % (
 
 BREADCRUMB_INDEX_URL = settings.LMS_SYLLABUS
 
+# Keys are representing the internal edx terminology
+# and the values are our CI terminology (also based on edx)
 BLOCK_TYPES = {
     'course': 'module',
     'chapter': 'section',
     'sequential': 'lesson',
-    'vertical': 'unit'
+    'vertical': 'unit',
 }
 
 PROGRAM_CODE = 'FS'  # Our Full-Stack program
