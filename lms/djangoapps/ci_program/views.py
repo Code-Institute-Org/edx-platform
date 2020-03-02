@@ -17,7 +17,6 @@ def show_programs(request, program_name):
         for enrollment in request.user.courseenrollment_set.all()]
     logger.error('Student Enrollment')
     logger.error(student_enrollment)
-
     context = {}
     context["program"] = program_descriptor
     context["student_enrollement"] = student_enrollment
