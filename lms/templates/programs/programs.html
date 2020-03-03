@@ -65,7 +65,7 @@
         <div class="container">
 
             % for course in program["modules"]:
-                % if course['course_key'] in enrolled_course_codes:
+                % if enrolled_course_codes.get(course['course_key']):
                     <div class="row">
                         <article class="program-course col-xs-12 col-sm-10 offset-sm-1 col-xl-10 offset-xl-1" id="${course['course_key']}" role="region" aria-label="${course['course'].display_name}">
                             <div class="inner-article">
