@@ -65,32 +65,34 @@
         <div class="container">
 
             % for course in program["modules"]:
-                <div class="row">
-                    <article class="program-course col-xs-12 col-sm-10 offset-sm-1 col-xl-10 offset-xl-1" id="${course['course_key']}" role="region" aria-label="${course['course'].display_name}">
-                        <div class="inner-article">
-                            <div class="row">
-                                <div class="col-lg-3 text-center p-xl-0">
-                                    <header class="course-image">
-                                        <div class="cover-image">
-                                            <img src="${course['course_image']}">
-                                        </div>
-                                    </header>
-                                </div>
-                                <div class="col-lg-8 p-xl-0">
-                                    <div class="course-info" aria-hidden="true">
-                                        <div class="course-name">
-                                            <a href="/courses/${course['course_key']}/info" aria-hidden="true">
-                                                <h3 class="program-course-title section-heading">${loop.index + 1}. ${course['course'].display_name}</h3>
-                                            </a>
-                                            <p class="program-course-desc">${course['course'].short_description}</p>
-                                        </div>
+                % if course['course_key'] in enrolled_course_codes:
+                    <div class="row">
+                        <article class="program-course col-xs-12 col-sm-10 offset-sm-1 col-xl-10 offset-xl-1" id="${course['course_key']}" role="region" aria-label="${course['course'].display_name}">
+                            <div class="inner-article">
+                                <div class="row">
+                                    <div class="col-lg-3 text-center p-xl-0">
+                                        <header class="course-image">
+                                            <div class="cover-image">
+                                                <img src="${course['course_image']}">
+                                            </div>
+                                        </header>
                                     </div>
-                                <a href="/courses/${course['course_key']}/info" class="button-cta" aria-hidden="true">Go To Module</a>
+                                    <div class="col-lg-8 p-xl-0">
+                                        <div class="course-info" aria-hidden="true">
+                                            <div class="course-name">
+                                                <a href="/courses/${course['course_key']}/info" aria-hidden="true">
+                                                    <h3 class="program-course-title section-heading">${loop.index + 1}. ${course['course'].display_name}</h3>
+                                                </a>
+                                                <p class="program-course-desc">${course['course'].short_description}</p>
+                                            </div>
+                                        </div>
+                                    <a href="/courses/${course['course_key']}/info" class="button-cta" aria-hidden="true">Go To Module</a>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    </article>
-                </div>
+                        </article>
+                    </div>
+                % endif
             % endfor
         </div>
     </div>
