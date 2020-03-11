@@ -151,7 +151,8 @@ function(_) {
             var newSpeed;
 
             newSpeed = parseFloat(value);
-
+            console.log('setPlaybackRate:value')
+            console.log(value)
             if (isFinite(newSpeed)) {
                 if (this.video.playbackRate !== value) {
                     this.video.playbackRate = value;
