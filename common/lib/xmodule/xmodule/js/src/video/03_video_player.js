@@ -410,12 +410,14 @@ function(HTML5Video, HTML5HLSVideo, Resizer, HLS, _) {
     function setPlaybackRate(newSpeed) {
         console.log('common:setPlaybackRate:newSpeed')
         console.log(newSpeed)
+        console.log(this.videoPlayer.player.setPlaybackRate)
         this.videoPlayer.player.setPlaybackRate(newSpeed);
     }
 
     function onSpeedChange(newSpeed) {
         console.log('common:onSpeedChange:newSpeed')
         console.log(newSpeed)
+        console.log(this.isFlashMode())
         var time = this.videoPlayer.currentTime;
 
         if (this.isFlashMode()) {
