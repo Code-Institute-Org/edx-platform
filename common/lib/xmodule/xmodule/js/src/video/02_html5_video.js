@@ -148,9 +148,6 @@ function(_) {
         };
 
         Player.prototype.setPlaybackRate = function(value) {
-            console.log("Is this triggering??")
-            console.log('PLAYER.setPlaybackRate:value')
-            console.log(value)
             var newSpeed;
             newSpeed = parseFloat(value);
             if (isFinite(newSpeed)) {
