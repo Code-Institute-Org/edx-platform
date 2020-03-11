@@ -422,7 +422,7 @@ function(HTML5Video, HTML5HLSVideo, Resizer, HLS, _) {
             );
         }
 
-        newSpeed = parseFloat(newSpeed).toFixed(2);
+        newSpeed = parseFloat(newSpeed);
         this.setSpeed(newSpeed);
         this.videoPlayer.setPlaybackRate(newSpeed);
     }
