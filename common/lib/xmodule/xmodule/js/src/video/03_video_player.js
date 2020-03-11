@@ -408,6 +408,8 @@ function(HTML5Video, HTML5HLSVideo, Resizer, HLS, _) {
     }
 
     function setPlaybackRate(newSpeed) {
+        console.log('common:setPlaybackRate:newSpeed')
+        console.log(newSpeed)
         this.videoPlayer.player.setPlaybackRate(newSpeed);
     }
 
