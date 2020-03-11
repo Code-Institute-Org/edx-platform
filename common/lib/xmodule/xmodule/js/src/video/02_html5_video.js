@@ -149,9 +149,9 @@ function(_) {
 
         Player.prototype.setPlaybackRate = function(value) {
             var newSpeed;
-
             newSpeed = parseFloat(value);
-            console.log('setPlaybackRate:value')
+            console.log("Is this triggering??")
+            console.log('PLAYER.setPlaybackRate:value')
             console.log(value)
             if (isFinite(newSpeed)) {
                 if (this.video.playbackRate !== value) {
