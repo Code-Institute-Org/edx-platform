@@ -66,6 +66,8 @@
             }),
 
             onSpeedChange: function(event, newSpeed) {
+                console.log("save_state:onSpeedChange:newSpeed");
+                console.log(newSpeed)
                 this.saveState(true, {speed: newSpeed});
                 this.state.storage.setItem('speed', newSpeed, true);
                 this.state.storage.setItem('general_speed', newSpeed);

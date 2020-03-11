@@ -98,6 +98,9 @@
             },
 
             onSpeedChange: function(event, newSpeed, oldSpeed) {
+                console.log("save_state:eventsPlugin:newSpeed");
+                console.log(newSpeed)
+                console.log(oldSpeed)
                 this.log('speed_change_video', {
                     current_time: this.getCurrentTime(),
                     old_speed: oldSpeed,

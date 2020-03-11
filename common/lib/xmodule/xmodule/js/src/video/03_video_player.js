@@ -414,6 +414,8 @@ function(HTML5Video, HTML5HLSVideo, Resizer, HLS, _) {
     }
 
     function onSpeedChange(newSpeed) {
+        console.log('common:onSpeedChange:newSpeed')
+        console.log(newSpeed)
         var time = this.videoPlayer.currentTime;
 
         if (this.isFlashMode()) {
@@ -563,6 +565,8 @@ function(HTML5Video, HTML5HLSVideo, Resizer, HLS, _) {
         dfd.resolve();
 
         this.el.on('speedchange', function(event, speed) {
+            console.log('speedchange')
+            console.log(speed)
             _this.videoPlayer.onSpeedChange(speed);
         });
 
