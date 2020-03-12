@@ -9,7 +9,7 @@ setuptools==34.0.2
 pip==9.0.1
 
 
-numpy==1.6.2
+numpy==1.16.6
 networkx==1.7
 sympy==0.7.1
 pyparsing==2.0.7
