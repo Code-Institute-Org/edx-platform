@@ -41,22 +41,6 @@ BLOCK_TYPES = {
 PROGRAM_CODE = 'FS'  # Our Full-Stack program
 
 
-def harvest_course_tree(tree, output_dict, prefix=()):
-    """Recursively harvest the breadcrumbs for each component in a tree
-
-    Populates output_dict
-    """
-    block_name = tree.display_name
-    block_breadcrumbs = prefix + (tree.display_name,)
-    block_id = tree.location.block_id
-    category = (tree.category,)
-    output_dict[block_id] = block_breadcrumbs + category
-
-    children = tree.get_children()
-    for subtree in children:
-        harvest_course_tree(subtree, output_dict, prefix=block_breadcrumbs)
-
-
 def get_safely(breadcrumbs, index):
     try:
         return breadcrumbs[index]
@@ -64,7 +48,7 @@ def get_safely(breadcrumbs, index):
         return None
 
 
-def harvest_course_tree_new(tree, output_list, prefix=()):
+def harvest_course_tree(tree, output_list, prefix=()):
     """Recursively harvest the breadcrumbs for each component in a tree
 
     Populates output_dict
@@ -86,7 +70,7 @@ def harvest_course_tree_new(tree, output_list, prefix=()):
 
     children = tree.get_children()
     for subtree in children:
-        harvest_course_tree_new(subtree, output_list, prefix=block_breadcrumbs)
+        harvest_course_tree(subtree, output_list, prefix=block_breadcrumbs)
     
 
 def harvest_program(program):
@@ -97,7 +81,7 @@ def harvest_program(program):
     all_blocks = []
     for course_locator in program.get_course_locators():
         course = modulestore().get_course(course_locator)
-        harvest_course_tree_new(course, all_blocks)
+        harvest_course_tree(course, all_blocks)
     return all_blocks
 
 
