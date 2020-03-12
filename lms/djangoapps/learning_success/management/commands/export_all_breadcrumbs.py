@@ -13,13 +13,12 @@ import json
 
 import requests
 
+LMS_TABLE = 'lms_breadcrumbs_v3'
+
 # Need to create an engine using sqlalchemy to be able to
 # connect with pandas .to_sql
 # Pandas natively only supports sqlite3
 # '?charset=utf8' used to specify utf-8 encoding to avoid encoding errors
-
-LMS_TABLE = 'lms_breadcrumbs_v3'
-
 CONNECTION_STRING = 'mysql+mysqldb://%s:%s@%s:%s/%s%s' % (
     settings.RDS_DB_USER,
     settings.RDS_DB_PASS,
@@ -93,7 +92,7 @@ def harvest_course_tree_new(tree, output_list, prefix=()):
 def harvest_program(program):
     """Harvest the breadcrumbs from all components in the program
 
-    Returns a dictionary mapping block IDs to the matching breadcrumbs
+    Returns a list of dictionaries containing xblock meta data
     """
     all_blocks = []
     for course_locator in program.get_course_locators():
@@ -114,7 +113,7 @@ def get_breadcrumb_index(URL):
     df_breadcrumb_idx.rename(columns={'index':'order_index'}, inplace=True)
     # TODO: remove following line, once the [beta] suffix is removed in the LMS
     df_breadcrumb_idx['module'] = df_breadcrumb_idx['module'].replace(
-        'Careers','Careers [Beta]')
+        'Careers', 'Careers [Beta]')
     df_breadcrumb_idx = df_breadcrumb_idx.reset_index()
     return df_breadcrumb_idx[['module','lesson','order_index','time_fraction']]
 
