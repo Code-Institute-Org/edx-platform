@@ -451,7 +451,7 @@ NOTIFICATION_EMAIL_EDX_LOGO = ENV_TOKENS.get('NOTIFICATION_EMAIL_EDX_LOGO', NOTI
 CSRF_COOKIE_SECURE = ENV_TOKENS.get('CSRF_COOKIE_SECURE', False)
 
 # To allow requests from repl.it in iframes
-SESSION_COOKIE_SAMESITE = True
+SESSION_COOKIE_SAMESITE = None
 
 ############# CORS headers for cross-domain requests #################
 if FEATURES.get('ENABLE_CORS_HEADERS') or FEATURES.get('ENABLE_CROSS_DOMAIN_CSRF_COOKIE'):
