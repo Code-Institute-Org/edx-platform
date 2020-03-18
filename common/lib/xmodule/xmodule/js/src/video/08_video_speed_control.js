@@ -246,7 +246,6 @@
             }
 
             this.resetActiveSpeed();
-            this.setActiveSpeed(speed);
             this.setActiveSpeed(newSpeed);
         },
 
