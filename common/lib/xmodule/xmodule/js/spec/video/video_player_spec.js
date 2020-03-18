@@ -54,7 +54,7 @@ function(VideoPlayer, HLS) {
 
                 it('create video caption', function() {
                     expect(state.videoCaption).toBeDefined();
-                    expect(state.speed).toEqual('1.50');
+                    expect(state.speed).toEqual(1.5);
                     expect(state.config.transcriptTranslationUrl)
                         .toEqual('/transcript/translation/__lang__');
                 });
@@ -62,7 +62,7 @@ function(VideoPlayer, HLS) {
                 it('create video speed control', function() {
                     expect(state.videoSpeedControl).toBeDefined();
                     expect(state.videoSpeedControl.el).toHaveClass('speeds');
-                    expect(state.speed).toEqual('1.50');
+                    expect(state.speed).toEqual(1.5);
                 });
 
                 it('create video progress slider', function() {
@@ -907,9 +907,9 @@ function(VideoPlayer, HLS) {
 
                 it('set video speed to the new speed', function() {
                     VideoPlayer.prototype.onSpeedChange.call(state, '0.75', false);
-                    expect(state.setSpeed).toHaveBeenCalledWith('0.75');
+                    expect(state.setSpeed).toHaveBeenCalledWith(0.75);
                     expect(state.videoPlayer.setPlaybackRate)
-                        .toHaveBeenCalledWith('0.75');
+                        .toHaveBeenCalledWith(0.75);
                 });
             });
         });
