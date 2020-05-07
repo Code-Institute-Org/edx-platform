@@ -10,16 +10,29 @@ from collections import Counter, defaultdict, OrderedDict
 from datetime import datetime, timedelta
 import json
 
+import pandas as pd
 import pytz
 import requests
+from sqlalchemy import create_engine, types
 
 PROGRAM_CODE = 'FS'  # Our Full-Stack program
 BREADCRUMB_INDEX_URL = settings.BREADCRUMB_INDEX_URL
 KEYS = ['module','section','lesson']
 utc=pytz.UTC
 
-STRACKR_LMS_API_ENDPOINT = "https://script.google.com/macros/s/AKfycbxszIgBOWeJpyUO9ucU7fF0JmkdOEjyawsPoweE-5qJAaUh5wkv/exec"
+# Need to create an engine using sqlalchemy to be able to
+# connect with pandas .to_sql
+# Pandas natively only supports sqlite3
+# '?charset=utf8' used to specify utf-8 encoding to avoid encoding errors
+CONNECTION_STRING = 'mysql+mysqldb://%s:%s@%s:%s/%s%s' % (
+    settings.RDS_DB_USER,
+    settings.RDS_DB_PASS,
+    settings.RDS_DB_ENDPOINT,
+    settings.RDS_DB_PORT,
+    settings.RDS_LMS_DB,
+    '?charset=utf8')
 
+LMS_ACTIVITY_TABLE = 'lms_activity'
 
 def harvest_course_tree(tree, output_dict, prefix=()):
     """Recursively harvest the breadcrumbs for each component in a tree
@@ -294,7 +307,14 @@ class Command(BaseCommand):
         program = get_program_by_program_code(PROGRAM_CODE)
         student_data = list(all_student_data(program))
 
-        api_endpoint = STRACKR_LMS_API_ENDPOINT
+        # TODO: Remove once the connection to the RDS is implemented in AMOS
+        api_endpoint = settings.STRACKR_LMS_API_ENDPOINT
         resp = requests.post(api_endpoint, data=json.dumps(student_data))
         if resp.status_code != 200:
             raise CommandError(resp.text)
+
+        df = pd.DataFrame(student_data)
+        engine = create_engine(CONNECTION_STRING, echo=False)
+        df.to_sql(name=LMS_ACTIVITY_TABLE, 
+                  con=engine, 
+                  if_exists='replace')
