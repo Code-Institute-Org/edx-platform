@@ -1,4 +1,4 @@
-from lms.djangoapps.challenges.models import Challenge
+from challenges.models import Challenge
 
 from collections import Counter, defaultdict
 
