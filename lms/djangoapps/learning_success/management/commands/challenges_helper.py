@@ -1,45 +1,48 @@
 from collections import Counter, defaultdict
 
-CHALLENGE_INDEX = index_challenge_to_module_and_level()
-CHALLENGE_COUNT_IN_MODULE_LEVEL = Counter(CHALLENGE_INDEX.values())
+class ChallengeAggregator:
+
+    def __init__(self):
+        self.CHALLENGE_INDEX = index_challenge_to_module_and_level()
+        self.CHALLENGE_COUNT_IN_MODULE_LEVEL = Counter(CHALLENGE_INDEX.values())
 
 
-def index_challenge_to_module_and_level():
-    challenge_index = {}
-    for challenge in Challenge.objects.all():
-        module = challenge.block_locator.split('+')[1].lower()
-        challenge_index[challenge.pk] = "_".join((module, challenge.level)).lower()
-    return challenge_index
+    def index_challenge_to_module_and_level(self):
+        challenge_index = {}
+        for challenge in Challenge.objects.all():
+            module = challenge.block_locator.split('+')[1].lower()
+            challenge_index[challenge.pk] = "_".join((module, challenge.level)).lower()
+        return challenge_index
 
 
-def calculate_unattempted(module, passed, attempted):
-    total = CHALLENGE_COUNT_IN_MODULE_LEVEL[module]
-    return total - passed - attempted
+    def calculate_unattempted(self, module, passed, attempted):
+        total = self.CHALLENGE_COUNT_IN_MODULE_LEVEL[module]
+        return total - passed - attempted
 
 
-def single_student_challenge_history(student):
-    challenge_activities = {module: defaultdict(int) for module
-                            in CHALLENGE_COUNT_IN_MODULE_LEVEL.keys()}
+    def single_student_challenge_history(self, student):
+        challenge_activities = {module: defaultdict(int) for module
+                                in self.CHALLENGE_COUNT_IN_MODULE_LEVEL.keys()}
 
-    for submission in student.challengesubmission_set.all():
-        module = CHALLENGE_INDEX[submission.challenge_id]
-        if submission.passed:
-            challenge_activities[module]['passed'] += 1
-        else:
-            challenge_activities[module]['attempted'] += 1
+        for submission in student.challengesubmission_set.all():
+            module = self.CHALLENGE_INDEX[submission.challenge_id]
+            if submission.passed:
+                challenge_activities[module]['passed'] += 1
+            else:
+                challenge_activities[module]['attempted'] += 1
 
-    for module_level in CHALLENGE_COUNT_IN_MODULE_LEVEL.keys():
-        activities = challenge_activities[module_level]
-        activities['unattempted'] = calculate_unattempted(
-            module_level, activities['passed'], activities['attempted'])
+        for module_level in self.CHALLENGE_COUNT_IN_MODULE_LEVEL.keys():
+            activities = challenge_activities[module_level]
+            activities['unattempted'] = calculate_unattempted(
+                module_level, activities['passed'], activities['attempted'])
 
-    return challenge_activities
+        return challenge_activities
 
 
-def extract_student_challenges(program):
-    students = program.enrolled_students.all()
-    challenge_history = {
-        student.email: single_student_challenge_history(student)
-        for student in students.prefetch_related('challengesubmission_set')
-    }
-    return challenge_history
+    def extract_student_challenges(self, program):
+        students = program.enrolled_students.all()
+        challenge_history = {
+            student.email: single_student_challenge_history(student)
+            for student in students.prefetch_related('challengesubmission_set')
+        }
+        return challenge_history

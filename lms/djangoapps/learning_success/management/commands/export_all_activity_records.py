@@ -4,6 +4,7 @@ from django.core.management.base import BaseCommand, CommandError
 from django.utils import timezone
 from opaque_keys.edx.locator import CourseLocator
 from xmodule.modulestore.django import modulestore
+from challenges_helper import ChallengeAggregator
 
 from collections import Counter, defaultdict, OrderedDict
 from datetime import datetime, timedelta
