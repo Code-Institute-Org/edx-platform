@@ -3,8 +3,8 @@ from collections import Counter, defaultdict
 class ChallengeAggregator:
 
     def __init__(self):
-        self.CHALLENGE_INDEX = index_challenge_to_module_and_level()
-        self.CHALLENGE_COUNT_IN_MODULE_LEVEL = Counter(CHALLENGE_INDEX.values())
+        self.CHALLENGE_INDEX = self.index_challenge_to_module_and_level()
+        self.CHALLENGE_COUNT_IN_MODULE_LEVEL = Counter(self.CHALLENGE_INDEX.values())
 
 
     def index_challenge_to_module_and_level(self):
@@ -33,7 +33,7 @@ class ChallengeAggregator:
 
         for module_level in self.CHALLENGE_COUNT_IN_MODULE_LEVEL.keys():
             activities = challenge_activities[module_level]
-            activities['unattempted'] = calculate_unattempted(
+            activities['unattempted'] = self.calculate_unattempted(
                 module_level, activities['passed'], activities['attempted'])
 
         return challenge_activities
@@ -42,7 +42,7 @@ class ChallengeAggregator:
     def extract_student_challenges(self, program):
         students = program.enrolled_students.all()
         challenge_history = {
-            student.email: single_student_challenge_history(student)
+            student.email: self.single_student_challenge_history(student)
             for student in students.prefetch_related('challengesubmission_set')
         }
         return challenge_history
