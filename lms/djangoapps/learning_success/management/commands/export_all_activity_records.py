@@ -207,6 +207,9 @@ def all_student_data(program):
             course_id__in=program.get_course_locators())
         
         student_challenges = challenges.get(student.email) or {}
+        converted_challenges = {
+            challenge_key : json.dumps(challenge)
+            for challenge_key, challenge in student_challenges.items()}
 
         # remember details of the first activity
         first_activity = student_activities.order_by('created').first()
@@ -277,7 +280,7 @@ def all_student_data(program):
         student_dict.update(completed_units_per_module(completed_units))
         student_dict.update(
             lessons_days_into_per_module(first_active, completed_lessons))
-        student_dict.update(student_challenges)
+        student_dict.update(converted_challenges)
 
         yield student_dict
 
