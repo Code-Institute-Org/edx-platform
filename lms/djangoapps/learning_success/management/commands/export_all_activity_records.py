@@ -219,7 +219,7 @@ def all_student_data(program):
         student_activities = student.studentmodule_set.filter(
             course_id__in=program.get_course_locators())
         
-        student_challenges = challenges.get(student.email) or {}
+        student_challenges = challenges.get(student.email, {})
         converted_challenges = {
             challenge_key : json.dumps(challenge)
             for challenge_key, challenge in student_challenges.items()}
