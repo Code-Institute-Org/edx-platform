@@ -38,7 +38,7 @@ def single_student_challenge_history(student, challenge_counter,
         activities['unattempted'] = (
             total_challenges - activities['passed'] - activities['attempted'])
 
-    return challenge_activities
+    return json.dumps(challenge_activities)
 
 
 def extract_all_student_challenges(program):
@@ -49,8 +49,8 @@ def extract_all_student_challenges(program):
     challenge_counter = Counter(challenge_index.values())
     students = program.enrolled_students.all()
     challenge_history = {
-        student.email: json.dumps(single_student_challenge_history(
-            student, challenge_counter, challenge_index))
+        student.email: single_student_challenge_history(
+            student, challenge_counter, challenge_index)
         for student in students.prefetch_related('challengesubmission_set')
     }
     return challenge_history
