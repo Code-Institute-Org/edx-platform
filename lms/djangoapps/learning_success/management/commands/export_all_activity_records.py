@@ -4,7 +4,7 @@ from django.core.management.base import BaseCommand, CommandError
 from django.utils import timezone
 from opaque_keys.edx.locator import CourseLocator
 from xmodule.modulestore.django import modulestore
-from lms.djangoapps.learning_success.management.commands.challenges_helper import ChallengeAggregator
+from lms.djangoapps.learning_success.management.commands.challenges_helper import extract_all_student_challenges
 
 from collections import Counter, defaultdict, OrderedDict
 from datetime import datetime, timedelta
@@ -211,8 +211,7 @@ def all_student_data(program):
     lesson_fractions = requests.get(BREADCRUMB_INDEX_URL).json()['LESSONS']
     module_fractions = {item['module'] : item['fractions']['module_fraction'] 
                         for item in lesson_fractions.values()}
-    challenge_agg = ChallengeAggregator()
-    challenges = challenge_agg.extract_student_challenges(program)
+    challenges = extract_all_student_challenges(program)
 
     for student in program.enrolled_students.all():
         # A short name for the activities queryset
