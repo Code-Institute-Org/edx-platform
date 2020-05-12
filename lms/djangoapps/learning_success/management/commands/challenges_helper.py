@@ -23,7 +23,7 @@ def single_student_challenge_history(student, challenge_counter,
     """ Creates the challenge history for one student
 
     Returns a dict with with passed, attempted and unattempted counts """
-    challenge_activities = {module: {} for module
+    challenge_activities = {module: defaultdict(int) for module
                             in challenge_counter.keys()}
 
     for submission in student.challengesubmission_set.all():
@@ -37,7 +37,11 @@ def single_student_challenge_history(student, challenge_counter,
         activities = challenge_activities[module_level]
         activities['unattempted'] = (
             total_challenges - activities['passed'] - activities['attempted'])
-        activities = json.dumps(activities)
+    
+    challenge_activities = {
+        module: json.dumps(challenges)
+        for module, challenges in challenge_activities.items()
+    }
 
     return challenge_activities
 
