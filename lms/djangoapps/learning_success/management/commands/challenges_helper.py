@@ -37,8 +37,9 @@ def single_student_challenge_history(student, challenge_counter,
         activities = challenge_activities[module_level]
         activities['unattempted'] = (
             total_challenges - activities['passed'] - activities['attempted'])
+        activities = json.dumps(activities)
 
-    return json.dumps(challenge_activities)
+    return challenge_activities
 
 
 def extract_all_student_challenges(program):
