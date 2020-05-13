@@ -4,19 +4,35 @@ from django.core.management.base import BaseCommand, CommandError
 from django.utils import timezone
 from opaque_keys.edx.locator import CourseLocator
 from xmodule.modulestore.django import modulestore
+from lms.djangoapps.learning_success.management.commands.challenges_helper import extract_all_student_challenges
 
 from collections import Counter, defaultdict, OrderedDict
 from datetime import datetime, timedelta
 import json
 
+import pandas as pd
 import pytz
 import requests
+from sqlalchemy import create_engine, types
 
 PROGRAM_CODE = 'FS'  # Our Full-Stack program
 BREADCRUMB_INDEX_URL = settings.BREADCRUMB_INDEX_URL
 KEYS = ['module','section','lesson']
 utc=pytz.UTC
 
+# Need to create an engine using sqlalchemy to be able to
+# connect with pandas .to_sql
+# Pandas natively only supports sqlite3
+# '?charset=utf8' used to specify utf-8 encoding to avoid encoding errors
+CONNECTION_STRING = 'mysql+mysqldb://%s:%s@%s:%s/%s%s' % (
+    settings.RDS_DB_USER,
+    settings.RDS_DB_PASS,
+    settings.RDS_DB_ENDPOINT,
+    settings.RDS_DB_PORT,
+    settings.RDS_LMS_DB,
+    '?charset=utf8')
+
+LMS_ACTIVITY_TABLE = 'lms_activity'
 
 def harvest_course_tree(tree, output_dict, prefix=()):
     """Recursively harvest the breadcrumbs for each component in a tree
@@ -195,11 +211,14 @@ def all_student_data(program):
     lesson_fractions = requests.get(BREADCRUMB_INDEX_URL).json()['LESSONS']
     module_fractions = {item['module'] : item['fractions']['module_fraction'] 
                         for item in lesson_fractions.values()}
+    challenges = extract_all_student_challenges(program)
 
     for student in program.enrolled_students.all():
         # A short name for the activities queryset
         student_activities = student.studentmodule_set.filter(
             course_id__in=program.get_course_locators())
+        
+        student_challenges = challenges.get(student.email, {})
 
         # remember details of the first activity
         first_activity = student_activities.order_by('created').first()
@@ -270,6 +289,8 @@ def all_student_data(program):
         student_dict.update(completed_units_per_module(completed_units))
         student_dict.update(
             lessons_days_into_per_module(first_active, completed_lessons))
+            
+        student_dict.update(student_challenges)
 
         yield student_dict
 
@@ -283,7 +304,14 @@ class Command(BaseCommand):
         program = get_program_by_program_code(PROGRAM_CODE)
         student_data = list(all_student_data(program))
 
+        # TODO: Remove once the connection to the RDS is implemented in AMOS
         api_endpoint = settings.STRACKR_LMS_API_ENDPOINT
         resp = requests.post(api_endpoint, data=json.dumps(student_data))
         if resp.status_code != 200:
             raise CommandError(resp.text)
+
+        df = pd.DataFrame(student_data)
+        engine = create_engine(CONNECTION_STRING, echo=False)
+        df.to_sql(name=LMS_ACTIVITY_TABLE, 
+                  con=engine, 
+                  if_exists='replace')
