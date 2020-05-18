@@ -28,10 +28,11 @@ class Command(BaseCommand):
     help = 'Extract student data from the open-edX server for use in Strackr'
     
     def add_arguments(self, parser):
-        parser.add_argument("-f", "-filepath", type=str)
+        parser.add_argument("-f", "--filepath", type=str)
 
     def handle(self, *args, **options):
         """ Replace specific enrollment with another
         """
-        filepath = options["filepath"] if options["filepath"] else "file.json"
-        print(filepath)
+        #filepath = options["filepath"] if options["filepath"] else "file.json"
+        print(options)
+        print(args)
