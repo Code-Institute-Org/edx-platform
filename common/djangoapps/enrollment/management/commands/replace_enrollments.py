@@ -1,3 +1,5 @@
+import json
+
 from enrollment.api import add_enrollment
 
 from django.contrib.auth.models import User
