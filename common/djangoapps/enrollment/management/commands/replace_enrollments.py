@@ -33,5 +33,5 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         """ Replace specific enrollment with another
         """
-
-        print(args)
+        filepath = options["filepath"] if options["filepath"] else "file.json"
+        print(filepath)
