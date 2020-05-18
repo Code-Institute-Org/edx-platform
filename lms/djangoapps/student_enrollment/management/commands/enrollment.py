@@ -22,7 +22,9 @@ Zap.
 This collection is used to store any courses that should be excluded from the
 initial student onboarding/enrollment process like the Careers module.
 """
-EXCLUDED_FROM_ONBOARDING = ['course-v1:code_institute+cc_101+2018_T1']
+EXCLUDED_FROM_ONBOARDING = ['course-v1:code_institute+cc_101+2018_T1',
+                            'course-v1:CodeInstitute+F101+2017_T1',
+                            ]
 
 
 class Command(BaseCommand):
