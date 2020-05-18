@@ -34,5 +34,5 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         """ Replace specific enrollment with another
         """
-        filepath = options.get('filepath', DEFAULT_PATH)
+        filepath = options.get('filepath') or DEFAULT_PATH
         print(filepath)
