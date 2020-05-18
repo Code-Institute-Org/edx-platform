@@ -26,6 +26,9 @@ def replace_course_enrollment(student_enrollments, deactivate_enrollment,
 
 class Command(BaseCommand):
     help = 'Extract student data from the open-edX server for use in Strackr'
+    
+    def add_arguments(self, parser):
+        parser.add_argument("-f", "-filepath", type=str)
 
     def handle(self, *args, **options):
         """ Replace specific enrollment with another
