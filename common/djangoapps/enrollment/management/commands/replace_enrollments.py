@@ -35,4 +35,10 @@ class Command(BaseCommand):
         """ Replace specific enrollment with another
         """
         filepath = options.get('filepath') or DEFAULT_PATH
-        print(filepath)
+        try:
+            with open(filepath) as f:
+                student_list = json.load(f)
+                print(student_list)
+        except FileNotFoundError as fileNotFoundError:
+            print("The file could not be found at %s. Error Message: %s"
+                  % (filepath, fileNotFoundError))
