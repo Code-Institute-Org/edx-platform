@@ -14,6 +14,7 @@ student = students[0]
 
 student_enrollments = student.courseenrollment_set.all()
 
+DEFAULT_PATH = "replace_file.json"
 
 def replace_course_enrollment(student_enrollments, deactivate_enrollment,
                               replace_with_enrolment=None):
@@ -33,6 +34,5 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         """ Replace specific enrollment with another
         """
-        #filepath = options["filepath"] if options["filepath"] else "file.json"
-        print(options)
-        print(args)
+        filepath = options.get('filepath', DEFAULT_PATH)
+        print(filepath)
