@@ -1,5 +1,6 @@
 from enrollment.api import add_enrollment
 
+from django.contrib.auth.models import User
 from django.core.management.base import BaseCommand, CommandError
 
 emails = ['stefan@codeinstitute.net','cidummystudent@gmail.com']
