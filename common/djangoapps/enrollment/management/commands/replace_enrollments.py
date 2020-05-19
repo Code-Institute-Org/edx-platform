@@ -9,9 +9,10 @@ from django.core.management.base import BaseCommand, CommandError
 DEFAULT_PATH = "replace_file.csv"
 
 
-def replace_course_enrollment(student_enrollments, deactivate_enrollment,
+def replace_course_enrollment(student, deactivate_enrollment,
                               replace_with_enrolment=None):
     changes_made = False
+    student_enrollments = student.courseenrollment_set.all()
     for e in student_enrollments:
         if e.course_id.html_id() == deactivate_enrollment:
             e.update_enrollment(is_active=False)
@@ -35,9 +36,8 @@ class Command(BaseCommand):
             enrollment_changes = pd.read_csv("replace_file.csv").to_dict("records")
             for enrollment_change in enrollment_changes:
                 student = User.objects.get(email=enrollment_change.get('email'))
-                student_enrollments = student.courseenrollment_set.all()
                 successful_change = replace_course_enrollment(
-                    student_enrollments=student_enrollments,
+                    student=student,
                     deactivate_enrollment=enrollment_change.get('replace_course'),
                     replace_with_enrolment=enrollment_change.get('replace_with_course'))
                 print("The change was successful: ", successful_change)
