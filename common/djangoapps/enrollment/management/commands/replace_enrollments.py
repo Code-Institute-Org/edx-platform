@@ -7,8 +7,6 @@ from enrollment.errors import CourseEnrollmentExistsError
 from django.contrib.auth.models import User
 from django.core.management.base import BaseCommand, CommandError
 
-DEFAULT_PATH = "replace_file.csv"
-
 
 def replace_course_enrollment(student, deactivate_enrollment,
                               replace_with_enrolment=None, mode=None):
@@ -39,7 +37,9 @@ class Command(BaseCommand):
         """ Replace specific enrollment with another
         """
         successful_changes = 0
-        filepath = options.get('filepath') or DEFAULT_PATH
+        filepath = options.get('filepath')
+        if filepath is None:
+            raise IOError
         try:
             df = pd.read_csv("replace_file.csv")
             # Needed to convert nan to None in case of missing values
