@@ -17,7 +17,7 @@ student = students[0]
 
 student_enrollments = student.courseenrollment_set.all()
 
-DEFAULT_PATH = "replace_file.json"
+DEFAULT_PATH = "replace_file.csv"
 
 def replace_course_enrollment(student_enrollments, deactivate_enrollment,
                               replace_with_enrolment=None):
@@ -39,7 +39,7 @@ class Command(BaseCommand):
         """
         filepath = options.get('filepath') or DEFAULT_PATH
         try:
-            enrollment_changes = pd.read_csv(filepath).to_dict()
+            enrollment_changes = pd.read_csv("replace_file.csv").to_dict("records")
             print(enrollment_changes)
         except IOError as ioError:
             print(ioError)
