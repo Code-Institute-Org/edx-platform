@@ -60,7 +60,7 @@ class Command(BaseCommand):
                         mode="honor")
                     print("The change was successful: ", successful_change)
                     successful_changes += successful_change
-                except DoesNotExist as doesNotExistError:
+                except User.DoesNotExist:
                     print("A user with the email %s could not be found" 
                           % enrollment_change.get('email'))
             print("%s changes out of %s successful."
