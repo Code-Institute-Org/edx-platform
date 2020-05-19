@@ -4,7 +4,7 @@ import pandas as pd
 from enrollment.api import add_enrollment
 from enrollment.errors import CourseEnrollmentExistsError
 
-from django.contrib.auth.models import User, DoesNotExist
+from django.contrib.auth.models import User
 from django.core.management.base import BaseCommand, CommandError
 
 
