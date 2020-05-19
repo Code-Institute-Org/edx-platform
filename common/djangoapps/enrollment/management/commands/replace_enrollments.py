@@ -10,6 +10,10 @@ from django.core.management.base import BaseCommand, CommandError
 
 def replace_course_enrollment(student, deactivate_enrollment,
                               replace_with_enrolment=None, mode=None):
+    """ Method to set an existing enrollment to inactive and add 
+    a new enrollment for another course if wanted
+    
+    Returns a boolean to indicate if the change was successful """
     changes_made = False
     student_enrollments = student.courseenrollment_set.all()
     for e in student_enrollments:
@@ -47,14 +51,18 @@ class Command(BaseCommand):
             df = df.astype(object).where(pd.notnull(df), None)
             enrollment_changes = df.to_dict("records")
             for enrollment_change in enrollment_changes:
-                student = User.objects.get(email=enrollment_change.get('email'))
-                successful_change = replace_course_enrollment(
-                    student=student,
-                    deactivate_enrollment=enrollment_change.get('replace_course'),
-                    replace_with_enrolment=enrollment_change.get('replace_with_course'),
-                    mode="honor")
-                print("The change was successful: ", successful_change)
-                successful_changes += successful_change
+                try:
+                    student = User.objects.get(email=enrollment_change.get('email'))
+                    successful_change = replace_course_enrollment(
+                        student=student,
+                        deactivate_enrollment=enrollment_change.get('replace_course'),
+                        replace_with_enrolment=enrollment_change.get('replace_with_course'),
+                        mode="honor")
+                    print("The change was successful: ", successful_change)
+                    successful_changes += successful_change
+                except User.DoesNotExist:
+                    print("A user with the email %s could not be found" 
+                          % enrollment_change.get('email'))
             print("%s changes out of %s successful."
                   % (str(successful_changes), str(len(enrollment_changes))))
         except IOError as ioError:
@@ -63,3 +71,4 @@ class Command(BaseCommand):
             print("An error occurred: ", vError)
         except TypeError as tError:
             print("An error occurred: ", tError)
+        
