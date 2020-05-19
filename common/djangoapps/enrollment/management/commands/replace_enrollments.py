@@ -1,4 +1,5 @@
 import json
+import pandas as pd
 
 from enrollment.api import add_enrollment
 
@@ -38,8 +39,11 @@ class Command(BaseCommand):
         """
         filepath = options.get('filepath') or DEFAULT_PATH
         try:
-            with open(filepath) as f:
-                student_list = json.load(f)
-                print(student_list)
+            enrollment_changes = pd.read_csv(filepath).to_dict()
+            print(enrollment_changes)
         except IOError as ioError:
             print(ioError)
+        except ValueError as vError:
+            print(vError)
+        except TypeErrpr as tError:
+            print(tError)
