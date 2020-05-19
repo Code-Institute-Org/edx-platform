@@ -40,7 +40,7 @@ class Command(BaseCommand):
         filepath = options.get('filepath')
         try:
             if filepath is None:
-                raise IOError
+                raise IOError("No filepath specified. Please add the -f or --filepath flag.")
 
             df = pd.read_csv("replace_file.csv")
             # Needed to convert nan to None in case of missing values
