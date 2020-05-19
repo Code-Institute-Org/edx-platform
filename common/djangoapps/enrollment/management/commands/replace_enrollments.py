@@ -38,7 +38,7 @@ class Command(BaseCommand):
                 student_enrollments = student.courseenrollment_set.all()
                 successful_change = replace_course_enrollment(
                     student_enrollments=student_enrollments,
-                    deactivate_enrollment=enrollment_change.get('replace_course')
+                    deactivate_enrollment=enrollment_change.get('replace_course'),
                     replace_with_enrolment=enrollment_change.get('replace_with_course'))
                 print("The change was successful: ", successful_change)
         except IOError as ioError:
