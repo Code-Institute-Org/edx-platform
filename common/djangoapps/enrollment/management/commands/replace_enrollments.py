@@ -6,26 +6,19 @@ from enrollment.api import add_enrollment
 from django.contrib.auth.models import User
 from django.core.management.base import BaseCommand, CommandError
 
-emails = ['stefan@codeinstitute.net','cidummystudent@gmail.com']
-
-students = User.objects.filter(email__in=emails)
-REMOVE_COURSE = 'course-v1:CodeInstitute+F101+2017_T1'
-REPLACE_WITH = 'course-v1:CodeInstitute+FSF_102+Q1_2020'
-
-students = User.objects.filter(email__in=emails)
-student = students[0]
-
-student_enrollments = student.courseenrollment_set.all()
-
 DEFAULT_PATH = "replace_file.csv"
+
 
 def replace_course_enrollment(student_enrollments, deactivate_enrollment,
                               replace_with_enrolment=None):
+    changes_made = False
     for e in student_enrollments:
-        if e.course_id.html_id() == REMOVE_COURSE:
+        if e.course_id.html_id() == deactivate_enrollment:
             e.update_enrollment(is_active=False)
     if replace_with_enrolment is not None:
-        add_enrollment(student.username, REPLACE_WITH)
+        add_enrollment(student.username, replace_with_enrolment)
+        changes_made = True
+    return changes_made
 
 
 class Command(BaseCommand):
@@ -40,7 +33,14 @@ class Command(BaseCommand):
         filepath = options.get('filepath') or DEFAULT_PATH
         try:
             enrollment_changes = pd.read_csv("replace_file.csv").to_dict("records")
-            print(enrollment_changes)
+            for enrollment_change in enrollment_changes:
+                student = User.objects.get(email=enrollment_change.get('email'))
+                student_enrollments = student.courseenrollment_set.all()
+                successful_change = replace_course_enrollment(
+                    student_enrollments=student_enrollments,
+                    deactivate_enrollment=enrollment_change.get('replace_course')
+                    replace_with_enrolment=enrollment_change.get('replace_with_course'))
+                print("The change was successful: ", successful_change)
         except IOError as ioError:
             print(ioError)
         except ValueError as vError:
