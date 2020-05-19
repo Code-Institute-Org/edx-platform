@@ -22,9 +22,10 @@ def replace_course_enrollment(student, deactivate_enrollment,
             add_enrollment(user_id=student.username,
                         course_id=replace_with_enrolment,
                         mode=mode)
-            changes_made = True
         except CourseEnrollmentExistsError as enrollmentExistsError:
             print("An error occurred: ", enrollmentExistsError.message)
+            return changes_made
+    changes_made = True
     return changes_made
 
 
