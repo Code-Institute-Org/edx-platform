@@ -3,6 +3,7 @@ import pandas as pd
 
 from enrollment.api import add_enrollment
 from enrollment.errors import CourseEnrollmentExistsError
+from opaque_keys import InvalidKeyError
 
 from django.contrib.auth.models import User
 from django.core.management.base import BaseCommand, CommandError
@@ -63,6 +64,8 @@ class Command(BaseCommand):
                 except User.DoesNotExist:
                     print("A user with the email %s could not be found" 
                           % enrollment_change.get('email'))
+                except InvalidKeyError:
+                    print("One or both of the CourseLocators are wrong.")
             print("%s changes out of %s successful."
                   % (str(successful_changes), str(len(enrollment_changes))))
         except IOError as ioError:
