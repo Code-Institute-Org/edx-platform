@@ -45,5 +45,5 @@ class Command(BaseCommand):
             print(ioError)
         except ValueError as vError:
             print(vError)
-        except TypeErrpr as tError:
+        except TypeError as tError:
             print(tError)
