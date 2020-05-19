@@ -35,7 +35,10 @@ class Command(BaseCommand):
         """
         filepath = options.get('filepath') or DEFAULT_PATH
         try:
-            enrollment_changes = pd.read_csv("replace_file.csv").to_dict("records")
+            df = pd.read_csv("replace_file.csv")
+            # Needed to convert nan to None in case of missing values
+            df = df.astype(object).where(pd.notnull(df), None)
+            enrollment_changes = df.to_dict("records")
             for enrollment_change in enrollment_changes:
                 student = User.objects.get(email=enrollment_change.get('email'))
                 successful_change = replace_course_enrollment(
