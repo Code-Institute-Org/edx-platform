@@ -4,7 +4,7 @@ import pandas as pd
 from enrollment.api import add_enrollment
 from enrollment.errors import CourseEnrollmentExistsError
 
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, DoesNotExist
 from django.core.management.base import BaseCommand, CommandError
 
 
@@ -60,7 +60,7 @@ class Command(BaseCommand):
                         mode="honor")
                     print("The change was successful: ", successful_change)
                     successful_changes += successful_change
-                except User.DoesNotExist:
+                except DoesNotExist as doesNotExistError:
                     print("A user with the email %s could not be found" 
                           % enrollment_change.get('email'))
             print("%s changes out of %s successful."
