@@ -38,9 +38,10 @@ class Command(BaseCommand):
         """
         successful_changes = 0
         filepath = options.get('filepath')
-        if filepath is None:
-            raise IOError
         try:
+            if filepath is None:
+                raise IOError
+
             df = pd.read_csv("replace_file.csv")
             # Needed to convert nan to None in case of missing values
             df = df.astype(object).where(pd.notnull(df), None)
