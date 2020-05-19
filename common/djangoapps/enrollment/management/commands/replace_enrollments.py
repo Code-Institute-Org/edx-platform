@@ -37,6 +37,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         """ Replace specific enrollment with another
         """
+        successful_changes = 0
         filepath = options.get('filepath') or DEFAULT_PATH
         try:
             df = pd.read_csv("replace_file.csv")
@@ -51,6 +52,9 @@ class Command(BaseCommand):
                     replace_with_enrolment=enrollment_change.get('replace_with_course'),
                     mode="honor")
                 print("The change was successful: ", successful_change)
+                successful_changes += successful_change
+            print("%s changes out of %s successful."
+                  % (str(successful_changes), str(len(enrollment_changes))))
         except IOError as ioError:
             print("An error occurred: ", ioError)
         except ValueError as vError:
