@@ -10,14 +10,16 @@ DEFAULT_PATH = "replace_file.csv"
 
 
 def replace_course_enrollment(student, deactivate_enrollment,
-                              replace_with_enrolment=None):
+                              replace_with_enrolment=None, mode=None):
     changes_made = False
     student_enrollments = student.courseenrollment_set.all()
     for e in student_enrollments:
         if e.course_id.html_id() == deactivate_enrollment:
             e.update_enrollment(is_active=False)
     if replace_with_enrolment is not None:
-        add_enrollment(student.username, replace_with_enrolment)
+        add_enrollment(user_id=student.username,
+                       course_id=replace_with_enrolment,
+                       mode=mode)
         changes_made = True
     return changes_made
 
