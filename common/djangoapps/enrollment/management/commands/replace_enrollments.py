@@ -2,6 +2,7 @@ import json
 import pandas as pd
 
 from enrollment.api import add_enrollment
+from enrollment.errors import CourseEnrollmentExistsError
 
 from django.contrib.auth.models import User
 from django.core.management.base import BaseCommand, CommandError
@@ -17,10 +18,13 @@ def replace_course_enrollment(student, deactivate_enrollment,
         if e.course_id.html_id() == deactivate_enrollment:
             e.update_enrollment(is_active=False)
     if replace_with_enrolment is not None:
-        add_enrollment(user_id=student.username,
-                       course_id=replace_with_enrolment,
-                       mode=mode)
-        changes_made = True
+        try:
+            add_enrollment(user_id=student.username,
+                        course_id=replace_with_enrolment,
+                        mode=mode)
+            changes_made = True
+        except CourseEnrollmentExistsError as enrollmentExistsError:
+            print("An error occurred: ", enrollmentExistsError)
     return changes_made
 
 
@@ -48,8 +52,8 @@ class Command(BaseCommand):
                     mode="honor")
                 print("The change was successful: ", successful_change)
         except IOError as ioError:
-            print(ioError)
+            print("An error occurred: ", ioError)
         except ValueError as vError:
-            print(vError)
+            print("An error occurred: ", vError)
         except TypeError as tError:
-            print(tError)
+            print("An error occurred: ", tError)
