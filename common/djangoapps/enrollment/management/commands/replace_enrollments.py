@@ -2,7 +2,7 @@ import json
 import pandas as pd
 
 from enrollment.api import add_enrollment
-from student.models import AlreadyEnrolledError
+from enrollment.errors import CourseEnrollmentExistsError
 
 from django.contrib.auth.models import User
 from django.core.management.base import BaseCommand, CommandError
@@ -23,8 +23,8 @@ def replace_course_enrollment(student, deactivate_enrollment,
                         course_id=replace_with_enrolment,
                         mode=mode)
             changes_made = True
-        except AlreadyEnrolledError as alreadyEnrolledError:
-            print("An error occurred: ", alreadyEnrolledError.message)
+        except CourseEnrollmentExistsError as enrollmentExistsError:
+            print("An error occurred: ", enrollmentExistsError.message)
     return changes_made
 
 
