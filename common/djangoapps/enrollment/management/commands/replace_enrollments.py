@@ -10,11 +10,11 @@ from django.core.management.base import BaseCommand, CommandError
 
 
 def replace_course_enrollment(student, deactivate_enrollment,
-                              replace_with_enrolment=None, mode=None):
+                              replace_with_enrollment=None, mode=None):
     """ Sets an existing enrollment to inactive and adds 
     a new enrollment for another course if wanted
 
-    If replace_with_enrolment is None, then no new enrollment will be added
+    If replace_with_enrollment is None, then no new enrollment will be added
     
     Returns a boolean to indicate if the change was successful """
     changes_made = False
@@ -22,10 +22,10 @@ def replace_course_enrollment(student, deactivate_enrollment,
     for e in student_enrollments:
         if e.course_id.html_id() == deactivate_enrollment:
             e.update_enrollment(is_active=False)
-    if replace_with_enrolment is not None:
+    if replace_with_enrollment is not None:
         try:
             add_enrollment(user_id=student.username,
-                        course_id=replace_with_enrolment,
+                        course_id=replace_with_enrollment,
                         mode=mode)
         except CourseEnrollmentExistsError as enrollmentExistsError:
             print('An error occurred: ', enrollmentExistsError.message)
@@ -61,7 +61,7 @@ class Command(BaseCommand):
             if filepath is None:
                 raise IOError('No filepath specified. Please add the -f or --filepath flag.')
 
-            df = pd.read_csv('replace_file.csv')
+            df = pd.read_csv(filepath)
             # Needed to convert nan to None in case of missing values
             df = df.astype(object).where(pd.notnull(df), None)
             enrollment_changes = df.to_dict('records')
@@ -71,7 +71,7 @@ class Command(BaseCommand):
                     successful_change = replace_course_enrollment(
                         student=student,
                         deactivate_enrollment=enrollment_change.get('replace_course'),
-                        replace_with_enrolment=enrollment_change.get('replace_with_course'),
+                        replace_with_enrollment=enrollment_change.get('replace_with_course'),
                         mode='honor')
                     print('The change was successful: ', successful_change)
                     successful_changes += successful_change
