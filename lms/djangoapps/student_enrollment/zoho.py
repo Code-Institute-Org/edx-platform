@@ -9,17 +9,24 @@ REFRESH_TOKEN = settings.ZOHO_REFRESH_TOKEN
 REFRESH_ENDPOINT = settings.ZOHO_REFRESH_ENDPOINT
 COQL_ENDPOINT = settings.ZOHO_COQL_ENDPOINT
 
-STUDENTS_QUERY = """
+STUDENTS_TO_BE_ENROLLED_QUERY = """
 SELECT Email, Full_Name, Course_of_Interest_Code
 FROM Contacts
 WHERE Lead_Status = 'Enroll'
 AND Course_of_Interest_Code is not null
 LIMIT {page},{per_page}
 """
+STUDENTS_TO_BE_UNENROLLED_QUERY = """
+SELECT Email, Full_Name, Course_of_Interest_Code
+FROM Contacts
+WHERE Lead_Status = 'Unenroll'
+AND Course_of_Interest_Code is not null
+LIMIT {page},{per_page}
+"""
 RECORDS_PER_PAGE = 200
 
 
-def get_students():
+def get_students_to_be_enrolled():
     """Fetch from Zoho all students
     with status of 'Enroll'
     API documentation for this endpoint:
@@ -29,12 +36,32 @@ def get_students():
     auth_headers = get_auth_headers()
 
     for page in count():
-        query = STUDENTS_QUERY.format(page=page*RECORDS_PER_PAGE,
-                                      per_page=RECORDS_PER_PAGE)
+        query = STUDENTS_TO_BE_ENROLLED_QUERY.format(
+                    page=page*RECORDS_PER_PAGE,
+                    per_page=RECORDS_PER_PAGE)
         students_resp = requests.post(
             COQL_ENDPOINT,
             headers=auth_headers,
             json={"select_query":query})
+        if students_resp.status_code != 200:
+            return students
+
+        students.extend(students_resp.json()['data'])
+        if not students_resp.json()['info']['more_records']:
+            return students
+
+def get_students_to_be_unenrolled():
+    students = []
+    auth_headers = get_auth_headers()
+
+    for page in count():
+        query = STUDENTS_TO_BE_UNENROLLED_QUERY.format(
+                    page=page*RECORDS_PER_PAGE,
+                    per_page=RECORDS_PER_PAGE)
+        students_resp = requests.post(
+                COQL_ENDPOINT,
+                headers=auth_headers,
+                json={"select_query":query})
         if students_resp.status_code != 200:
             return students
 
