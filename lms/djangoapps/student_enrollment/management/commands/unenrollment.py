@@ -66,7 +66,7 @@ class Command(BaseCommand):
 
             # Send the email
             email_sent_status = program.send_email(
-                user, program.name, ENROLLMENT_TYPE)
+                user, ENROLLMENT_TYPE, None)
 
             # Set the students access level (i.e. determine whether or not a student
             # is allowed to access to the LMS.
