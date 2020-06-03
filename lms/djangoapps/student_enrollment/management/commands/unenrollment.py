@@ -1,6 +1,3 @@
-"""
-NOTE: WIP NOT TESTED!!!
-"""
 from django.core.management.base import BaseCommand, CommandError
 from django.core.exceptions import ObjectDoesNotExist
 from django.contrib.auth.models import User
@@ -13,7 +10,7 @@ from student_enrollment.zoho import (
     update_student_record
 )
 from lms.djangoapps.student_enrollment.models import EnrollmentStatusHistory
-
+from lms.djangoapps.student_enrollment.models import ProgramAccessStatus
 
 class Command(BaseCommand):
     help = 'Unenroll students from their relevant programs'
