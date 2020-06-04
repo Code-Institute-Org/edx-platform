@@ -9,19 +9,19 @@ REFRESH_TOKEN = settings.ZOHO_REFRESH_TOKEN
 REFRESH_ENDPOINT = settings.ZOHO_REFRESH_ENDPOINT
 COQL_ENDPOINT = settings.ZOHO_COQL_ENDPOINT
 
-STUDENTS_QUERY = """
+QUERY = """
 SELECT Email, Full_Name, Course_of_Interest_Code
 FROM Contacts
-WHERE Lead_Status = 'Enroll'
+WHERE Lead_Status = {lead_status}
 AND Course_of_Interest_Code is not null
 LIMIT {page},{per_page}
 """
 RECORDS_PER_PAGE = 200
 
 
-def get_students():
+def get_students(lead_status):
     """Fetch from Zoho all students
-    with status of 'Enroll'
+    with the provided lead_status
     API documentation for this endpoint:
     https://www.zohoapis.com/crm/v2/coql
     """
@@ -29,8 +29,10 @@ def get_students():
     auth_headers = get_auth_headers()
 
     for page in count():
-        query = STUDENTS_QUERY.format(page=page*RECORDS_PER_PAGE,
-                                      per_page=RECORDS_PER_PAGE)
+        query = QUERY.format(
+                    lead_status=lead_status,
+                    page=page*RECORDS_PER_PAGE,
+                    per_page=RECORDS_PER_PAGE)
         students_resp = requests.post(
             COQL_ENDPOINT,
             headers=auth_headers,
