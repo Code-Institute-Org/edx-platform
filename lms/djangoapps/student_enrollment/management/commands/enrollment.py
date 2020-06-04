@@ -7,7 +7,7 @@ from student_enrollment.utils import (
     get_or_register_student, post_to_zapier
 )
 from student_enrollment.zoho import (
-    get_students_to_be_enrolled,
+    get_students,
     parse_course_of_interest_code
 )
 from lms.djangoapps.student_enrollment.models import EnrollmentStatusHistory
@@ -46,7 +46,7 @@ class Command(BaseCommand):
         may already be registered in the system.
         """
 
-        zoho_students = get_students_to_be_enrolled()
+        zoho_students = get_students('Enroll')
 
         for student in zoho_students:
             if not student['Email']:

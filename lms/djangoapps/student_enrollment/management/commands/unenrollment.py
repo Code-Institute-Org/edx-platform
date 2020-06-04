@@ -5,7 +5,7 @@ from django.conf import settings
 from ci_program.models import Program
 from student_enrollment.utils import get_or_register_student
 from student_enrollment.zoho import (
-    get_students_to_be_unenrolled,
+    get_students,
     parse_course_of_interest_code,
     update_student_record
 )
@@ -30,7 +30,7 @@ class Command(BaseCommand):
         # we'll set the type as a constact
         ENROLLMENT_TYPE = 1
 
-        zoho_students = get_students_to_be_unenrolled()
+        zoho_students = get_students('Unenroll')
 
         for student in zoho_students:
             # Get the user
