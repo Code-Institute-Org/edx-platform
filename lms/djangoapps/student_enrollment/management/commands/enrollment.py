@@ -100,7 +100,7 @@ class Command(BaseCommand):
 
             success_email_content = ('<h2>Successfully enrolled %d students.</h2>'
                                     % len(zoho_students))
-            send_success_or_exception_email(type='success',
+            send_success_or_exception_email(email_type='success',
                                             content=success_email_content,
                                             from_address=FROM_ADDRESS,
                                             to_address=TO_ADDRESS)
@@ -111,5 +111,7 @@ class Command(BaseCommand):
                                        + '<p>Exception message: %s}</p>'
                                        + '<p>Please check the log file for more detailed information.</p>')
                                        % str(exception))
-            send_success_or_exception_email(type='exception',
-                                            content=exception_email_content)
+            send_success_or_exception_email(email_type='exception',
+                                            content=exception_email_content,
+                                            from_address=FROM_ADDRESS,
+                                            to_address=TO_ADDRESS)
