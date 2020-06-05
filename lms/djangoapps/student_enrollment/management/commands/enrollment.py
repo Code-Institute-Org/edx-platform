@@ -98,12 +98,12 @@ class Command(BaseCommand):
                     email_sent=email_sent_status)
                 enrollment_status.save()
 
-        success_email_content = ("<h2>Successfully enrolled %d students.</h2>"
-                                 % len(zoho_students))
-        send_success_or_exception_email(type='success',
-                                        content=success_email_content,
-                                        from_address=FROM_ADDRESS,
-                                        to_address=TO_ADDRESS)
+            success_email_content = ("<h2>Successfully enrolled %d students.</h2>"
+                                    % len(zoho_students))
+            send_success_or_exception_email(type='success',
+                                            content=success_email_content,
+                                            from_address=FROM_ADDRESS,
+                                            to_address=TO_ADDRESS)
 
         except Exception as exception:
 
