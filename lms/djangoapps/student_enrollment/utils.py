@@ -2,13 +2,16 @@
 This module contains some handy utility functions for
 creating/registering users, as well as sending emails.
 """
+from logging import getLogger
 
 from django.contrib.auth.models import User
 from django.conf import settings
-from django.core.mail import get_connection
+from django.core.mail import get_connection, send_mail
 from django.template.loader import render_to_string
 import requests
 from student.models import UserProfile
+
+log = getLogger(__name__)
 
 
 def create_user_profile(user, full_name):
@@ -126,3 +129,37 @@ def post_to_zapier(zap_url, data):
         to Zapier
     """
     response = requests.post(zap_url, data=data)
+
+
+def send_success_or_exception_email(email_type, content, from_address,
+                                    to_address):
+    """
+    Sends an email to the CI platform team either confirming the
+    successful enrollment of students or email that an exception occurred
+    """
+    email_connection = create_email_connection()
+    email_subject = 'Student Enrollment Successful'
+    if email_type == 'exception':
+        email_subject = 'Student Enrollment Failed'
+
+    number_of_mails_sent = send_mail(
+        subject=email_subject,
+        exception_email_content,
+        from_address, to_address,
+        fail_silently=False,
+        html_message=exception_email_content,
+        connection=email_connection)
+
+    email_successfully_sent = None
+    log_message = ''
+
+    if number_of_mails_sent == 1:
+        email_successfully_sent = True
+        log_message = ('Succeeded to send %s email to %s'
+                       % (email_type, ', '.join(to_address)))
+    else:
+        email_successfully_sent = False
+        log_message = ('Failed to send %s email to %s'
+                       % (email_type, ', '.join(to_address)))
+    
+    log.info(log_message)
