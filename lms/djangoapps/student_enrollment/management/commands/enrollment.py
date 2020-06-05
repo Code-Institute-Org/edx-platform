@@ -107,13 +107,9 @@ class Command(BaseCommand):
 
         except Exception as exception:
 
-            exception_email_content = f"""
-            <h2>Successfully enrolled ${ len(zoho_students) } students.</h2>
-            """
-            exception_email_content = ("""
-            <h2>An error occurred in the enrollment script!</h2>
-            <p>Exception message: %s}</p>
-            <p>Please check the log file for more detailed information.</p>
-            """ % str(exception))
+            exception_email_content = ("<h2>An error occurred in the enrollment script!</h2>"
+                                       + "<p>Exception message: %s}</p>"
+                                       + "<p>Please check the log file for more detailed information.</p>"
+                                       % str(exception))
             send_success_or_exception_email(type='exception',
                                             content=exception_email_content)
