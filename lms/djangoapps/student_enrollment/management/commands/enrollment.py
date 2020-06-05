@@ -98,9 +98,8 @@ class Command(BaseCommand):
                     email_sent=email_sent_status)
                 enrollment_status.save()
 
-        success_email_content = f"""
-            <h2>Successfully enrolled ${ len(zoho_students) } students.</h2>
-            """
+        success_email_content = ("<h2>Successfully enrolled %d students.</h2>"
+                                 % len(zoho_students))
         send_success_or_exception_email(type='success',
                                         content=success_email_content,
                                         from_address=FROM_ADDRESS,
@@ -111,10 +110,10 @@ class Command(BaseCommand):
             exception_email_content = f"""
             <h2>Successfully enrolled ${ len(zoho_students) } students.</h2>
             """
-            exception_email_content = f"""
+            exception_email_content = ("""
             <h2>An error occurred in the enrollment script!</h2>
-            <p>Exception message: { str(exception) }</p>
+            <p>Exception message: %s}</p>
             <p>Please check the log file for more detailed information.</p>
-            """
+            """ % str(exception))
             send_success_or_exception_email(type='exception',
                                             content=exception_email_content)
