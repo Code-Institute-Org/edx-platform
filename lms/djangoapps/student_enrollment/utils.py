@@ -143,7 +143,7 @@ def send_success_or_exception_email(email_type, content, from_address,
         email_subject = 'Student Enrollment Failed'
 
     number_of_mails_sent = send_mail(
-        subject=email_subject,
+        email_subject,
         exception_email_content,
         from_address, to_address,
         fail_silently=False,
