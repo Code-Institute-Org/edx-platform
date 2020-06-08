@@ -26,8 +26,8 @@ initial student onboarding/enrollment process like the Careers module.
 EXCLUDED_FROM_ONBOARDING = ['course-v1:code_institute+cc_101+2018_T1',
                             'course-v1:CodeInstitute+F101+2017_T1',
                             ]
-FROM_ADDRESS = 'stefan@codeinstitute.net'
-TO_ADDRESS = ['stefan@codeinstitute.net']
+FROM_ADDRESS = 'platform@codeinstitute.net'
+TO_ADDRESS = ['platform@codeinstitute.net']
 
 
 class Command(BaseCommand):
@@ -53,7 +53,6 @@ class Command(BaseCommand):
             for student in zoho_students:
                 if not student['Email']:
                     continue
-                print(student['Email'])
 
                 # Get the user, the user's password, and their enrollment type
                 user, password, enrollment_type = get_or_register_student(
@@ -98,20 +97,20 @@ class Command(BaseCommand):
                     email_sent=email_sent_status)
                 enrollment_status.save()
 
-            success_email_content = ('<h2>Successfully enrolled %d students.</h2>'
+            email_content = ('<h2>Successfully enrolled %d students.</h2>'
                                     % len(zoho_students))
             send_success_or_exception_email(email_type='success',
-                                            content=success_email_content,
+                                            content=email_content,
                                             from_address=FROM_ADDRESS,
                                             to_address=TO_ADDRESS)
 
         except Exception as exception:
-            print("Exception Occurred: ", str(exception))
-            exception_email_content = (('<h2>An error occurred in the enrollment script!</h2>'
-                                       + '<p>Exception message: %s}</p>'
-                                       + '<p>Please check the log file for more detailed information.</p>')
-                                       % str(exception))
+            email_content = (
+                ('<h2>An error occurred in the enrollment script!</h2>'
+                 + '<p>Exception message: %s</p>'
+                 + '<p>Please check the log file for more detailed'
+                 + 'information.</p>') % str(exception))
             send_success_or_exception_email(email_type='exception',
-                                            content=exception_email_content,
+                                            content=email_content,
                                             from_address=FROM_ADDRESS,
                                             to_address=TO_ADDRESS)
