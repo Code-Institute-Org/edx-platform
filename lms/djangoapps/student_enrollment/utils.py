@@ -150,16 +150,12 @@ def send_success_or_exception_email(email_type, content, from_address,
         html_message=content,
         connection=email_connection)
 
-    email_successfully_sent = None
     log_message = ''
-
     if number_of_mails_sent == 1:
-        email_successfully_sent = True
         log_message = ('Succeeded to send %s email to %s'
                        % (email_type, ', '.join(to_address)))
     else:
-        email_successfully_sent = False
         log_message = ('Failed to send %s email to %s'
                        % (email_type, ', '.join(to_address)))
-    
+
     log.info(log_message)
