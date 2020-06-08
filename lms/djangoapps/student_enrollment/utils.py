@@ -144,10 +144,10 @@ def send_success_or_exception_email(email_type, content, from_address,
 
     number_of_mails_sent = send_mail(
         email_subject,
-        exception_email_content,
+        content,
         from_address, to_address,
         fail_silently=False,
-        html_message=exception_email_content,
+        html_message=content,
         connection=email_connection)
 
     email_successfully_sent = None
