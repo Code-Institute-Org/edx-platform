@@ -50,10 +50,10 @@ class Command(BaseCommand):
         """
         try:
             zoho_students = get_students(lead_status='Enroll')
-
             for student in zoho_students:
                 if not student['Email']:
                     continue
+                print(student['Email'])
 
                 # Get the user, the user's password, and their enrollment type
                 user, password, enrollment_type = get_or_register_student(
@@ -106,7 +106,7 @@ class Command(BaseCommand):
                                             to_address=TO_ADDRESS)
 
         except Exception as exception:
-
+            print("Exception Occurred: ", str(exception))
             exception_email_content = (('<h2>An error occurred in the enrollment script!</h2>'
                                        + '<p>Exception message: %s}</p>'
                                        + '<p>Please check the log file for more detailed information.</p>')
