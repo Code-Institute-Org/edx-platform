@@ -85,6 +85,8 @@ class Command(BaseCommand):
                     access.allowed_access = True
                     access.save()
 
+                # Used to update the status from 'Enroll' to 'Online'
+                # in the CRM
                 post_to_zapier(settings.ZAPIER_ENROLLMENT_URL,
                                {'email': user.email})
 
@@ -116,3 +118,4 @@ class Command(BaseCommand):
                 content=email_content,
                 from_address=FROM_ADDRESS,
                 to_address=RECIPIENT_LIST)
+            
