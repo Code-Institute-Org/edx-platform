@@ -61,9 +61,9 @@ class Command(BaseCommand):
             # Unenroll the student from the program
             program_enrollment_status = program.unenroll_student_from_program(user)
 
-            # Send the email
-            email_sent_status = program.send_email(
-                user, ENROLLMENT_TYPE, None)
+            # Skip sending the email from the LMS
+            # Student Care team would prefer to use the CRM instead
+            email_sent_status = False
 
             # Set the students access level (i.e. determine whether or not a student
             # is allowed to access to the LMS.
