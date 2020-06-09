@@ -61,10 +61,6 @@ class Command(BaseCommand):
             # Unenroll the student from the program
             program_enrollment_status = program.unenroll_student_from_program(user)
 
-            # Skip sending the email from the LMS
-            # Student Care team would prefer to use the CRM instead
-            email_sent_status = False
-
             # Set the students access level (i.e. determine whether or not a student
             # is allowed to access to the LMS.
             access, created = ProgramAccessStatus.objects.get_or_create(
@@ -79,9 +75,11 @@ class Command(BaseCommand):
             # Create a new entry in the EnrollmentStatusHistory to
             # indicate whether or not each step of the process was
             # successful
+            # email_sent is set to False, no requirement to send email from LMS
+            # Automated unenrollment emails are configured in Zoho CRM
             enrollment_status = EnrollmentStatusHistory(student=user, program=program,
                                                         registered=bool(user),
                                                         enrollment_type=ENROLLMENT_TYPE,
                                                         enrolled=bool(program_enrollment_status),
-                                                        email_sent=email_sent_status)
+                                                        email_sent=False)
             enrollment_status.save()
