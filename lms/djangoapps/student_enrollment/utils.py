@@ -131,16 +131,13 @@ def post_to_zapier(zap_url, data):
     response = requests.post(zap_url, data=data)
 
 
-def send_success_or_exception_email(email_type, content, from_address,
+def send_success_or_exception_email(email_subject, content, from_address,
                                     to_address):
     """
     Sends an email to the CI platform team either confirming the
     successful enrollment of students or email that an exception occurred
     """
     email_connection = create_email_connection()
-    email_subject = 'Student Enrollment Successful'
-    if email_type == 'exception':
-        email_subject = 'Student Enrollment Failed'
 
     number_of_mails_sent = send_mail(
         email_subject,
@@ -152,10 +149,10 @@ def send_success_or_exception_email(email_type, content, from_address,
 
     log_message = ''
     if number_of_mails_sent == 1:
-        log_message = ('Succeeded to send %s email to %s'
-                       % (email_type, ', '.join(to_address)))
+        log_message = ('Succeeded to send email to %s'
+                       % ', '.join(to_address))
     else:
-        log_message = ('Failed to send %s email to %s'
-                       % (email_type, ', '.join(to_address)))
+        log_message = ('Failed to send email to %s'
+                       % ', '.join(to_address))
 
     log.info(log_message)

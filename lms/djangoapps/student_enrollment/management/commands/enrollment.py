@@ -27,7 +27,7 @@ EXCLUDED_FROM_ONBOARDING = ['course-v1:code_institute+cc_101+2018_T1',
                             'course-v1:CodeInstitute+F101+2017_T1',
                             ]
 FROM_ADDRESS = 'platform@codeinstitute.net'
-TO_ADDRESS = ['platform@codeinstitute.net']
+RECIPIENT_LIST = ['platform@codeinstitute.net']
 
 
 class Command(BaseCommand):
@@ -99,10 +99,11 @@ class Command(BaseCommand):
 
             email_content = ('<h2>Successfully enrolled %d students.</h2>'
                                     % len(zoho_students))
-            send_success_or_exception_email(email_type='success',
-                                            content=email_content,
-                                            from_address=FROM_ADDRESS,
-                                            to_address=TO_ADDRESS)
+            send_success_or_exception_email(
+                email_subject='Student Enrollment Successful',
+                content=email_content,
+                from_address=FROM_ADDRESS,
+                to_address=RECIPIENT_LIST)
 
         except Exception as exception:
             email_content = (
@@ -110,7 +111,8 @@ class Command(BaseCommand):
                  + '<p>Exception message: %s</p>'
                  + '<p>Please check the log file for more detailed'
                  + 'information.</p>') % str(exception))
-            send_success_or_exception_email(email_type='exception',
-                                            content=email_content,
-                                            from_address=FROM_ADDRESS,
-                                            to_address=TO_ADDRESS)
+            send_success_or_exception_email(
+                email_subject='Student Enrollment Failed',
+                content=email_content,
+                from_address=FROM_ADDRESS,
+                to_address=RECIPIENT_LIST)
