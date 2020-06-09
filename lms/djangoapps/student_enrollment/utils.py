@@ -151,8 +151,8 @@ def send_success_or_exception_email(email_subject, content, from_address,
     if number_of_mails_sent == 1:
         log_message = ('Succeeded to send email to %s'
                        % ', '.join(to_address))
+        log.info(log_message)
     else:
         log_message = ('Failed to send email to %s'
                        % ', '.join(to_address))
-
-    log.info(log_message)
+        log.error(log_message)
