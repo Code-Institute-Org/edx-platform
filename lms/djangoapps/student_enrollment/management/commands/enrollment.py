@@ -1,3 +1,5 @@
+from logging import getLogger
+
 from django.core.management.base import BaseCommand
 from django.core.exceptions import ObjectDoesNotExist
 from django.contrib.auth.models import User
@@ -12,6 +14,8 @@ from student_enrollment.zoho import (
 )
 from lms.djangoapps.student_enrollment.models import EnrollmentStatusHistory
 from lms.djangoapps.student_enrollment.models import ProgramAccessStatus
+
+log = getLogger(__name__)
 
 
 """
@@ -107,15 +111,18 @@ class Command(BaseCommand):
                 from_address=FROM_ADDRESS,
                 to_address=RECIPIENT_LIST)
 
-        except Exception as exception:
+        except smtplib.SMTPException as smtp_exception:
+            log.exception(str(smtp_exception))
+        except ObjectDoesNotExist as does_not_exist_exception:
             email_content = (
                 ('<h2>An error occurred in the enrollment script!</h2>'
                  + '<p>Exception message: %s</p>'
                  + '<p>Please check the log file for more detailed'
-                 + 'information.</p>') % str(exception))
+                 + 'information.</p>') % does_not_exist_exception.message)
             send_success_or_exception_email(
                 email_subject='Student Enrollment Failed',
                 content=email_content,
                 from_address=FROM_ADDRESS,
                 to_address=RECIPIENT_LIST)
+            log.exception(str(does_not_exist_exception))
             

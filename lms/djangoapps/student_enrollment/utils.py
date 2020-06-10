@@ -23,7 +23,7 @@ def create_user_profile(user, full_name):
         profile for
     """
     user_profile = UserProfile(user=user)
-    user_profile.full_name = full_name
+    user_profile.name = full_name
     user_profile.save()
 
 
@@ -132,27 +132,20 @@ def post_to_zapier(zap_url, data):
 
 
 def send_success_or_exception_email(email_subject, content, from_address,
-                                    to_address):
+                                    recipient_list):
     """
-    Sends an email to the CI platform team either confirming the
+    Sends an email to a list of recipients m either confirming the
     successful enrollment of students or email that an exception occurred
     """
     email_connection = create_email_connection()
 
-    number_of_mails_sent = send_mail(
+    send_mail(
         email_subject,
         content,
-        from_address, to_address,
+        from_address, recipient_list,
         fail_silently=False,
         html_message=content,
         connection=email_connection)
 
-    log_message = ''
-    if number_of_mails_sent == 1:
-        log_message = ('Succeeded to send email to %s'
-                       % ', '.join(to_address))
-        log.info(log_message)
-    else:
-        log_message = ('Failed to send email to %s'
-                       % ', '.join(to_address))
-        log.error(log_message)
+    log.info('Succeeded to send email to %s'
+             % ', '.join(to_address))
