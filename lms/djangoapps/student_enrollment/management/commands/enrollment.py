@@ -115,7 +115,7 @@ class Command(BaseCommand):
             email_content = (
                 ('<h2>An error occurred in the enrollment script!</h2>'
                  + '<p>Exception message: %s</p>'
-                 + '<p>Please check the log file for more detailed'
+                 + '<p>Please check the log file for more detailed '
                  + 'information.</p>') % does_not_exist_exception.message)
             send_success_or_exception_email(
                 email_subject='Student Enrollment Failed',
