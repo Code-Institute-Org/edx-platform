@@ -9,6 +9,7 @@ from django.conf import settings
 from django.core.mail import get_connection, send_mail
 from django.template.loader import render_to_string
 import requests
+from smtplib import SMTPException
 from student.models import UserProfile
 
 log = getLogger(__name__)
@@ -137,15 +138,19 @@ def send_success_or_exception_email(email_subject, content, from_address,
     Sends an email to a list of recipients m either confirming the
     successful enrollment of students or email that an exception occurred
     """
-    email_connection = create_email_connection()
+    try:
+        email_connection = create_email_connection()
 
-    send_mail(
-        email_subject,
-        content,
-        from_address, recipient_list,
-        fail_silently=False,
-        html_message=content,
-        connection=email_connection)
+        send_mail(
+            email_subject,
+            content,
+            from_address, recipient_list,
+            fail_silently=False,
+            html_message=content,
+            connection=email_connection)
 
-    log.info('Succeeded to send email to %s'
-             % ', '.join(to_address))
+        log.info('Succeeded to send email to %s'
+                % ', '.join(recipient_list))
+
+    except SMTPException as smtp_exception:
+        log.exception(str(smtp_exception))
