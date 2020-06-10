@@ -109,7 +109,7 @@ class Command(BaseCommand):
                 email_subject='Student Enrollment Successful',
                 content=email_content,
                 from_address=FROM_ADDRESS,
-                to_address=RECIPIENT_LIST)
+                recipient_list=RECIPIENT_LIST)
 
         except ObjectDoesNotExist as does_not_exist_exception:
             email_content = (
@@ -121,6 +121,6 @@ class Command(BaseCommand):
                 email_subject='Student Enrollment Failed',
                 content=email_content,
                 from_address=FROM_ADDRESS,
-                to_address=RECIPIENT_LIST)
+                recipient_list=RECIPIENT_LIST)
             log.exception(str(does_not_exist_exception))
             
