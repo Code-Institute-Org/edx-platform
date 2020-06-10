@@ -30,8 +30,8 @@ initial student onboarding/enrollment process like the Careers module.
 EXCLUDED_FROM_ONBOARDING = ['course-v1:code_institute+cc_101+2018_T1',
                             'course-v1:CodeInstitute+F101+2017_T1',
                             ]
-FROM_ADDRESS = 'platform@codeinstitute.net'
-RECIPIENT_LIST = ['platform@codeinstitute.net']
+FROM_ADDRESS = 'stefan@codeinstitute.net'
+RECIPIENT_LIST = ['stefan@codeinstitute.net']
 
 
 class Command(BaseCommand):
