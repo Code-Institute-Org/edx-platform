@@ -111,8 +111,6 @@ class Command(BaseCommand):
                 from_address=FROM_ADDRESS,
                 to_address=RECIPIENT_LIST)
 
-        except smtplib.SMTPException as smtp_exception:
-            log.exception(str(smtp_exception))
         except ObjectDoesNotExist as does_not_exist_exception:
             email_content = (
                 ('<h2>An error occurred in the enrollment script!</h2>'
