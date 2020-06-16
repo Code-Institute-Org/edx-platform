@@ -80,6 +80,8 @@ def days_into_data(first_active, completion_timestamps):
 
 
 def format_module_field(module_name, suffix):
+    if module_name == 'Full Stack Frameworks with Django - retiring July 31':
+        return 'full_stack_frameworks_with_django'
     return module_name.lower().replace(' ', '_') + suffix
 
 
