@@ -67,7 +67,7 @@ def single_student_challenge_history(student, challenge_counter,
         module: json.dumps(challenges)
         for module, challenges in challenge_activities.items()
     }
-    challenge_activities['student_skills'] = skill_tags
+    challenge_activities['student_skills'] = student_skills
     return challenge_activities
 
 
