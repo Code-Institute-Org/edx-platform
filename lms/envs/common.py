@@ -439,13 +439,13 @@ PASSWORD_RESET_EMAIL_RATE_LIMIT = {
 COURSE_MESSAGE_ALERT_DURATION_IN_DAYS = 14
 
 ############################# SET PATH INFORMATION #############################
-PROJECT_ROOT = path(__file__).abspath().dirname().dirname()  # /edx-platform/lms
-REPO_ROOT = PROJECT_ROOT.dirname()
-COMMON_ROOT = REPO_ROOT / "common"
-OPENEDX_ROOT = REPO_ROOT / "openedx"
-ENV_ROOT = REPO_ROOT.dirname()  # virtualenv dir /edx-platform is in
-COURSES_ROOT = ENV_ROOT / "data"
-NODE_MODULES_ROOT = REPO_ROOT / "node_modules"
+PROJECT_ROOT = path(__file__).abspath().dirname().dirname()  # /openedx/edx-platform/lms
+REPO_ROOT = PROJECT_ROOT.dirname()  # /openedx/edx-platform
+COMMON_ROOT = REPO_ROOT / "common"  # /openedx/edx-platform/common
+OPENEDX_ROOT = REPO_ROOT / "openedx"  # /openedx/edx-platform/openedx
+ENV_ROOT = REPO_ROOT.dirname()  # /openedx
+COURSES_ROOT = ENV_ROOT / "data"  # /openedx/data
+NODE_MODULES_ROOT = REPO_ROOT / "node_modules"  # /openedx/edx-platform/node_modules
 
 DATA_DIR = COURSES_ROOT
 
@@ -971,6 +971,7 @@ STATICFILES_DIRS = [
     COMMON_ROOT / "static",
     PROJECT_ROOT / "static",
     NODE_MODULES_ROOT / "@edx",
+    ENV_ROOT / "static",
 ]
 
 FAVICON_PATH = 'images/favicon.ico'

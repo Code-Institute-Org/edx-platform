@@ -48,7 +48,7 @@ CONFIG_PREFIX = SERVICE_VARIANT + "." if SERVICE_VARIANT else ""
 
 ################################ ALWAYS THE SAME ##############################
 
-DEBUG = False
+DEBUG = os.environ.get('DEBUG', 'False').lower() in ['t', 'true', '1']
 DEFAULT_TEMPLATE_ENGINE['OPTIONS']['debug'] = False
 
 EMAIL_BACKEND = 'django_ses.SESBackend'
@@ -1118,3 +1118,52 @@ plugin_settings.add_plugins(__name__, plugin_constants.ProjectType.LMS, plugin_c
 ########################## Derive Any Derived Settings  #######################
 
 derive_settings(__name__)
+
+
+
+################################ DEBUG TOOLBAR ################################
+
+if DEBUG:
+    INSTALLED_APPS += ['debug_toolbar', 'debug_toolbar_mongo']
+
+    MIDDLEWARE_CLASSES.append('debug_toolbar.middleware.DebugToolbarMiddleware')
+    INTERNAL_IPS = ('127.0.0.1',)
+
+    DEBUG_TOOLBAR_PANELS = (
+        'debug_toolbar.panels.versions.VersionsPanel',
+        'debug_toolbar.panels.timer.TimerPanel',
+        'debug_toolbar.panels.settings.SettingsPanel',
+        'debug_toolbar.panels.headers.HeadersPanel',
+        'debug_toolbar.panels.request.RequestPanel',
+        'debug_toolbar.panels.sql.SQLPanel',
+        'debug_toolbar.panels.signals.SignalsPanel',
+        'debug_toolbar.panels.logging.LoggingPanel',
+        'debug_toolbar.panels.profiling.ProfilingPanel',
+    )
+
+    DEBUG_TOOLBAR_CONFIG = {
+        # Profile panel is incompatible with wrapped views
+        # See https://github.com/jazzband/django-debug-toolbar/issues/792
+        'DISABLE_PANELS': (
+            'debug_toolbar.panels.profiling.ProfilingPanel',
+        ),
+        'SHOW_TOOLBAR_CALLBACK': 'cms.envs.devstack.should_show_debug_toolbar',
+    }
+
+
+    def should_show_debug_toolbar(request):
+        # We always want the toolbar on devstack unless running tests from another Docker container
+        if request.get_host().startswith('edx.devstack.studio:'):
+            return False
+        return True
+
+
+    # To see stacktraces for MongoDB queries, set this to True.
+    # Stacktraces slow down page loads drastically (for pages with lots of queries).
+    DEBUG_TOOLBAR_MONGO_STACKTRACES = False
+
+
+
+# Whether to run django-require in debug mode.
+REQUIRE_DEBUG = DEBUG
+

@@ -13,10 +13,10 @@ RUN apt update && \
     && rm -rf /var/lib/apt/lists/*
 
 # Dockerize will be useful to wait for mysql DB availability
-ARG DOCKERIZE_VERSION=v0.6.1
-RUN curl -L -o /tmp/dockerize.tar.gz https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSION/dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz \
-    && tar -C /usr/local/bin -xzvf /tmp/dockerize.tar.gz \
-    && rm /tmp/dockerize.tar.gz
+#ARG DOCKERIZE_VERSION=v0.6.1
+#RUN curl -L -o /tmp/dockerize.tar.gz https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSION/dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz \
+#    && tar -C /usr/local/bin -xzvf /tmp/dockerize.tar.gz \
+#    && rm /tmp/dockerize.tar.gz
 
 # Checkout edx-platform code: https://github.com/edx/edx-platform/commits/open-release/ironwood.master
 # Because we are pulling from a branch, and not a tag, you should manually modify the
@@ -28,13 +28,46 @@ RUN curl -L -o /tmp/dockerize.tar.gz https://github.com/jwilder/dockerize/releas
 #    echo "Pulling $EDX_PLATFORM_VERSION tag from $EDX_PLATFORM_REPOSITORY ($EDX_PLATFORM_VERSION_DATE)" && \
 #    git clone $EDX_PLATFORM_REPOSITORY --branch $EDX_PLATFORM_VERSION --depth 1 /openedx/edx-platform
 
+
+WORKDIR /openedx/edx-platform
+
+
+# Copying requirements and specific submodules included in requirements
 COPY ./requirements/ /openedx/edx-platform/requirements
+COPY ./common/lib/ /openedx/edx-platform/common/lib/
+
+# Install python requirements in a virtualenv
+RUN virtualenv /openedx/venv
+ENV PATH /openedx/venv/bin:${PATH}
+ENV VIRTUAL_ENV /openedx/venv/
+RUN pip install setuptools==39.0.1 pip==9.0.3
+RUN pip install -r requirements/edx/base.txt
+
+# Install patched version of ora2
+RUN pip uninstall -y ora2 && \
+    pip install git+https://github.com/overhangio/edx-ora2.git@2.2.0-patched#egg=ora2==2.2.0
+
+# Install patched version of edx-oauth2-provider
+RUN pip install git+https://github.com/overhangio/edx-oauth2-provider.git@1.2.3#egg=edx-oauth2-provider==1.2.3
+
+# Install ironwood-compatible scorm xblock
+RUN pip install "openedx-scorm-xblock<10.0.0,>=9.2.0"
+
+# Install development libraries
+RUN pip install -r requirements/edx/ci-dev.txt
 
 
 # Using local version
 COPY ./lms/ /openedx/edx-platform/lms
 COPY ./cms/ /openedx/edx-platform/cms
-COPY ./common/ /openedx/edx-platform/common
+
+# Copying common subdirs separately as the common/lib dir was alreaedy copied / installed above
+COPY ./common/djangoapps/ /openedx/edx-platform/common/djangoapps/
+COPY ./common/static/ /openedx/edx-platform/common/static/
+COPY ./common/templates/ /openedx/edx-platform/common/templates/
+COPY ./common/test/ /openedx/edx-platform/common/test/
+COPY ./common/__init__.py /openedx/edx-platform/common/__init__.py
+
 COPY ./conf/ /openedx/edx-platform/conf
 COPY ./docs/ /openedx/edx-platform/docs
 COPY ./openedx/ /openedx/edx-platform/openedx
@@ -68,8 +101,13 @@ COPY ./pylintrc /openedx/edx-platform/
 COPY ./pylintrc_tweaks /openedx/edx-platform/
 COPY ./tox.ini /openedx/edx-platform/
 
+# Install edx local
+RUN pip install -e .
 
-WORKDIR /openedx/edx-platform
+
+# Adding this to allow staticfile access from debug server
+RUN ln -s /openedx/staticfiles /openedx/static
+
 
 # Apply patches
 # Allow SigV4 authentication for video uploads to S3 https://github.com/edx/edx-platform/pull/22080
@@ -88,23 +126,6 @@ WORKDIR /openedx/edx-platform
 #    && mv openedx-i18n-ironwood/edx-platform/locale /openedx/locale/contrib \
 #    && rm -rf openedx-i18n*
 
-# Install python requirements in a virtualenv
-RUN virtualenv /openedx/venv
-ENV PATH /openedx/venv/bin:${PATH}
-ENV VIRTUAL_ENV /openedx/venv/
-RUN pip install setuptools==39.0.1 pip==9.0.3
-RUN pip install -r requirements/edx/base.txt
-
-# Install patched version of ora2
-RUN pip uninstall -y ora2 && \
-    pip install git+https://github.com/overhangio/edx-ora2.git@2.2.0-patched#egg=ora2==2.2.0
-
-# Install patched version of edx-oauth2-provider
-RUN pip install git+https://github.com/overhangio/edx-oauth2-provider.git@1.2.3#egg=edx-oauth2-provider==1.2.3
-
-# Install ironwood-compatible scorm xblock
-RUN pip install "openedx-scorm-xblock<10.0.0,>=9.2.0"
-
 # Install a recent version of nodejs
 RUN nodeenv /openedx/nodeenv --node=8.9.3 --prebuilt
 ENV PATH /openedx/nodeenv/bin:${PATH}
@@ -116,10 +137,10 @@ RUN npm set progress=false \
 ENV PATH ./node_modules/.bin:${PATH}
 
 # Install private requirements: this is useful for installing custom xblocks.
-COPY ./requirements/ /openedx/requirements
-RUN cd /openedx/requirements/ \
-  && touch ./private.txt \
-  && pip install -r ./private.txt
+#COPY ./requirements/ /openedx/requirements
+#RUN cd /openedx/requirements/ \
+#  && touch ./private.txt \
+#  && pip install -r ./private.txt
 
 # Create folder that will store *.env.json and *.auth.json files, as well as
 # the tutor-specific settings files.
@@ -167,17 +188,7 @@ RUN mkdir /openedx/data
 
 # service variant is "lms" or "cms"
 ENV SERVICE_VARIANT lms
-ENV SETTINGS tutor.production
-
-RUN pip install -r requirements/edx/development.txt
-RUN pip install ipdb==0.12.2 ipython==5.8.0
-
-# Recompile static assets: in development mode all static assets are stored in edx-platform,
-# and the location of these files is stored in webpack-stats.json. If we don't recompile
-# static assets, then production assets will be served instead.
-RUN rm -r /openedx/staticfiles && \
-    mkdir /openedx/staticfiles && \
-    openedx-assets webpack --env=dev
+ENV SETTINGS production
 
 # Copy new entrypoint (to take care of permission issues at runtime)
 COPY ./bin /openedx/bin
@@ -188,7 +199,6 @@ ARG USERID=1000
 RUN create-user.sh $USERID
 
 # Default django settings
-ENV SETTINGS tutor.development
 
 # Entrypoint will set right environment variables
 ENTRYPOINT ["docker-entrypoint.sh"]

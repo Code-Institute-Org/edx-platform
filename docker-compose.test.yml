@@ -1,0 +1,142 @@
+version: "3.7"
+services:
+  
+  memcached:
+    image: docker.io/memcached:1.4.38
+    restart: unless-stopped
+  
+  mongodb:
+    image: docker.io/mongo:3.2.16
+    # Use WiredTiger in all environments, just like at edx.org
+    command: mongod --smallfiles --nojournal --storageEngine wiredTiger
+    restart: unless-stopped
+    volumes:
+      - /var/edx/data/mongodb:/data/db
+
+  
+  mysql:
+    image: docker.io/mysql:5.6.36
+    command: mysqld --character-set-server=utf8 --collation-server=utf8_general_ci
+    restart: unless-stopped
+    ports:
+      - "3306:3306"
+    volumes:
+      - /var/edx/data/mysql:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: "a4sQrRUq"
+      MYSQL_DATABASE: openedx
+      MYSQL_USER: openedx
+      MYSQL_PASSWORD: "h61EqXte"
+
+  
+  elasticsearch:
+    image: docker.io/elasticsearch:1.5.2
+    command: ["elasticsearch", "--cluster.name=openedx", "--bootstrap.mlockall=true"]
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    restart: unless-stopped
+    volumes:
+      - /var/edx/data/elasticsearch:/usr/share/elasticsearch/data
+
+
+  nginx:
+    image: docker.io/nginx:1.13
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    networks:
+      default:
+        aliases: []
+      
+      
+    depends_on: ["lms"]
+
+  
+  rabbitmq:
+    image: docker.io/rabbitmq:3.6.10-management-alpine
+    restart: unless-stopped
+  
+
+  
+  smtp:
+    image: mailhog/mailhog:latest
+    restart: unless-stopped
+    ports:
+      - "8025:8025"
+  
+
+  ############# Forum
+
+  
+  forum:
+    image: docker.io/overhangio/openedx-forum:3.12.6
+    environment:
+      SEARCH_SERVER: "http://elasticsearch:9200"
+      MONGODB_AUTH: ""
+      MONGODB_HOST: "mongodb"
+      MONGODB_PORT: "27017"
+    restart: unless-stopped
+    depends_on: ["elasticsearch", "mongodb"]
+  
+
+  ############# LMS and CMS
+
+
+
+  lms:
+    image: edx-patched-dev:latest  # docker.io/overhangio/openedx-dev:3.12.6
+    environment:
+      SETTINGS: production
+      DEBUG: "True"
+    command: ./manage.py lms runserver 0.0.0.0:8000
+    volumes:
+      - ./config/:/openedx/config/
+      - ./lms:/openedx/edx-platform/lms
+      - ./common:/openedx/edx-platform/common
+    ports:
+      - "8000:8000"
+    stdin_open: true
+    tty: true
+    depends_on:
+      - mysql
+      - elasticsearch
+      - forum
+      - memcached
+      - mongodb
+      - rabbitmq
+      - smtp
+      - lms-worker
+      - nginx
+
+
+  lms-worker:
+    image: edx-patched-dev:latest  # docker.io/overhangio/openedx:3.12.6
+    environment:
+      SERVICE_VARIANT: lms
+      SETTINGS: development
+      C_FORCE_ROOT: "1" # run celery tasks as root #nofear
+    command: ./manage.py lms celery worker --loglevel=info --hostname=edx.lms.core.default.%%h --maxtasksperchild 100
+    restart: unless-stopped
+    volumes:
+#      - ../apps/openedx/settings/lms/:/openedx/edx-platform/lms/envs/tutor/
+#      - ../apps/openedx/settings/cms/:/openedx/edx-platform/cms/envs/tutor/
+#      - ../apps/openedx/config/:/openedx/config/
+      - ./config/:/openedx/config/
+      - /var/edx/data/lms:/openedx/data
+      - /var/edx/data/openedx-media:/openedx/media
+    depends_on:
+      - rabbitmq
+
+  nginx:
+    image: docker.io/nginx:1.13
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./conf/nginx:/etc/nginx/conf.d/:ro
+      - /var/edx/data/openedx:/var/www/openedx:ro
+      - /var/edx/data/openedx-media:/var/www/openedx-media:ro

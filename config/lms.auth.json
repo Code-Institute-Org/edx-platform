@@ -1,0 +1,41 @@
+{
+  "SECRET_KEY": "2yYc1R33nwPfQIPor3GmESN0",
+  "AWS_ACCESS_KEY_ID": "",
+  "AWS_SECRET_ACCESS_KEY": "",
+  
+  "XQUEUE_INTERFACE": {
+      "django_auth": null,
+      "url": null
+  },
+  "CONTENTSTORE": { 
+    "ENGINE": "xmodule.contentstore.mongo.MongoContentStore",                       
+    "DOC_STORE_CONFIG": {                                                           
+      "host": "mongodb",
+      "port": 27017,
+      
+      "db": "openedx"
+    } 
+  },  
+  "DOC_STORE_CONFIG": {
+    "host": "mongodb",
+    "port": 27017,
+    
+    "db": "openedx"
+  },
+  "DATABASES": {
+    "default": {
+      "ENGINE": "django.db.backends.mysql",
+      "HOST": "mysql",
+      "PORT": 3306,
+      "NAME": "openedx",
+      "USER": "openedx",
+      "PASSWORD": "h61EqXte",
+      "ATOMIC_REQUESTS": true,
+      "OPTIONS": {
+          "init_command": "SET sql_mode='STRICT_TRANS_TABLES'"
+      }
+    }
+  },
+  "EMAIL_HOST_USER": "",
+  "EMAIL_HOST_PASSWORD": ""
+}
