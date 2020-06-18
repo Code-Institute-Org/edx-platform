@@ -11,15 +11,15 @@ DEFAULT_SKILL = {
 }
 
 
-def increment_student_skill_tags(challenge_skills, skill_tags, incrementor):
+def increment_student_skill_tags(student_skills, skill_tags, incrementor):
     """ Increments the student's achieved skill tags based on the skill tags
     of the challenge
     
-    Modifies dict inplace """ 
+    Modifies dict inplace """
     for skill in skill_tags:
-        challenge_skills.setdefault(skill, DEFAULT_SKILL)
-        challenge_skills[skill]['achieved'] += incrementor
-        challenge_skills[skill]['total'] += 1
+        student_skills.setdefault(skill, DEFAULT_SKILL)
+        student_skills[skill]['achieved'] += incrementor
+        student_skills[skill]['total'] += 1
 
 
 def index_challenge_to_module_and_level():
@@ -49,6 +49,7 @@ def single_student_challenge_history(student, challenge_counter,
     for submission in student.challengesubmission_set.all():
         module = challenge_index[submission.challenge_id]
         challenge_tags = skill_tags[submission.challenge_id]
+        print(challenge_tags)
         incrementor = 0
         if submission.passed:
             challenge_activities[module]['passed'] += 1
@@ -56,7 +57,7 @@ def single_student_challenge_history(student, challenge_counter,
         else:
             challenge_activities[module]['attempted'] += 1
         increment_student_skill_tags(student_skills,
-                                     challenge_tags[module], incrementor)
+                                     challenge_tags, incrementor)
 
     for module_level, total_challenges in challenge_counter.items():
         activities = challenge_activities[module_level]
