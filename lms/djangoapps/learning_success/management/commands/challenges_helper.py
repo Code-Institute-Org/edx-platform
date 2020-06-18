@@ -17,7 +17,7 @@ def increment_student_skill_tags(challenge_skills, skill_tags, incrementor):
     
     Modifies dict inplace """ 
     for skill in skill_tags:
-        challenge_skills.set_default(skill, DEFAULT_SKILL)
+        challenge_skills.setdefault(skill, DEFAULT_SKILL)
         challenge_skills[skill]['achieved'] += incrementor
         challenge_skills[skill]['total'] += 1
 
