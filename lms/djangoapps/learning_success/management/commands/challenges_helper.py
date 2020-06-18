@@ -31,7 +31,6 @@ def index_challenge_to_module_and_level():
     challenge_index = {}
     skill_tags = {}
     for challenge in Challenge.objects.all():
-        update_skills_tags(skill_tags, challenge)
         module = challenge.block_locator.split('+')[1].lower()
         module_level = "_".join((module, challenge.level)).lower()
         challenge_index[challenge.pk] = {
