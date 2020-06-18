@@ -47,7 +47,7 @@ def single_student_challenge_history(student, challenge_counter,
                             in challenge_counter.keys()}
     student_skills = {}
     for submission in student.challengesubmission_set.all():
-        module = challenge_index[submission.challenge_id].get('module_name')
+        module = challenge_index[submission.challenge_id]
         challenge_tags = skill_tags[submission.challenge_id]
         incrementor = 0
         if submission.passed:
