@@ -68,7 +68,7 @@ def single_student_challenge_history(student, challenge_counter,
         else:
             challenge_activities[module]['attempted'] += 1
         increment_student_skill_tags(student_skills, challenge_tags, 
-                                     incrementor, default_skills)
+                                     incrementor)
 
     for module_level, total_challenges in challenge_counter.items():
         activities = challenge_activities[module_level]
