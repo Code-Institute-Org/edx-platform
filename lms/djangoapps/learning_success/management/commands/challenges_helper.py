@@ -37,6 +37,7 @@ def index_challenge_to_module_and_level():
         challenge_index[challenge.pk] = {
             'module_name': module_level,
             'tags': [tag.name for tag in challenge.tags.all()]
+        }
     return challenge_index
 
 
