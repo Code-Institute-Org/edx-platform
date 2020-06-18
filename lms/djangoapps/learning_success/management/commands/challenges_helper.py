@@ -49,7 +49,6 @@ def single_student_challenge_history(student, challenge_counter,
     for submission in student.challengesubmission_set.all():
         module = challenge_index[submission.challenge_id]
         challenge_tags = skill_tags[submission.challenge_id]
-        print(challenge_tags)
         incrementor = 0
         if submission.passed:
             challenge_activities[module]['passed'] += 1
