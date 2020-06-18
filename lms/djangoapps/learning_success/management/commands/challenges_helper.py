@@ -7,8 +7,8 @@ import json
 from lms.djangoapps.learning_success.management.commands.export_all_breadcrumbs import get_safely
 
 DEFAULT_SKILL = {
-    "achieved": 0,
-    "total": 0,
+    'achieved': 0,
+    'total': 0,
 }
 
 
@@ -18,9 +18,20 @@ def increment_student_skill_tags(student_skills, skill_tags, incrementor):
     
     Modifies dict inplace """
     for skill in skill_tags:
-        student_skills.setdefault(skill, deepcopy(DEFAULT_SKILL))
         student_skills[skill]['achieved'] += incrementor
         student_skills[skill]['total'] += 1
+
+
+def generate_default_skills(skill_tags):
+    """ Generates the default skills and populates the totals
+    
+    Returns a dict with the totals for the challenge tags"""
+    default_skills = {}
+    for challenge in skill_tags:
+        for skill in skill_tags:
+            default_skills.setdefault(skill, DEFAULT_SKILL)
+            default_skills[skill]['total'] += 1
+    return default_skills
 
 
 def index_challenge_to_module_and_level():
@@ -46,7 +57,7 @@ def single_student_challenge_history(student, challenge_counter,
     Returns a dict with with passed, attempted and unattempted counts """
     challenge_activities = {module: defaultdict(int) for module
                             in challenge_counter.keys()}
-    student_skills = {} 
+    student_skills = generate_default_skills(skill_tags)
     for submission in student.challengesubmission_set.all():
         module = challenge_index[submission.challenge_id]
         challenge_tags = skill_tags[submission.challenge_id]
@@ -56,8 +67,8 @@ def single_student_challenge_history(student, challenge_counter,
             incrementor = 1
         else:
             challenge_activities[module]['attempted'] += 1
-        increment_student_skill_tags(student_skills,
-                                     challenge_tags, incrementor)
+        increment_student_skill_tags(student_skills, challenge_tags, 
+                                     incrementor, default_skills)
 
     for module_level, total_challenges in challenge_counter.items():
         activities = challenge_activities[module_level]
