@@ -1,5 +1,6 @@
 from challenges.models import Challenge
 
+from copy import deepcopy
 from collections import Counter, defaultdict
 import json
 
@@ -17,7 +18,7 @@ def increment_student_skill_tags(student_skills, skill_tags, incrementor):
     
     Modifies dict inplace """
     for skill in skill_tags:
-        student_skills.setdefault(skill, DEFAULT_SKILL)
+        student_skills.setdefault(skill, deepcopy(DEFAULT_SKILL))
         student_skills[skill]['achieved'] += incrementor
         student_skills[skill]['total'] += 1
 
@@ -45,7 +46,7 @@ def single_student_challenge_history(student, challenge_counter,
     Returns a dict with with passed, attempted and unattempted counts """
     challenge_activities = {module: defaultdict(int) for module
                             in challenge_counter.keys()}
-    student_skills = {}
+    student_skills = {} 
     for submission in student.challengesubmission_set.all():
         module = challenge_index[submission.challenge_id]
         challenge_tags = skill_tags[submission.challenge_id]
