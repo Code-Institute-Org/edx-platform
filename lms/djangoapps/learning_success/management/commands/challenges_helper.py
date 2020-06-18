@@ -28,7 +28,7 @@ def generate_default_skills(skill_tags):
     Returns a dict with the totals for the challenge tags"""
     default_skills = {}
     for challenge in skill_tags:
-        for skill in skill_tags:
+        for skill in challenge:
             default_skills.setdefault(skill, DEFAULT_SKILL)
             default_skills[skill]['total'] += 1
     return default_skills
@@ -51,13 +51,14 @@ def index_challenge_to_module_and_level():
 
 
 def single_student_challenge_history(student, challenge_counter,
-                                     challenge_index, skill_tags):
+                                     challenge_index, skill_tags,
+                                     default_skills):
     """ Creates the challenge history for one student
 
     Returns a dict with with passed, attempted and unattempted counts """
     challenge_activities = {module: defaultdict(int) for module
                             in challenge_counter.keys()}
-    student_skills = generate_default_skills(skill_tags)
+    student_skills = deepcopy(default_skills)
     for submission in student.challengesubmission_set.all():
         module = challenge_index[submission.challenge_id]
         challenge_tags = skill_tags[submission.challenge_id]
@@ -88,11 +89,13 @@ def extract_all_student_challenges(program):
 
     Returns a dict with email and challenge history for each student """
     challenge_index, skill_tags = index_challenge_to_module_and_level()
+    default_skills = generate_default_skills(skill_tags)
     challenge_counter = Counter(challenge_index.values())
     students = program.enrolled_students.all()
     challenge_history = {
         student.email: single_student_challenge_history(
-            student, challenge_counter, challenge_index, skill_tags)
+            student, challenge_counter, challenge_index, skill_tags,
+            default_skills)
         for student in students.prefetch_related('challengesubmission_set')
     }
     return challenge_history
