@@ -34,6 +34,7 @@ CONNECTION_STRING = 'mysql+mysqldb://%s:%s@%s:%s/%s%s' % (
 
 LMS_ACTIVITY_TABLE = 'lms_activity'
 
+
 def harvest_course_tree(tree, output_dict, prefix=()):
     """Recursively harvest the breadcrumbs for each component in a tree
 
