@@ -360,6 +360,38 @@ class Program(TimeStampedModel):
         return True if cea is None else False
 
 
+    def enroll_student_in_a_specific_module(self, student_email, course_id):
+        """
+        Enroll a student in a specific module, given the course_id
+        e.g. Careers module: 'course-v1:code_institute+cc_101+2018_T1'
+        """
+
+        enroll_email(course_id, student_email, auto_enroll=True)
+        cea, _ = CourseEnrollmentAllowed.objects.get_or_create(
+            course_id=course.id, email=student_email)
+        cea.auto_enroll = True
+        cea.save()
+        
+        student_to_be_enrolled = User.objects.get(email=student_email)
+
+        self.enrolled_students.add(student_to_be_enrolled)
+        
+        student_successfully_enrolled = None
+        log_message = ""
+        
+        if self.enrolled_students.filter(email=student_email).exists():
+            student_successfully_enrolled = True
+            log_message = "%s was enrolled in the %s module in %s" % (
+                student_email, course_id , self.name)
+        else:
+            student_successfully_enrolled = False
+            log_message = "Failed to enroll in the %s module in %s" % (
+                student_email, course_id , self.name)
+        
+        log.info(log_message)
+        return student_successfully_enrolled
+
+
 class CourseCode(models.Model):
     """
     Store the key and a display names for each course that belongs to a program 
