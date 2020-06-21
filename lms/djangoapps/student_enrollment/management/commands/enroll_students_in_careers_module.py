@@ -40,6 +40,6 @@ class Command(BaseCommand):
 
             # Enroll the student in the program
             enroll_in_careers_module = program.enroll_student_in_a_specific_module(
-                user.email, course_id)
+                user.email, careers_course_id)
 
             print(enroll_in_careers_module)
