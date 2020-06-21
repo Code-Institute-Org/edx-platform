@@ -6,7 +6,6 @@ from ci_program.models import Program
 from student_enrollment.zoho import (
     get_students_to_be_enrolled_in_careers_module
 )
-from opaque_keys import InvalidKeyError
 """
 Students on the Full Stack Developer course are enrolled in the Careers module
 following submission of their Interactive milestone project. Students eligible to 
@@ -24,7 +23,8 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         """
         This will retrieve all of the users from the Zoho CRM API and
-        with an 'Access to Careers Module' status of 'Enroll'.
+        with an 'Access to Careers Module' status of 'Enroll' and
+        will enroll the student in the Careers module.
         """
         careers_course_id = 'course-v1:code_institute+cc_101+2018_T1'
         students = get_students_to_be_enrolled_in_careers_module()
@@ -33,13 +33,18 @@ class Command(BaseCommand):
             if not student['Email']:
                 continue
 
-            user = User.objects.get(email=student['Email'])
-            print(user)
+            try:
+                # check student is a registered user
+                user = User.objects.get(email=student['Email'])
+            except User.DoesNotExist:
+                print('A user with the email %s could not be found. ' \
+                      'Bypassing request to enroll student in Careers module.' 
+                      % student['Email'])
+                continue
+
             program = Program.objects.get(program_code='FS')
-            print(program)
 
             # Enroll the student in the program
             enroll_in_careers_module = program.enroll_student_in_a_specific_module(
                 user.email, careers_course_id)
 
-            print(enroll_in_careers_module)

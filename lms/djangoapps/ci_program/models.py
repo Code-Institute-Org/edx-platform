@@ -365,15 +365,11 @@ class Program(TimeStampedModel):
         Enroll a student in a specific module, given the course_id
         e.g. Careers module: 'course-v1:code_institute+cc_101+2018_T1'
         """
-        for course in self.get_courses():
-            if str(course.id) != 'course-v1:code_institute+cc_101+2018_T1':
-                continue
-
-            enroll_email(course.id, student_email, auto_enroll=True)
-            cea, _ = CourseEnrollmentAllowed.objects.get_or_create(
-                course_id=course.id, email=student_email)
-            cea.auto_enroll = True
-            cea.save()
+        enroll_email(course_id, student_email, auto_enroll=True)
+        cea, _ = CourseEnrollmentAllowed.objects.get_or_create(
+            course_id=course.id, email=student_email)
+        cea.auto_enroll = True
+        cea.save()
         
         student_to_be_enrolled = User.objects.get(email=student_email)
 
@@ -384,12 +380,12 @@ class Program(TimeStampedModel):
         
         if self.enrolled_students.filter(email=student_email).exists():
             student_successfully_enrolled = True
-            log_message = "%s was enrolled in %s" % (
-                student_email, self.name)
+            log_message = "%s was enrolled in module %s of the %s program" % (
+                student_email, course_id, self.name)
         else:
             student_successfully_enrolled = False
-            log_message = "Failed to enroll %s in %s" % (
-                student_email, self.name)
+            log_message = "Failed to enroll %s in module %s of the %s program" % (
+                student_email, course_id, self.name)
         
         log.info(log_message)
         return student_successfully_enrolled
