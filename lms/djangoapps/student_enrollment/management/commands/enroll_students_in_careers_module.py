@@ -1,9 +1,8 @@
-from common.djangoapps.enrollment.data import add_enrollment
-from common.djangoapps.enrollment.errors import CourseEnrollmentExistsError
 from django.core.management.base import BaseCommand
 from django.core.exceptions import ObjectDoesNotExist
 from django.contrib.auth.models import User
 from django.conf import settings
+from ci_program.models import Program
 from student_enrollment.zoho import (
     get_students_to_be_enrolled_in_careers_module
 )
@@ -35,19 +34,8 @@ class Command(BaseCommand):
                 continue
 
             user = User.objects.get(email=student['Email'])
+            program = Program.objects.get(program_code='FS')
 
-            try:
-                add_enrollment(
-                    user=user.username,
-                    course=careers_course_id,
-                    mode='honor')
-            except User.DoesNotExist:
-                print('A user with the email %s could not be found' 
-                      % student['Email'])
-            except InvalidKeyError:
-                print('The CourseLocator %s is invalid.'
-                      % careers_course_id)
-            except CourseEnrollmentExistsError:
-            # If the user is already enrolled in the course, do nothing.
-                pass
-
+            # Enroll the student in the program
+            enroll_in_careers_module = program.enroll_student_in_a_specific_module(
+                user.email, course_id)
