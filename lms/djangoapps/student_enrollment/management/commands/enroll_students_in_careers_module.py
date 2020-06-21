@@ -27,7 +27,7 @@ class Command(BaseCommand):
         with an 'Access to Careers Module' status of 'Enroll'.
         """
         careers_course_id = 'course-v1:code_institute+cc_101+2018_T1'
-        students = get_students_to_be_enrolled_in_careers_module
+        students = get_students_to_be_enrolled_in_careers_module()
 
         for student in students:
             if not student['Email']:
