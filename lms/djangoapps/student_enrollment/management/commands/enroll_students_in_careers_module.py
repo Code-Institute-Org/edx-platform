@@ -49,5 +49,5 @@ class Command(BaseCommand):
                 # Enroll the student in the careers module
                 enroll_in_careers_module = program.enroll_student_in_a_specific_module(
                     user.email, course)
-                print("Successfully enrolled %s in %s module of %s"
-                       % user.email, % course.id, % program)
+                print("Successfully enrolled %s in Careers module of Full Stack program"
+                       % user.email)
