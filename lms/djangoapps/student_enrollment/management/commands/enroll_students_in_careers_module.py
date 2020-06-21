@@ -34,8 +34,12 @@ class Command(BaseCommand):
                 continue
 
             user = User.objects.get(email=student['Email'])
+            print(user)
             program = Program.objects.get(program_code='FS')
+            print(program)
 
             # Enroll the student in the program
             enroll_in_careers_module = program.enroll_student_in_a_specific_module(
                 user.email, course_id)
+
+            print(enroll_in_careers_module)
