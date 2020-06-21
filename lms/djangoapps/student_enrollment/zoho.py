@@ -17,9 +17,9 @@ AND Course_of_Interest_Code is not null
 LIMIT {page},{per_page}
 """
 ENROLL_IN_CAREERS_MODULE_QUERY = """
-SELECT Email
+SELECT Email, Full_Name, Course_of_Interest_Code
 FROM Contacts
-WHERE Access_to_Careers_Module = "Enroll"
+WHERE Access_to_Careers_Module = 'Enroll'
 AND Course_of_Interest_Code is not null
 LIMIT {page},{per_page}
 """
