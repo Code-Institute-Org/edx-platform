@@ -44,8 +44,10 @@ class Command(BaseCommand):
             program = Program.objects.get(program_code='FS')
             careers_course_id = 'course-v1:code_institute+cc_101+2018_T1'
             for course in program.get_courses():
-                if str(course.id) != 'course-v1:code_institute+cc_101+2018_T1':
+                if str(course.id) != careers_course_id:
                     continue
                 # Enroll the student in the careers module
                 enroll_in_careers_module = program.enroll_student_in_a_specific_module(
-                    user.email, course.id)
+                    user.email, course)
+                print("Successfully enrolled %s in %s module of %s"
+                       % user.email, % course.id, % program)

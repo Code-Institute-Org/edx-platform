@@ -360,12 +360,12 @@ class Program(TimeStampedModel):
         return True if cea is None else False
 
 
-    def enroll_student_in_a_specific_module(self, student_email, course_id):
+    def enroll_student_in_a_specific_module(self, student_email, course):
         """
         Enroll a student in a specific module, given the course_id
         e.g. Careers module: 'course-v1:code_institute+cc_101+2018_T1'
         """
-        enroll_email(course_id, student_email, auto_enroll=True)
+        enroll_email(course.id, student_email, auto_enroll=True)
         cea, _ = CourseEnrollmentAllowed.objects.get_or_create(
             course_id=course.id, email=student_email)
         cea.auto_enroll = True
@@ -380,8 +380,6 @@ class Program(TimeStampedModel):
         
         if self.enrolled_students.filter(email=student_email).exists():
             student_successfully_enrolled = True
-            log_message = "%s was enrolled in module %s of the %s program" % (
-                student_email, course_id, self.name)
         else:
             student_successfully_enrolled = False
             log_message = "Failed to enroll %s in module %s of the %s program" % (
