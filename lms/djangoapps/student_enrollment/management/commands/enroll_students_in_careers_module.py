@@ -26,7 +26,6 @@ class Command(BaseCommand):
         with an 'Access to Careers Module' status of 'Enroll' and
         will enroll the student in the Careers module.
         """
-        careers_course_id = 'course-v1:code_institute+cc_101+2018_T1'
         students = get_students_to_be_enrolled_in_careers_module()
 
         for student in students:
@@ -43,8 +42,10 @@ class Command(BaseCommand):
                 continue
 
             program = Program.objects.get(program_code='FS')
-
-            # Enroll the student in the program
-            enroll_in_careers_module = program.enroll_student_in_a_specific_module(
-                user.email, careers_course_id)
-
+            careers_course_id = 'course-v1:code_institute+cc_101+2018_T1'
+            for course in program.get_courses():
+                if str(course.id) != 'course-v1:code_institute+cc_101+2018_T1':
+                    continue
+                # Enroll the student in the careers module
+                enroll_in_careers_module = program.enroll_student_in_a_specific_module(
+                    user.email, course.id)
