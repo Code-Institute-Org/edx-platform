@@ -58,7 +58,6 @@ services:
   rabbitmq:
     image: docker.io/rabbitmq:3.6.10-management-alpine
     restart: unless-stopped
-  
 
   
   smtp:
@@ -85,12 +84,11 @@ services:
   ############# LMS and CMS
 
 
-
-  lms:
+  ci-lms:
     image: edx-patched-dev:latest  # docker.io/overhangio/openedx-dev:3.12.6
     environment:
       SETTINGS: production
-      DEBUG: "True"
+      DEBUG: "False"
     command: ./manage.py lms runserver 0.0.0.0:8000
     volumes:
       - ./config/:/openedx/config/
@@ -112,6 +110,33 @@ services:
       - nginx
 
 
+  ci-cms:
+    image: edx-patched-dev:latest  # docker.io/overhangio/openedx:3.12.6
+    environment:
+      SERVICE_VARIANT: cms
+      GUNICORN_WORKERS: 2
+      SETTINGS: production
+      DEBUG: "False"
+    restart: unless-stopped
+    command: ./manage.py cms runserver 0.0.0.0:8000
+    ports:
+      - "8001:8000"
+    stdin_open: true
+    tty: true
+    volumes:
+      - ./config/:/openedx/config/
+      - ./cms:/openedx/edx-platform/cms
+      - ./common:/openedx/edx-platform/common
+    depends_on:
+      - mysql
+      - elasticsearch
+      - memcached
+      - mongodb
+      - rabbitmq
+      - smtp
+
+
+
   lms-worker:
     image: edx-patched-dev:latest  # docker.io/overhangio/openedx:3.12.6
     environment:
@@ -121,14 +146,12 @@ services:
     command: ./manage.py lms celery worker --loglevel=info --hostname=edx.lms.core.default.%%h --maxtasksperchild 100
     restart: unless-stopped
     volumes:
-#      - ../apps/openedx/settings/lms/:/openedx/edx-platform/lms/envs/tutor/
-#      - ../apps/openedx/settings/cms/:/openedx/edx-platform/cms/envs/tutor/
-#      - ../apps/openedx/config/:/openedx/config/
       - ./config/:/openedx/config/
       - /var/edx/data/lms:/openedx/data
       - /var/edx/data/openedx-media:/openedx/media
     depends_on:
       - rabbitmq
+
 
   nginx:
     image: docker.io/nginx:1.13
@@ -140,3 +163,10 @@ services:
       - ./conf/nginx:/etc/nginx/conf.d/:ro
       - /var/edx/data/openedx:/var/www/openedx:ro
       - /var/edx/data/openedx-media:/var/www/openedx-media:ro
+
+
+  openedx-assets:
+    image: edx-patched-dev:latest  # docker.io/overhangio/openedx:3.12.6
+    volumes:
+      - /var/edx/data/openedx:/var/www/openedx
+    command: sh -c "rm -rf /var/www/openedx/staticfiles && cp -r /openedx/staticfiles/ /var/www/openedx/"

@@ -658,10 +658,11 @@ MANAGERS = ADMINS
 EDX_PLATFORM_REVISION = 'unknown'
 
 # Static content
-STATIC_URL = '/static/studio/'
-STATIC_ROOT = ENV_ROOT / "staticfiles" / 'studio'
+STATIC_URL = '/static/'
+STATIC_ROOT = ENV_ROOT / "staticfiles"
 
 STATICFILES_DIRS = [
+    ENV_ROOT / "static",
     COMMON_ROOT / "static",
     PROJECT_ROOT / "static",
 

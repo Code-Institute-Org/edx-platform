@@ -12,22 +12,6 @@ RUN apt update && \
     gettext gfortran graphviz graphviz-dev libffi-dev libfreetype6-dev libgeos-dev libjpeg8-dev liblapack-dev libpng12-dev libsqlite3-dev libxml2-dev libxmlsec1-dev libxslt1-dev lynx nodejs npm ntp pkg-config \
     && rm -rf /var/lib/apt/lists/*
 
-# Dockerize will be useful to wait for mysql DB availability
-#ARG DOCKERIZE_VERSION=v0.6.1
-#RUN curl -L -o /tmp/dockerize.tar.gz https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSION/dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz \
-#    && tar -C /usr/local/bin -xzvf /tmp/dockerize.tar.gz \
-#    && rm /tmp/dockerize.tar.gz
-
-# Checkout edx-platform code: https://github.com/edx/edx-platform/commits/open-release/ironwood.master
-# Because we are pulling from a branch, and not a tag, you should manually modify the
-# date hash below to force clearing the docker cache.
-#ARG EDX_PLATFORM_REPOSITORY=https://github.com/edx/edx-platform.git
-#ARG EDX_PLATFORM_VERSION=open-release/ironwood.master
-#ARG EDX_PLATFORM_VERSION_DATE=20200505
-#RUN mkdir -p /openedx/edx-platform && \
-#    echo "Pulling $EDX_PLATFORM_VERSION tag from $EDX_PLATFORM_REPOSITORY ($EDX_PLATFORM_VERSION_DATE)" && \
-#    git clone $EDX_PLATFORM_REPOSITORY --branch $EDX_PLATFORM_VERSION --depth 1 /openedx/edx-platform
-
 
 WORKDIR /openedx/edx-platform
 
@@ -108,23 +92,6 @@ RUN pip install -e .
 # Adding this to allow staticfile access from debug server
 RUN ln -s /openedx/staticfiles /openedx/static
 
-
-# Apply patches
-# Allow SigV4 authentication for video uploads to S3 https://github.com/edx/edx-platform/pull/22080
-#RUN curl https://github.com/overhangio/edx-platform/commit/0d4f6cc3433013960b28e963c4094ef2a2a92f04.patch | git apply -
-# Resolve missing tasks in CMS 
-# https://github.com/edx/edx-platform/pull/21297/
-# https://github.com/edx/edx-platform/pull/21305/
-#RUN curl https://github.com/edx/edx-platform/commit/adb2c672e4d17cc1c42bdc206a0051e0fa16b5be.patch | git apply -
-#RUN curl https://github.com/edx/edx-platform/commit/b7ecd80a2bef0d845c3bce97818e70fb3ed9e36d.patch | git apply -
-
-# Download extra locales to /openedx/locale/contrib/locale
-#RUN cd /tmp \
-#    && curl -L -o openedx-i18n.tar.gz https://github.com/openedx/openedx-i18n/archive/ironwood.tar.gz \
-#    && tar xzf /tmp/openedx-i18n.tar.gz \
-#    && mkdir -p /openedx/locale/contrib \
-#    && mv openedx-i18n-ironwood/edx-platform/locale /openedx/locale/contrib \
-#    && rm -rf openedx-i18n*
 
 # Install a recent version of nodejs
 RUN nodeenv /openedx/nodeenv --node=8.9.3 --prebuilt

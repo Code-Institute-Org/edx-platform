@@ -4,7 +4,6 @@ services:
   memcached:
     image: docker.io/memcached:1.4.38
     restart: unless-stopped
-  
 
   
   mongodb:
@@ -14,7 +13,6 @@ services:
     restart: unless-stopped
     volumes:
       - /var/edx/data/mongodb:/data/db
-  
 
   
   mysql:
@@ -48,6 +46,7 @@ services:
       - /var/edx/data/openedx:/var/www/openedx
     command: sh -c "rm -rf /var/www/openedx/staticfiles && cp -r /openedx/staticfiles/ /var/www/openedx/"
 
+
   nginx:
     image: docker.io/nginx:1.13
     restart: unless-stopped
@@ -62,16 +61,14 @@ services:
       - /var/edx/data/openedx:/var/www/openedx:ro
       - /var/edx/data/openedx-media:/var/www/openedx-media:ro
       
-      
     depends_on: ["lms", "cms"]
 
-  
+
   rabbitmq:
     image: docker.io/rabbitmq:3.6.10-management-alpine
     volumes:
       - /var/edx/data/rabbitmq:/var/lib/rabbitmq
     restart: unless-stopped
-  
 
   
   smtp:
@@ -91,11 +88,11 @@ services:
       MONGODB_PORT: "27017"
     restart: unless-stopped
     depends_on: ["elasticsearch", "mongodb"]
-  
+
 
   ############# LMS and CMS
 
-  
+
   lms:
     image: edx-patched-dev:latest  # docker.io/overhangio/openedx:3.12.6
     environment:
@@ -103,12 +100,10 @@ services:
       GUNICORN_WORKERS: 2
       SETTINGS: development
     restart: unless-stopped
+    ports:
+      - "8000:8000"
     volumes:
       - ./config/:/openedx/config/
-#    volumes:
-#      - ../apps/openedx/settings/lms/:/openedx/edx-platform/lms/envs/tutor/
-#      - ../apps/openedx/settings/cms/:/openedx/edx-platform/cms/envs/tutor/
-#      - ../apps/openedx/config/:/openedx/config/
       - /var/edx/data/lms:/openedx/data
       - /var/edx/data/openedx-media:/openedx/media
     depends_on:
@@ -119,10 +114,8 @@ services:
       - mongodb
       - rabbitmq
       - smtp
-      
-  
 
-  
+
   cms:
     image: edx-patched-dev:latest  # docker.io/overhangio/openedx:3.12.6
     environment:
@@ -141,12 +134,11 @@ services:
       - mongodb
       - rabbitmq
       - smtp
-      
-  
+
 
   ############# LMS and CMS workers
 
-  
+
   lms-worker:
     image: edx-patched-dev:latest  # docker.io/overhangio/openedx:3.12.6
     environment:
@@ -156,16 +148,13 @@ services:
     command: ./manage.py lms celery worker --loglevel=info --hostname=edx.lms.core.default.%%h --maxtasksperchild 100
     restart: unless-stopped
     volumes:
-#      - ../apps/openedx/settings/lms/:/openedx/edx-platform/lms/envs/tutor/
-#      - ../apps/openedx/settings/cms/:/openedx/edx-platform/cms/envs/tutor/
-#      - ../apps/openedx/config/:/openedx/config/
+      - ./config/:/openedx/config/
       - /var/edx/data/lms:/openedx/data
       - /var/edx/data/openedx-media:/openedx/media
     depends_on:
       - lms
-  
 
-  
+
   cms-worker:
     image: edx-patched-dev:latest  # docker.io/overhangio/openedx:3.12.6
     environment:
@@ -175,13 +164,8 @@ services:
     command: ./manage.py cms celery worker --loglevel=info --hostname=edx.cms.core.default.%%h --maxtasksperchild 100
     restart: unless-stopped
     volumes:
-#      - ../apps/openedx/settings/lms/:/openedx/edx-platform/lms/envs/tutor/
-#      - ../apps/openedx/settings/cms/:/openedx/edx-platform/cms/envs/tutor/
-#      - ../apps/openedx/config/:/openedx/config/
+      - ./config/:/openedx/config/
       - /var/edx/data/lms:/openedx/data
       - /var/edx/data/openedx-media:/openedx/media
     depends_on:
       - cms
-  
-
-  

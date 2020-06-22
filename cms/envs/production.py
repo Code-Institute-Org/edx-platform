@@ -35,7 +35,7 @@ CONFIG_PREFIX = SERVICE_VARIANT + "." if SERVICE_VARIANT else ""
 
 ############### ALWAYS THE SAME ################################
 
-DEBUG = False
+DEBUG = os.environ.get('DEBUG', 'False').lower() in ['t', 'true', '1']
 
 EMAIL_BACKEND = 'django_ses.SESBackend'
 SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
@@ -84,6 +84,49 @@ CELERY_QUEUES = {
 
 CELERY_ROUTES = "{}celery.Router".format(QUEUE_VARIANT)
 
+
+################################ DEBUG TOOLBAR ################################
+
+if DEBUG:
+    INSTALLED_APPS += ['debug_toolbar', 'debug_toolbar_mongo']
+
+    MIDDLEWARE_CLASSES.append('debug_toolbar.middleware.DebugToolbarMiddleware')
+    INTERNAL_IPS = ('127.0.0.1',)
+
+    DEBUG_TOOLBAR_PANELS = (
+        'debug_toolbar.panels.versions.VersionsPanel',
+        'debug_toolbar.panels.timer.TimerPanel',
+        'debug_toolbar.panels.settings.SettingsPanel',
+        'debug_toolbar.panels.headers.HeadersPanel',
+        'debug_toolbar.panels.request.RequestPanel',
+        'debug_toolbar.panels.sql.SQLPanel',
+        'debug_toolbar.panels.signals.SignalsPanel',
+        'debug_toolbar.panels.logging.LoggingPanel',
+        'debug_toolbar.panels.profiling.ProfilingPanel',
+    )
+
+    DEBUG_TOOLBAR_CONFIG = {
+        # Profile panel is incompatible with wrapped views
+        # See https://github.com/jazzband/django-debug-toolbar/issues/792
+        'DISABLE_PANELS': (
+            'debug_toolbar.panels.profiling.ProfilingPanel',
+        ),
+        'SHOW_TOOLBAR_CALLBACK': 'cms.envs.devstack.should_show_debug_toolbar',
+    }
+
+
+    def should_show_debug_toolbar(request):
+        # We always want the toolbar on devstack unless running tests from another Docker container
+        if request.get_host().startswith('edx.devstack.studio:'):
+            return False
+        return True
+
+
+    # To see stacktraces for MongoDB queries, set this to True.
+    # Stacktraces slow down page loads drastically (for pages with lots of queries).
+    DEBUG_TOOLBAR_MONGO_STACKTRACES = False
+
+
 ############# NON-SECURE ENV CONFIG ##############################
 # Things like server locations, ports, etc.
 with open(CONFIG_ROOT / CONFIG_PREFIX + "env.json") as env_file:
@@ -93,13 +136,13 @@ with open(CONFIG_ROOT / CONFIG_PREFIX + "env.json") as env_file:
 EDX_PLATFORM_REVISION = ENV_TOKENS.get('EDX_PLATFORM_REVISION', EDX_PLATFORM_REVISION)
 
 # STATIC_URL_BASE specifies the base url to use for static files
-STATIC_URL_BASE = ENV_TOKENS.get('STATIC_URL_BASE', None)
-if STATIC_URL_BASE:
-    # collectstatic will fail if STATIC_URL is a unicode string
-    STATIC_URL = STATIC_URL_BASE.encode('ascii')
-    if not STATIC_URL.endswith("/"):
-        STATIC_URL += "/"
-    STATIC_URL += 'studio/'
+#STATIC_URL_BASE = ENV_TOKENS.get('STATIC_URL_BASE', None)
+#if STATIC_URL_BASE:
+#    # collectstatic will fail if STATIC_URL is a unicode string
+#    STATIC_URL = STATIC_URL_BASE.encode('ascii')
+#    if not STATIC_URL.endswith("/"):
+#        STATIC_URL += "/"
+#    STATIC_URL += 'studio/'
 
 # DEFAULT_COURSE_ABOUT_IMAGE_URL specifies the default image to show for courses that don't provide one
 DEFAULT_COURSE_ABOUT_IMAGE_URL = ENV_TOKENS.get('DEFAULT_COURSE_ABOUT_IMAGE_URL', DEFAULT_COURSE_ABOUT_IMAGE_URL)
@@ -620,3 +663,7 @@ plugin_settings.add_plugins(__name__, plugin_constants.ProjectType.CMS, plugin_c
 ########################## Derive Any Derived Settings  #######################
 
 derive_settings(__name__)
+
+
+STATIC_URL = '/static/studio/'
+STATIC_ROOT = ENV_ROOT / "staticfiles/studio"
