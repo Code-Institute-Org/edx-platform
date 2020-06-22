@@ -75,7 +75,6 @@ def get_students_to_be_enrolled_in_careers_module():
 
         students.extend(students_resp.json()['data'])
         if not students_resp.json()['info']['more_records']:
-            print(students)
             return students
 
 
