@@ -21,7 +21,7 @@ import contracts
 contracts.disable_all()
 
 import os
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "lms.envs.aws")
+#os.environ.setdefault("DJANGO_SETTINGS_MODULE", "lms.envs.aws")
 
 import lms.startup as startup
 startup.run()
@@ -30,7 +30,7 @@ from xmodule.modulestore.django import modulestore
 
 # Trigger a forced initialization of our modulestores since this can take a
 # while to complete and we want this done before HTTP requests are accepted.
-modulestore()
+#modulestore()
 
 
 # This application object is used by the development server

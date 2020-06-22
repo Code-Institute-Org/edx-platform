@@ -89,7 +89,7 @@ services:
     environment:
       SETTINGS: production
       DEBUG: "False"
-    command: ./manage.py lms runserver 0.0.0.0:8000
+#    command: ./manage.py lms runserver 0.0.0.0:8000
     volumes:
       - ./config/:/openedx/config/
       - ./lms:/openedx/edx-platform/lms
@@ -118,7 +118,7 @@ services:
       SETTINGS: production
       DEBUG: "False"
     restart: unless-stopped
-    command: ./manage.py cms runserver 0.0.0.0:8000
+#    command: ./manage.py cms runserver 0.0.0.0:8000
     ports:
       - "8001:8000"
     stdin_open: true
