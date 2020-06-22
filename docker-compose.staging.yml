@@ -1,0 +1,137 @@
+version: "3.7"
+services:
+
+  memcached:
+    image: docker.io/memcached:1.4.38
+
+  
+  mongodb:
+    image: docker.io/mongo:3.2.16
+    # Use WiredTiger in all environments, just like at edx.org
+    command: mongod --smallfiles --nojournal --storageEngine wiredTiger
+    volumes:
+      - /var/edx/data/mongodb:/data/db
+
+  
+  mysql:
+    image: docker.io/mysql:5.6.36
+    command: mysqld --character-set-server=utf8 --collation-server=utf8_general_ci
+    volumes:
+      - /var/edx/data/mysql:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: "a4sQrRUq"
+      MYSQL_DATABASE: openedx
+      MYSQL_USER: openedx
+      MYSQL_PASSWORD: "h61EqXte"
+
+  
+  elasticsearch:
+    image: docker.io/elasticsearch:1.5.2
+    command: ["elasticsearch", "--cluster.name=openedx", "--bootstrap.mlockall=true"]
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - /var/edx/data/elasticsearch:/usr/share/elasticsearch/data
+  
+
+  openedx-assets:
+    image: docker.io/overhangio/openedx:3.12.6
+    volumes:
+      - /var/edx/data/openedx:/var/www/openedx
+    command: sh -c "rm -rf /var/www/openedx/staticfiles && cp -r /openedx/staticfiles/ /var/www/openedx/"
+
+
+  nginx:
+    image: docker.io/nginx:1.13
+    ports:
+      - "80:80"
+      - "443:443"
+    networks:
+      default:
+        aliases: []
+    volumes:
+      - ./conf/nginx:/etc/nginx/conf.d/:ro
+      - /var/edx/data/openedx:/var/www/openedx:ro
+      - /var/edx/data/openedx-media:/var/www/openedx-media:ro
+
+
+  rabbitmq:
+    image: docker.io/rabbitmq:3.6.10-management-alpine
+    volumes:
+      - /var/edx/data/rabbitmq:/var/lib/rabbitmq
+
+  
+  smtp:
+    image: mailhog/mailhog:latest
+  
+
+  ############# Forum
+
+  
+  forum:
+    image: docker.io/overhangio/openedx-forum:3.12.6
+    environment:
+      SEARCH_SERVER: "http://elasticsearch:9200"
+      MONGODB_AUTH: ""
+      MONGODB_HOST: "mongodb"
+      MONGODB_PORT: "27017"
+
+
+  ############# LMS and CMS
+
+
+  ci-lms:
+    image: edx-patched-dev:latest  # docker.io/overhangio/openedx:3.12.6
+    environment:
+      SERVICE_VARIANT: lms
+      GUNICORN_WORKERS: 2
+      SETTINGS: production
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./config/:/openedx/config/
+      - /var/edx/data/lms:/openedx/data
+      - /var/edx/data/openedx-media:/openedx/media
+
+
+  ci-cms:
+    image: edx-patched-dev:latest  # docker.io/overhangio/openedx:3.12.6
+    environment:
+      SERVICE_VARIANT: cms
+      GUNICORN_WORKERS: 2
+      SETTINGS: production
+    volumes:
+      - ./config/:/openedx/config/
+      - /var/edx/data/lms:/openedx/data
+      - /var/edx/data/openedx-media:/openedx/media
+
+
+  ############# LMS and CMS workers
+
+
+  lms-worker:
+    image: edx-patched-dev:latest  # docker.io/overhangio/openedx:3.12.6
+    environment:
+      SERVICE_VARIANT: lms
+      SETTINGS: production
+      C_FORCE_ROOT: "1" # run celery tasks as root #nofear
+    command: ./manage.py lms celery worker --loglevel=info --hostname=edx.lms.core.default.%%h --maxtasksperchild 100
+    volumes:
+      - ./config/:/openedx/config/
+      - /var/edx/data/lms:/openedx/data
+      - /var/edx/data/openedx-media:/openedx/media
+
+
+  cms-worker:
+    image: edx-patched-dev:latest  # docker.io/overhangio/openedx:3.12.6
+    environment:
+      SERVICE_VARIANT: cms
+      SETTINGS: production
+      C_FORCE_ROOT: "1" # run celery tasks as root #nofear
+    command: ./manage.py cms celery worker --loglevel=info --hostname=edx.cms.core.default.%%h --maxtasksperchild 100
+    volumes:
+      - ./config/:/openedx/config/
+      - /var/edx/data/lms:/openedx/data
+      - /var/edx/data/openedx-media:/openedx/media
