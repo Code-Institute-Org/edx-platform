@@ -28,19 +28,15 @@ services:
   elasticsearch:
     image: docker.io/elasticsearch:1.5.2
     command: ["elasticsearch", "--cluster.name=openedx", "--bootstrap.mlockall=true"]
-    ulimits:
-      memlock:
-        soft: -1
-        hard: -1
     volumes:
       - /var/edx/data/elasticsearch:/usr/share/elasticsearch/data
   
 
-  openedx-assets:
-    image: docker.io/overhangio/openedx:3.12.6
-    volumes:
-      - /var/edx/data/openedx:/var/www/openedx
-    command: sh -c "rm -rf /var/www/openedx/staticfiles && cp -r /openedx/staticfiles/ /var/www/openedx/"
+#  openedx-assets:
+#    image: docker.io/overhangio/openedx:3.12.6
+#    volumes:
+#      - /var/edx/data/openedx:/var/www/openedx
+#    command: sh -c "rm -rf /var/www/openedx/staticfiles && cp -r /openedx/staticfiles/ /var/www/openedx/"
 
 
   nginx:
