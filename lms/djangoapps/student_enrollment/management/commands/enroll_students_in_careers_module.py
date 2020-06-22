@@ -3,6 +3,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.contrib.auth.models import User
 from django.conf import settings
 from ci_program.models import Program
+from student_enrollment.utils import post_to_zapier
 from student_enrollment.zoho import (
     get_students_to_be_enrolled_in_careers_module
 )
@@ -27,6 +28,8 @@ class Command(BaseCommand):
         will enroll the student in the Careers module.
         """
         students = get_students_to_be_enrolled_in_careers_module()
+        program = Program.objects.get(program_code='FS')
+        careers_course_id = 'course-v1:code_institute+cc_101+2018_T1'
 
         for student in students:
             if not student['Email']:
@@ -41,13 +44,15 @@ class Command(BaseCommand):
                       % student['Email'])
                 continue
 
-            program = Program.objects.get(program_code='FS')
-            careers_course_id = 'course-v1:code_institute+cc_101+2018_T1'
             for course in program.get_courses():
                 if str(course.id) != careers_course_id:
                     continue
                 # Enroll the student in the careers module
                 enroll_in_careers_module = program.enroll_student_in_a_specific_module(
                     user.email, course)
+                # Trigger zap to update the CRM
+                post_to_zapier(
+                    settings.ZAPIER_CAREERS_MODULE_ENROLLMENT_URL, {"email": user.email})
+
                 print("Successfully enrolled %s in Careers module of Full Stack program"
                        % user.email)
