@@ -34,6 +34,7 @@ CONNECTION_STRING = 'mysql+mysqldb://%s:%s@%s:%s/%s%s' % (
 
 LMS_ACTIVITY_TABLE = 'lms_activity'
 
+
 def harvest_course_tree(tree, output_dict, prefix=()):
     """Recursively harvest the breadcrumbs for each component in a tree
 
@@ -289,7 +290,6 @@ def all_student_data(program):
         student_dict.update(completed_units_per_module(completed_units))
         student_dict.update(
             lessons_days_into_per_module(first_active, completed_lessons))
-            
         student_dict.update(student_challenges)
 
         yield student_dict
