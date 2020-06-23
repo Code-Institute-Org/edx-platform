@@ -7,6 +7,8 @@ from student_enrollment.utils import post_to_zapier
 from student_enrollment.zoho import (
     get_students_to_be_enrolled_in_careers_module
 )
+
+CAREERS_COURSE_ID = 'course-v1:code_institute+cc_101+2018_T1'
 """
 Students on the Full Stack Developer course are enrolled in the Careers module
 following submission of their Interactive milestone project. Students eligible to 
@@ -29,7 +31,6 @@ class Command(BaseCommand):
         """
         students = get_students_to_be_enrolled_in_careers_module()
         program = Program.objects.get(program_code='FS')
-        careers_course_id = 'course-v1:code_institute+cc_101+2018_T1'
 
         for student in students:
             if not student['Email']:
@@ -45,7 +46,7 @@ class Command(BaseCommand):
                 continue
 
             for course in program.get_courses():
-                if str(course.id) != careers_course_id:
+                if str(course.id) != CAREERS_COURSE_ID:
                     continue
                 # Enroll the student in the careers module
                 enroll_in_careers_module = program.enroll_student_in_a_specific_module(
