@@ -352,11 +352,14 @@ class Program(TimeStampedModel):
         """
         for course in self.get_courses():
             unenroll_email(course.id, student.email)
+            log_message = "%s was unenrolled from %s" % (
+                student_email, self.name)
         
         self.enrolled_students.remove(User.objects.get(email=student.email))
         enrolled_courses = student.courseenrollment_set.all()
         cea = CourseEnrollmentAllowed.objects.filter(email=student.email).delete()
         
+        log.info(log_message)
         return True if cea is None else False
 
 
