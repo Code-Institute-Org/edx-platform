@@ -5,7 +5,7 @@ from django.conf import settings
 from ci_program.models import Program
 from student_enrollment.utils import get_or_register_student
 from student_enrollment.zoho import (
-    get_students,
+    get_students_to_be_unenrolled,
     parse_course_of_interest_code,
     update_student_record
 )
