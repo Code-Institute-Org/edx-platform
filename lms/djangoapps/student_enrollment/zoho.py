@@ -9,11 +9,19 @@ REFRESH_TOKEN = settings.ZOHO_REFRESH_TOKEN
 REFRESH_ENDPOINT = settings.ZOHO_REFRESH_ENDPOINT
 COQL_ENDPOINT = settings.ZOHO_COQL_ENDPOINT
 
-QUERY = """
+ENROLL_QUERY = """
 SELECT Email, Full_Name, Course_of_Interest_Code
 FROM Contacts
-WHERE Lead_Status = {lead_status}
+WHERE Lead_Status = 'Enroll'
 AND Course_of_Interest_Code is not null
+LIMIT {page},{per_page}
+"""
+UNENROLL_QUERY = """
+SELECT Email, Full_Name, Course_of_Interest_Code
+FROM Contacts
+WHERE (((LMS_Access_Status = 'To Be Removed')
+AND (Reason_for_Unenrollment is not null))
+AND (Course_of_Interest_Code is not null))
 LIMIT {page},{per_page}
 """
 ENROLL_IN_CAREERS_MODULE_QUERY = """
@@ -26,9 +34,9 @@ LIMIT {page},{per_page}
 RECORDS_PER_PAGE = 200
 
 
-def get_students(lead_status):
+def get_students_to_be_enrolled():
     """Fetch from Zoho all students
-    with the provided lead_status
+    with a Lead Status of 'Enroll'
     API documentation for this endpoint:
     https://www.zohoapis.com/crm/v2/coql
     """
@@ -36,8 +44,33 @@ def get_students(lead_status):
     auth_headers = get_auth_headers()
 
     for page in count():
-        query = QUERY.format(
-                    lead_status=lead_status,
+        query = ENROLL_QUERY.format(
+                    page=page*RECORDS_PER_PAGE,
+                    per_page=RECORDS_PER_PAGE)
+        students_resp = requests.post(
+            COQL_ENDPOINT,
+            headers=auth_headers,
+            json={"select_query":query})
+        if students_resp.status_code != 200:
+            return students
+
+        students.extend(students_resp.json()['data'])
+        if not students_resp.json()['info']['more_records']:
+            return students
+
+
+def get_students_to_be_unenrolled():
+    """Fetch from Zoho all students
+    with an LMS_Access_Status of 'To Be Removed'
+    and a provided 'Reason for Removal'
+    API documentation for this endpoint:
+    https://www.zohoapis.com/crm/v2/coql
+    """
+    students = []
+    auth_headers = get_auth_headers()
+
+    for page in count():
+        query = UNENROLL_QUERY.format(
                     page=page*RECORDS_PER_PAGE,
                     per_page=RECORDS_PER_PAGE)
         students_resp = requests.post(

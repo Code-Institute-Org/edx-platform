@@ -30,7 +30,7 @@ class Command(BaseCommand):
         # we'll set the type as a constact
         ENROLLMENT_TYPE = 1
 
-        zoho_students = get_students(lead_status='Unenroll')
+        zoho_students = get_students_to_be_unenrolled()
 
         for student in zoho_students:
             # Get the user
