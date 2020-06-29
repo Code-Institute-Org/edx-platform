@@ -19,7 +19,7 @@ LIMIT {page},{per_page}
 UNENROLL_QUERY = """
 SELECT Email, Full_Name, Course_of_Interest_Code
 FROM Contacts
-WHERE (((LMS_Access_Status = 'To Be Removed')
+WHERE (((LMS_Access_Status = 'To be removed')
 AND (Reason_for_Unenrollment is not null))
 AND (Course_of_Interest_Code is not null))
 LIMIT {page},{per_page}
@@ -61,7 +61,7 @@ def get_students_to_be_enrolled():
 
 def get_students_to_be_unenrolled():
     """Fetch from Zoho all students
-    with an LMS_Access_Status of 'To Be Removed'
+    with an LMS_Access_Status of 'To be removed'
     and a provided 'Reason for Removal'
     API documentation for this endpoint:
     https://www.zohoapis.com/crm/v2/coql
