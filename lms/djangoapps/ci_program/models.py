@@ -347,20 +347,26 @@ class Program(TimeStampedModel):
 
         `student` is the user instance that we which to enroll in the program
 
-        Returns True if the student was successfully unenrolled from all of the courses,
-            otherwise, return False
+        Returns cea (CourseEnrollmentAllowed) as False if the student was 
+        successfully unenrolled from all of the courses, otherwise, return True
         """
         for course in self.get_courses():
             unenroll_email(course.id, student.email)
-                
+
         self.enrolled_students.remove(User.objects.get(email=student.email))
         enrolled_courses = student.courseenrollment_set.all()
         cea = CourseEnrollmentAllowed.objects.filter(email=student.email).delete()
         
-        log_message = "%s was unenrolled from %s" % (
-            student.email, self.name)
-        log.info(log_message)
-        return True if cea is None else False
+        if cea is None:
+            log_message = "%s was successfully unenrolled from %s" % (
+                student.email, self.name)
+            log.info(log_message)
+            return False
+        else:
+            log_message = "Attempt to unenroll %s from %s was unsuccessful" % (
+                student.email, self.name)
+            log.info(log_message)
+            return True
 
 
     def enroll_student_in_a_specific_module(self, student_email, course):
