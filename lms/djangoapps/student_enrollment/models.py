@@ -98,6 +98,7 @@ class StudentEnrollment(TimeStampedModel):
         to_address = self.student.email
         from_address = settings.DEFAULT_FROM_EMAIL
         student_password = password
+        reply_to_address = 'studentcare@codeinstitute.net'
 
         template_location, subject = self.email_template_location_and_subject(
             enrollment_type)
@@ -106,7 +107,8 @@ class StudentEnrollment(TimeStampedModel):
         email_content = construct_email(to_address, from_address,
                                        template_location,
                                        student_password=password,
-                                       program_name=self.name)
+                                       program_name=self.name,
+                                       reply_to_address=reply_to_address)
 
         # Create a new email connection
         email_connection = create_email_connection()
