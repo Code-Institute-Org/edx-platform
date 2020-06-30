@@ -255,7 +255,7 @@ class Program(TimeStampedModel):
                 self.course_codes.first().key)
             reply_to_address = 'billy@codeinstitute.net'
         elif self.name == "All Access Coding Challenges - In Partnership With Springboard":
-             module_url = "https://courses.codeinstitute.net/courses/{}/course/".format(
+            module_url = "https://courses.codeinstitute.net/courses/{}/course/".format(
                 self.course_codes.first().key)
             reply_to_address = 'ciara@codeinstitute.net'           
         else:
