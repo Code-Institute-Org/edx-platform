@@ -246,12 +246,18 @@ class Program(TimeStampedModel):
         to_address = student.email
         from_address = 'learning@codeinstitute.net'
         student_password = password
+        reply_to_address = 'studentcare@codeinstitute.net'
         
         self.enrollment_type = enrollment_type
         
         if self.name == "Five Day Coding Challenge":
             module_url = "https://courses.codeinstitute.net/courses/{}/course/".format(
                 self.course_codes.first().key)
+            reply_to_address = 'billy@codeinstitute.net'
+        elif self.name == "All Access Coding Challenges - In Partnership With Springboard":
+             module_url = "https://courses.codeinstitute.net/courses/{}/course/".format(
+                self.course_codes.first().key)
+            reply_to_address = 'ciara@codeinstitute.net'           
         else:
             module_url = None
         
@@ -263,6 +269,7 @@ class Program(TimeStampedModel):
                                        template_location,
                                        student_password=password,
                                        program_name=self.name,
+                                       reply_to_address=reply_to_address,
                                        module_url=module_url)
         
         # Create a new email connection
