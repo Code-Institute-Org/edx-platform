@@ -9,7 +9,7 @@ from lms.djangoapps.learning_success.management.commands.challenges_helper impor
 from collections import Counter, defaultdict, OrderedDict
 from datetime import datetime, timedelta
 import json
-
+import math
 import pandas as pd
 import pytz
 import requests
@@ -315,6 +315,13 @@ class Command(BaseCommand):
 
         df = pd.DataFrame(student_data)
         engine = create_engine(CONNECTION_STRING, echo=False)
-        df.to_sql(name=LMS_ACTIVITY_TABLE, 
-                  con=engine, 
-                  if_exists='replace')
+        write_type = 'replace'
+        interval = 1000
+        # df.shape[0] holds the number of rows in the DataFrame
+        for i in range(math.ceil(df.shape[0]/interval)): 
+            print(f"From {i*interval} to {i*interval+(interval-1)}")
+            print(df.loc[i*interval:i*interval+(interval-1)])
+            df.to_sql(name=LMS_ACTIVITY_TABLE, 
+                    con=engine, 
+                    if_exists='replace')
+            write_type='append'
