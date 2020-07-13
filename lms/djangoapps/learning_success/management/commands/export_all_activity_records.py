@@ -318,10 +318,9 @@ class Command(BaseCommand):
         write_type = 'replace'
         interval = 1000
         # df.shape[0] holds the number of rows in the DataFrame
-        for i in range(math.ceil(df.shape[0]/interval)): 
-            print(f"From {i*interval} to {i*interval+(interval-1)}")
-            print(df.loc[i*interval:i*interval+(interval-1)])
-            df.to_sql(name=LMS_ACTIVITY_TABLE, 
+        for subset in range(int(math.ceil(df.shape[0]/interval))):
+            df_subset = df.loc[subset*interval:subset*interval+(interval-1)]
+            df_subset.to_sql(name=LMS_ACTIVITY_TABLE,
                     con=engine, 
-                    if_exists='replace')
+                    if_exists=write_type)
             write_type='append'
