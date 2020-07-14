@@ -6,7 +6,7 @@ from django.contrib.auth.models import User
 from django.conf import settings
 from ci_program.models import Program
 from student_enrollment.utils import (
-    get_or_register_student, post_to_zapier, send_success_or_exception_email
+    get_or_register_student, post_to_zapier
 )
 from student_enrollment.zoho import (
     get_students_to_be_enrolled,
@@ -30,8 +30,6 @@ initial student onboarding/enrollment process like the Careers module.
 EXCLUDED_FROM_ONBOARDING = ['course-v1:code_institute+cc_101+2018_T1',
                             'course-v1:CodeInstitute+F101+2017_T1',
                             ]
-FROM_ADDRESS = 'platform@codeinstitute.net'
-RECIPIENT_LIST = ['platform@codeinstitute.net']
 
 
 class Command(BaseCommand):
