@@ -9,7 +9,7 @@ from student_enrollment.utils import (
     get_or_register_student, post_to_zapier, send_success_or_exception_email
 )
 from student_enrollment.zoho import (
-    get_students,
+    get_students_to_be_enrolled,
     parse_course_of_interest_code
 )
 from lms.djangoapps.student_enrollment.models import EnrollmentStatusHistory
@@ -52,7 +52,8 @@ class Command(BaseCommand):
         if they miss payments (or other circumstances) which means they
         may already be registered in the system.
         """
-        zoho_students = get_students(lead_status='Enroll')
+        zoho_students = get_students_to_be_enrolled()
+
         for student in zoho_students:
             if not student['Email']:
                 continue
@@ -111,13 +112,4 @@ class Command(BaseCommand):
                 enrollment_type=enrollment_type,
                 enrolled=bool(program_enrollment_status),
                 email_sent=email_sent_status)
-            enrollment_status.save()
-
-        email_content = ('<h2>Successfully enrolled %d students.</h2>'
-                                % len(zoho_students))
-        send_success_or_exception_email(
-            email_subject='Student Enrollment Successful',
-            content=email_content,
-            from_address=FROM_ADDRESS,
-            recipient_list=RECIPIENT_LIST)
-            
+            enrollment_status.save()            

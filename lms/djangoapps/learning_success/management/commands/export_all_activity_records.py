@@ -34,6 +34,7 @@ CONNECTION_STRING = 'mysql+mysqldb://%s:%s@%s:%s/%s%s' % (
 
 LMS_ACTIVITY_TABLE = 'lms_activity'
 
+
 def harvest_course_tree(tree, output_dict, prefix=()):
     """Recursively harvest the breadcrumbs for each component in a tree
 
@@ -80,6 +81,9 @@ def days_into_data(first_active, completion_timestamps):
 
 
 def format_module_field(module_name, suffix):
+    # TODO: Rename module name once there is no student who can view it
+    if module_name == 'Full Stack Frameworks with Django - retiring Aug 31':
+        return 'full_stack_frameworks_with_django'
     return module_name.lower().replace(' ', '_') + suffix
 
 
@@ -289,7 +293,6 @@ def all_student_data(program):
         student_dict.update(completed_units_per_module(completed_units))
         student_dict.update(
             lessons_days_into_per_module(first_active, completed_lessons))
-            
         student_dict.update(student_challenges)
 
         yield student_dict

@@ -347,17 +347,55 @@ class Program(TimeStampedModel):
 
         `student` is the user instance that we which to enroll in the program
 
-        Returns True if the student was successfully unenrolled from all of the courses,
-            otherwise, return False
+        Returns cea (CourseEnrollmentAllowed) as False if the student was 
+        successfully unenrolled from all of the courses, otherwise, return True
         """
         for course in self.get_courses():
             unenroll_email(course.id, student.email)
-        
+
         self.enrolled_students.remove(User.objects.get(email=student.email))
         enrolled_courses = student.courseenrollment_set.all()
         cea = CourseEnrollmentAllowed.objects.filter(email=student.email).delete()
         
-        return True if cea is None else False
+        if cea is None:
+            log_message = "%s was successfully unenrolled from %s" % (
+                student.email, self.name)
+            log.info(log_message)
+            return False
+        else:
+            log_message = "Attempt to unenroll %s from %s was unsuccessful" % (
+                student.email, self.name)
+            log.info(log_message)
+            return True
+
+
+    def enroll_student_in_a_specific_module(self, student_email, course):
+        """
+        Enroll a student in a specific module, given the course_id
+        e.g. Careers module: 'course-v1:code_institute+cc_101+2018_T1'
+        """
+        enroll_email(course.id, student_email, auto_enroll=True)
+        cea, _ = CourseEnrollmentAllowed.objects.get_or_create(
+            course_id=course.id, email=student_email)
+        cea.auto_enroll = True
+        cea.save()
+        
+        student_to_be_enrolled = User.objects.get(email=student_email)
+
+        self.enrolled_students.add(student_to_be_enrolled)
+        
+        student_successfully_enrolled = None
+        log_message = ""
+        
+        if self.enrolled_students.filter(email=student_email).exists():
+            student_successfully_enrolled = True
+        else:
+            student_successfully_enrolled = False
+            log_message = "Failed to enroll %s in module %s of the %s program" % (
+                student_email, course_id, self.name)
+        
+        log.info(log_message)
+        return student_successfully_enrolled
 
 
 class CourseCode(models.Model):
