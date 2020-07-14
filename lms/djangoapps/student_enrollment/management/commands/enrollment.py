@@ -52,75 +52,72 @@ class Command(BaseCommand):
         if they miss payments (or other circumstances) which means they
         may already be registered in the system.
         """
-        try:
-            zoho_students = get_students(lead_status='Enroll')
-            for student in zoho_students:
-                if not student['Email']:
-                    continue
+        zoho_students = get_students(lead_status='Enroll')
+        for student in zoho_students:
+            if not student['Email']:
+                continue
 
-                # Get the user, the user's password, and their enrollment type
-                user, password, enrollment_type = get_or_register_student(
-                    student['Email'], student['Email'])
+            # Get the user, the user's password, and their enrollment type
+            user, password, enrollment_type = get_or_register_student(
+                student['Email'], student['Email'])
 
-                # Get the code for the course the student is enrolling in
-                program_to_enroll_in = parse_course_of_interest_code(
-                    student['Course_of_Interest_Code'])
+            # Get the code for the course the student is enrolling in
+            program_to_enroll_in = parse_course_of_interest_code(
+                student['Course_of_Interest_Code'])
 
+            try:
                 # Get the Program that contains the th Zoho program code
                 program = Program.objects.get(
                     program_code=program_to_enroll_in)
 
-                # Enroll the student in the program
-                program_enrollment_status = program.enroll_student_in_program(
-                    user.email,
-                    exclude_courses=EXCLUDED_FROM_ONBOARDING)
-
-                # Send the email
-                email_sent_status = program.send_email(
-                    user, enrollment_type, password)
-
-                # Set the students access level (i.e. determine whether or
-                # not a student is allowed to access to the LMS.
-                # Deprecated...
-                access, created = ProgramAccessStatus.objects.get_or_create(
-                    user=user, program_access=True)
-
-                if not created:
-                    access.allowed_access = True
-                    access.save()
-
+            # Catch if there is an error with the Course_of_Interest_Code
+            # and send an email to SC, but continue with the next student
+            except ObjectDoesNotExist as does_not_exist_exception:
+                log.exception(str(does_not_exist_exception))
                 # Used to update the status from 'Enroll' to 'Online'
-                # in the CRM
-                post_to_zapier(settings.ZAPIER_ENROLLMENT_URL,
-                               {'email': user.email})
+                post_to_zapier(settings.ZAPIER_ENROLLMENT_EXCEPTION_URL,
+                                {'email': user.email,
+                                 'type': 'Course_of_Interest_Code'})
+                continue
 
-                enrollment_status = EnrollmentStatusHistory(
-                    student=user,
-                    program=program,
-                    registered=bool(user),
-                    enrollment_type=enrollment_type,
-                    enrolled=bool(program_enrollment_status),
-                    email_sent=email_sent_status)
-                enrollment_status.save()
+            # Enroll the student in the program
+            program_enrollment_status = program.enroll_student_in_program(
+                user.email,
+                exclude_courses=EXCLUDED_FROM_ONBOARDING)
 
-            email_content = ('<h2>Successfully enrolled %d students.</h2>'
-                                    % len(zoho_students))
-            send_success_or_exception_email(
-                email_subject='Student Enrollment Successful',
-                content=email_content,
-                from_address=FROM_ADDRESS,
-                recipient_list=RECIPIENT_LIST)
+            # Send the email
+            email_sent_status = program.send_email(
+                user, enrollment_type, password)
 
-        except ObjectDoesNotExist as does_not_exist_exception:
-            email_content = (
-                ('<h2>An error occurred in the enrollment script!</h2>'
-                 + '<p>Exception message: %s</p>'
-                 + '<p>Please check the log file for more detailed '
-                 + 'information.</p>') % does_not_exist_exception.message)
-            send_success_or_exception_email(
-                email_subject='Student Enrollment Failed',
-                content=email_content,
-                from_address=FROM_ADDRESS,
-                recipient_list=RECIPIENT_LIST)
-            log.exception(str(does_not_exist_exception))
+            # Set the students access level (i.e. determine whether or
+            # not a student is allowed to access to the LMS.
+            # Deprecated...
+            access, created = ProgramAccessStatus.objects.get_or_create(
+                user=user, program_access=True)
+
+            if not created:
+                access.allowed_access = True
+                access.save()
+
+            # Used to update the status from 'Enroll' to 'Online'
+            # in the CRM
+            post_to_zapier(settings.ZAPIER_ENROLLMENT_URL,
+                            {'email': user.email})
+
+            enrollment_status = EnrollmentStatusHistory(
+                student=user,
+                program=program,
+                registered=bool(user),
+                enrollment_type=enrollment_type,
+                enrolled=bool(program_enrollment_status),
+                email_sent=email_sent_status)
+            enrollment_status.save()
+
+        email_content = ('<h2>Successfully enrolled %d students.</h2>'
+                                % len(zoho_students))
+        send_success_or_exception_email(
+            email_subject='Student Enrollment Successful',
+            content=email_content,
+            from_address=FROM_ADDRESS,
+            recipient_list=RECIPIENT_LIST)
             

@@ -130,27 +130,3 @@ def post_to_zapier(zap_url, data):
         to Zapier
     """
     response = requests.post(zap_url, data=data)
-
-
-def send_success_or_exception_email(email_subject, content, from_address,
-                                    recipient_list):
-    """
-    Sends an email to a list of recipients m either confirming the
-    successful enrollment of students or email that an exception occurred
-    """
-    try:
-        email_connection = create_email_connection()
-
-        send_mail(
-            email_subject,
-            content,
-            from_address, recipient_list,
-            fail_silently=False,
-            html_message=content,
-            connection=email_connection)
-
-        log.info('Succeeded to send email to %s'
-                % ', '.join(recipient_list))
-
-    except SMTPException as smtp_exception:
-        log.exception(str(smtp_exception))
