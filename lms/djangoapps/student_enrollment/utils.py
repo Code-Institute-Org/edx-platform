@@ -6,13 +6,10 @@ from logging import getLogger
 
 from django.contrib.auth.models import User
 from django.conf import settings
-from django.core.mail import get_connection, send_mail
+from django.core.mail import get_connection
 from django.template.loader import render_to_string
 import requests
-from smtplib import SMTPException
 from student.models import UserProfile
-
-log = getLogger(__name__)
 
 
 def create_user_profile(user, full_name):
