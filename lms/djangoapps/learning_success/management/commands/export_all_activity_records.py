@@ -33,6 +33,7 @@ CONNECTION_STRING = 'mysql+mysqldb://%s:%s@%s:%s/%s%s' % (
     '?charset=utf8')
 
 LMS_ACTIVITY_TABLE = 'lms_activity'
+ROWS_PER_PACKET = 1000
 
 
 def harvest_course_tree(tree, output_dict, prefix=()):
@@ -315,12 +316,11 @@ class Command(BaseCommand):
 
         df = pd.DataFrame(student_data)
         engine = create_engine(CONNECTION_STRING, echo=False)
-        rows_per_packet = 1000
         row_count = df.shape[0]
 
-        for subset_start in range(0, row_count, rows_per_packet):
+        for subset_start in range(0, row_count, ROWS_PER_PACKET):
             write_type = 'replace' if subset_start == 0 else 'append'
-            df_subset = df.loc[subset_start:subset_start+rows_per_packet-1]
+            df_subset = df.loc[subset_start:subset_start+ROWS_PER_PACKET-1]
             df_subset.to_sql(name=LMS_ACTIVITY_TABLE,
                     con=engine, 
                     if_exists=write_type)
