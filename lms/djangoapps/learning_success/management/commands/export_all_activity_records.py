@@ -315,12 +315,12 @@ class Command(BaseCommand):
 
         df = pd.DataFrame(student_data)
         engine = create_engine(CONNECTION_STRING, echo=False)
-        write_type = 'replace'
-        interval = 1000
-        # df.shape[0] holds the number of rows in the DataFrame
-        for subset in range(int(math.ceil(df.shape[0]/interval))):
-            df_subset = df.loc[subset*interval:subset*interval+(interval-1)]
+        rows_per_packet = 1000
+        row_count = df.shape[0]
+
+        for subset_start in range(0, row_count, rows_per_packet):
+            write_type = 'replace' if subset_start == 0 else 'append'
+            df_subset = df.loc[subset_start:subset_start+rows_per_packet-1]
             df_subset.to_sql(name=LMS_ACTIVITY_TABLE,
                     con=engine, 
                     if_exists=write_type)
-            write_type='append'
