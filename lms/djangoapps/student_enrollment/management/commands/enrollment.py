@@ -65,7 +65,7 @@ class Command(BaseCommand):
                 student['Course_of_Interest_Code'])
 
             try:
-                # Get the Program that contains the th Zoho program code
+                # Get the Program that contains the Zoho program code
                 program = Program.objects.get(
                     program_code=program_to_enroll_in)
 
@@ -109,4 +109,4 @@ class Command(BaseCommand):
                 enrollment_type=enrollment_type,
                 enrolled=bool(program_enrollment_status),
                 email_sent=email_sent_status)
-            enrollment_status.save()            
+            enrollment_status.save()
