@@ -21,6 +21,9 @@ import os
 from path import Path as path
 from xmodule.modulestore.modulestore_settings import convert_module_store_setting_if_needed
 
+import sentry_sdk
+from sentry_sdk.integrations.django import DjangoIntegration
+
 # SERVICE_VARIANT specifies name of the variant used, which decides what JSON
 # configuration files are read during startup.
 SERVICE_VARIANT = os.environ.get('SERVICE_VARIANT', None)
@@ -529,3 +532,10 @@ ORA2_FILEUPLOAD_BACKEND = ENV_TOKENS.get('ORA2_FILEUPLOAD_BACKEND', 'filesystem'
 ORA2_FILEUPLOAD_ROOT = ENV_TOKENS.get('ORA2_FILEUPLOAD_BACKEND',  os.path.join(MEDIA_ROOT, 'submissions_attachments/'))
 ORA2_FILEUPLOAD_CACHE_NAME = ENV_TOKENS.get('ORA2_FILEUPLOAD_CACHE_NAME', 'default')
 # RACCOONGANG
+
+####################### Sentry Setup ##############################
+if AUTH_TOKENS.get(SENTRY_CMS_DSN):
+    sentry_sdk.init(
+        dsn=AUTH_TOKENS.get(SENTRY_CMS_DSN),
+        integrations=[DjangoIntegration()]
+    )
