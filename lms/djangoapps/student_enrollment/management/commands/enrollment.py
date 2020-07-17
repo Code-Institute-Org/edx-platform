@@ -75,7 +75,7 @@ class Command(BaseCommand):
                 log.exception(str(does_not_exist_exception))
                 post_to_zapier(settings.ZAPIER_ENROLLMENT_EXCEPTION_URL,
                                 {'email': user.email,
-                                 'type': 'Course_of_Interest_Code'})
+                                 'crm_field': 'Course_of_Interest_Code'})
                 continue
 
             # Enroll the student in the program
