@@ -73,7 +73,6 @@ class Command(BaseCommand):
             # and send an email to SC, but continue with the next student
             except ObjectDoesNotExist as does_not_exist_exception:
                 log.exception(str(does_not_exist_exception))
-                # Used to update the status from 'Enroll' to 'Online'
                 post_to_zapier(settings.ZAPIER_ENROLLMENT_EXCEPTION_URL,
                                 {'email': user.email,
                                  'type': 'Course_of_Interest_Code'})
