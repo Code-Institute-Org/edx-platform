@@ -1084,8 +1084,8 @@ PROFILE_IMAGE_SIZES_MAP = ENV_TOKENS.get(
 STRACKR_LMS_API_ENDPOINT = AUTH_TOKENS.get('STRACKR_LMS_API_ENDPOINT', None)
 
 ####################### Sentry Setup ##############################
-if AUTH_TOKENS.get(SENTRY_LMS_DSN):
+if AUTH_TOKENS.get("SENTRY_LMS_DSN"):
     sentry_sdk.init(
-        dsn=AUTH_TOKENS.get(SENTRY_LMS_DSN),
+        dsn=AUTH_TOKENS.get("SENTRY_LMS_DSN"),
         integrations=[DjangoIntegration()]
     )

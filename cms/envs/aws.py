@@ -534,8 +534,8 @@ ORA2_FILEUPLOAD_CACHE_NAME = ENV_TOKENS.get('ORA2_FILEUPLOAD_CACHE_NAME', 'defau
 # RACCOONGANG
 
 ####################### Sentry Setup ##############################
-if AUTH_TOKENS.get(SENTRY_CMS_DSN):
+if AUTH_TOKENS.get("SENTRY_CMS_DSN"):
     sentry_sdk.init(
-        dsn=AUTH_TOKENS.get(SENTRY_CMS_DSN),
+        dsn=AUTH_TOKENS.get("SENTRY_CMS_DSN"),
         integrations=[DjangoIntegration()]
     )
