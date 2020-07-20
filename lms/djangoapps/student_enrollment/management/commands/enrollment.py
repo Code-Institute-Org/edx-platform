@@ -1,3 +1,5 @@
+from logging import getLogger
+
 from django.core.management.base import BaseCommand
 from django.core.exceptions import ObjectDoesNotExist
 from django.contrib.auth.models import User
@@ -12,6 +14,9 @@ from student_enrollment.zoho import (
 )
 from lms.djangoapps.student_enrollment.models import EnrollmentStatusHistory
 from lms.djangoapps.student_enrollment.models import ProgramAccessStatus
+
+log = getLogger(__name__)
+
 
 """
 Students starting the Full Stack Developer course should initially not be
@@ -45,7 +50,6 @@ class Command(BaseCommand):
         if they miss payments (or other circumstances) which means they
         may already be registered in the system.
         """
-
         zoho_students = get_students_to_be_enrolled()
 
         for student in zoho_students:
@@ -60,8 +64,19 @@ class Command(BaseCommand):
             program_to_enroll_in = parse_course_of_interest_code(
                 student['Course_of_Interest_Code'])
 
-            # Get the Program that contains the th Zoho program code
-            program = Program.objects.get(program_code=program_to_enroll_in)
+            try:
+                # Get the Program that contains the Zoho program code
+                program = Program.objects.get(
+                    program_code=program_to_enroll_in)
+
+            # Catch if there is an error with the Course_of_Interest_Code
+            # and send an email to SC, but continue with the next student
+            except ObjectDoesNotExist as does_not_exist_exception:
+                log.exception(str(does_not_exist_exception))
+                post_to_zapier(settings.ZAPIER_ENROLLMENT_EXCEPTION_URL,
+                                {'email': user.email,
+                                 'crm_field': 'Course_of_Interest_Code'})
+                continue
 
             # Enroll the student in the program
             program_enrollment_status = program.enroll_student_in_program(
@@ -82,11 +97,16 @@ class Command(BaseCommand):
                 access.allowed_access = True
                 access.save()
 
-            post_to_zapier(settings.ZAPIER_ENROLLMENT_URL, {"email": user.email})
+            # Used to update the status from 'Enroll' to 'Online'
+            # in the CRM
+            post_to_zapier(settings.ZAPIER_ENROLLMENT_URL,
+                            {'email': user.email})
 
-            enrollment_status = EnrollmentStatusHistory(student=user, program=program,
-                                                        registered=bool(user),
-                                                        enrollment_type=enrollment_type,
-                                                        enrolled=bool(program_enrollment_status),
-                                                        email_sent=email_sent_status)
+            enrollment_status = EnrollmentStatusHistory(
+                student=user,
+                program=program,
+                registered=bool(user),
+                enrollment_type=enrollment_type,
+                enrolled=bool(program_enrollment_status),
+                email_sent=email_sent_status)
             enrollment_status.save()
