@@ -246,7 +246,7 @@ class Program(TimeStampedModel):
         student_password = password
         to_address = student.email
         from_address = 'learning@codeinstitute.net'
-        if self.name == "All Access Coding Challenges - In Partnership With Springboard":
+        if self.program_code == 'SBAACC':
             from_address = 'springboard@codeinstitute.net' 
 
         self.enrollment_type = enrollment_type
