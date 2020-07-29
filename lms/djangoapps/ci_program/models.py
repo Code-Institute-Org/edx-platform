@@ -243,10 +243,12 @@ class Program(TimeStampedModel):
         """
 
         # Set the values that will be used for sending the email
+        student_password = password
         to_address = student.email
         from_address = 'learning@codeinstitute.net'
-        student_password = password
-        
+        if "Springboard" in self.name:
+            from_address = 'springboard@codeinstitute.net' 
+
         self.enrollment_type = enrollment_type
         
         if self.name == "Five Day Coding Challenge":
@@ -254,6 +256,7 @@ class Program(TimeStampedModel):
                 self.course_codes.first().key)
         else:
             module_url = None
+
         
         # Get the email location & subject
         template_location, subject = self.email_template_location
