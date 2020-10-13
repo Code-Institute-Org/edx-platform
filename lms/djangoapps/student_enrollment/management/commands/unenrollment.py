@@ -34,12 +34,14 @@ class Command(BaseCommand):
 
         for student in zoho_students:
             # Get the user
-            user = User.objects.get(email=student['Email'])
-
-            # Get the code for the course the student is enrolling in
-            program_to_enroll_in = parse_course_of_interest_code(
-                student['Course_of_Interest_Code'])
-
+            try:
+                user = User.objects.get(email=student['Email'])
+                program_to_enroll_in = parse_course_of_interest_code(
+                        student['Course_of_Interest_Code'])
+            except ObjectDoesNotExist:
+                print("{} not found when attempting unenrollment".format(
+                    student['Email']))
+                continue
             # DITF is not current present in the Learning Platform so
             # we'll skip over it until then
             if 'DITF' in program_to_enroll_in or not program_to_enroll_in:
@@ -53,6 +55,7 @@ class Command(BaseCommand):
             except ObjectDoesNotExist:
                 print("{} is not enrolled in this {}".format(
                     user.email, program_to_enroll_in))
+                update_student_record(settings.ZAPIER_UNENROLLMENT_URL, user.email)
                 continue
 
             # Get the Program that contains the Zoho program code
