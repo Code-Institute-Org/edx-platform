@@ -15,8 +15,6 @@ import pytz
 import requests
 from sqlalchemy import create_engine, types
 
-PROGRAM_CODE = 'FS'  # Our Full-Stack program
-BREADCRUMB_INDEX_URL = settings.BREADCRUMB_INDEX_URL
 KEYS = ['module','section','lesson']
 utc=pytz.UTC
 
@@ -32,7 +30,7 @@ CONNECTION_STRING = 'mysql+mysqldb://%s:%s@%s:%s/%s%s' % (
     settings.RDS_LMS_DB,
     '?charset=utf8')
 
-LMS_ACTIVITY_TABLE = 'lms_activity'
+LMS_ACTIVITY_TABLE = settings.LMS_ACTIVITY_TABLE
 ROWS_PER_PACKET = 1000
 
 
@@ -126,7 +124,7 @@ def n_days_fractions(completed_fractions, days_ago=None):
 
 
 def fractions_per_day(date_joined, completed_fractions):
-        """Create a list of fractions completed for 
+        """Create a list of fractions completed for
         each day since the student started
 
         1) Create a dict where the keys are all the days in the student life
@@ -134,7 +132,7 @@ def fractions_per_day(date_joined, completed_fractions):
         calculate on which day in their lifecyle each fraction was completed
         3) Add each fraction to that day in their lifecyle
 
-        Returns a comma separated string of fractions 
+        Returns a comma separated string of fractions
         per day in the student lifecyle
         """
         days_since_joined = (timezone.now() - date_joined).days
@@ -143,23 +141,23 @@ def fractions_per_day(date_joined, completed_fractions):
         days = {str(day) : '0' for day in range(days_since_joined + 1)}
         for fraction in completed_fractions:
             days_in = str((fraction['time_completed'] - date_joined).days)
-            days[days_in] = str(float(days[days_in]) 
+            days[days_in] = str(float(days[days_in])
                                 + fraction['lesson_fraction'])
         return ','.join(OrderedDict(sorted(days.items())).values())
 
 
 def fractions_per_module(fractions, completed_fractions, days_ago=14):
-    """Separate and sum completed fractions into those in last n days 
+    """Separate and sum completed fractions into those in last n days
     and the rest
-        
+
     Returns a dict with module and the completed sums
     """
     n_days_ago = timezone.now() - timedelta(days=days_ago)
     for module, fraction in completed_fractions.items():
         key = (
             format_module_field(module[0], '_fraction_within_%sd' % (days_ago))
-            if fraction['time_completed'] > n_days_ago 
-            else format_module_field(module[0], 
+            if fraction['time_completed'] > n_days_ago
+            else format_module_field(module[0],
                                      '_fraction_before_%sd' % (days_ago)))
 
         if key in fractions:
@@ -168,30 +166,30 @@ def fractions_per_module(fractions, completed_fractions, days_ago=14):
 
 
 def create_fractions_dict(lessons, days_ago=14):
-    """ Create data structure to store fractions for each module 
+    """ Create data structure to store fractions for each module
 
     Returns dict with an entry for each module for fractions completed
     within the last n days and the rest
     """
     fractions = {format_module_field(
-        lesson['module'],'_fraction_within_%sd' % (days_ago)) : 0 
+        lesson['module'],'_fraction_within_%sd' % (days_ago)) : 0
         for lesson in lessons.values()}
     fractions.update({format_module_field(
-        lesson['module'],'_fraction_before_%sd' % (days_ago)) : 0 
+        lesson['module'],'_fraction_before_%sd' % (days_ago)) : 0
         for lesson in lessons.values()})
     return fractions
 
 
-def get_fractions(lesson_fractions, completed_fractions, block_id, breadcrumbs, 
+def get_fractions(lesson_fractions, completed_fractions, block_id, breadcrumbs,
                                                                 modified_time):
-    """Combine block fractions from API with the student's modified time 
+    """Combine block fractions from API with the student's modified time
     of that block
 
     Returns result dict
     """
     lesson_fraction = 0
     module_fraction = 0
-    cumulative_fraction = 0                
+    cumulative_fraction = 0
 
     # Check if fractions for lesson exist, if not keep default 0
     if block_id in lesson_fractions:
@@ -199,7 +197,7 @@ def get_fractions(lesson_fractions, completed_fractions, block_id, breadcrumbs,
         lesson_fraction = lesson['fractions']['lesson_fraction']
         module_fraction = lesson['fractions']['module_fraction']
         cumulative_fraction = lesson['fractions']['cumulative_fraction']
-    
+
     completed_fractions[breadcrumbs] = {
         'time_completed' : modified_time,
         'lesson_fraction' : lesson_fraction,
@@ -212,9 +210,11 @@ def all_student_data(program):
 
     Input is a pregenerated dictionary mapping block IDs in LMS to breadcrumbs
     """
+    breadcrumb_index_url = ('%s?format=amos_fractions' %
+                            settings.BREADCRUMB_INDEX_URL)
     all_components = harvest_program(program)
-    lesson_fractions = requests.get(BREADCRUMB_INDEX_URL).json()['LESSONS']
-    module_fractions = {item['module'] : item['fractions']['module_fraction'] 
+    lesson_fractions = requests.get(breadcrumb_index_url).json()['LESSONS']
+    module_fractions = {item['module'] : item['fractions']['module_fraction']
                         for item in lesson_fractions.values()}
     challenges = extract_all_student_challenges(program)
 
@@ -222,7 +222,7 @@ def all_student_data(program):
         # A short name for the activities queryset
         student_activities = student.studentmodule_set.filter(
             course_id__in=program.get_course_locators())
-        
+
         student_challenges = challenges.get(student.email, {})
 
         # remember details of the first activity
@@ -248,7 +248,7 @@ def all_student_data(program):
                 completed_lessons[breadcrumbs] = activity.modified
 
                 # get timestamp and fractions for each breadcrumb
-                get_fractions(lesson_fractions, completed_fractions, block_id, 
+                get_fractions(lesson_fractions, completed_fractions, block_id,
                               breadcrumbs, activity.modified)
 
             if breadcrumbs and len(breadcrumbs) >= 4:  # unit or inner block
@@ -286,7 +286,7 @@ def all_student_data(program):
                 first_active, completed_fractions.values())
         }
 
-        completed_fractions_per_module = fractions_per_module(all_fractions, 
+        completed_fractions_per_module = fractions_per_module(all_fractions,
             completed_fractions)
 
         student_dict.update(completed_fractions_per_module)
@@ -302,25 +302,34 @@ def all_student_data(program):
 class Command(BaseCommand):
     help = 'Extract student data from the open-edX server for use in Strackr'
 
-    def handle(self, *args, **options):
+    def add_arguments(self, parser):
+        parser.add_argument('source_platform', type=str)
+        parser.add_argument('program_code', type=str)
+
+    def handle(self, source_platform, program_code, **kwargs):
         """POST the collected data to the api endpoint from the settings
+            Arguments:
+                source_platform: Platform import as, i.e. 'juniper' or 'ginkgo'
+                program_code: Program code of program to use 'disd'
         """
-        program = get_program_by_program_code(PROGRAM_CODE)
+
+        program = get_program_by_program_code(program_code)
         student_data = list(all_student_data(program))
 
-        # TODO: Remove once the connection to the RDS is implemented in AMOS
-        api_endpoint = settings.STRACKR_LMS_API_ENDPOINT
-        resp = requests.post(api_endpoint, data=json.dumps(student_data))
-        if resp.status_code != 200:
-            raise CommandError(resp.text)
-
-        df = pd.DataFrame(student_data)
         engine = create_engine(CONNECTION_STRING, echo=False)
-        row_count = df.shape[0]
+        with engine.begin() as conn:
+            # remove existing
+            conn.execute("delete from lms_activity where source_platform = %s", (source_platform,))
 
-        for subset_start in range(0, row_count, ROWS_PER_PACKET):
-            write_type = 'replace' if subset_start == 0 else 'append'
-            df_subset = df.loc[subset_start:subset_start+ROWS_PER_PACKET-1]
-            df_subset.to_sql(name=LMS_ACTIVITY_TABLE,
-                    con=engine, 
-                    if_exists=write_type)
+            # add new
+            df = pd.DataFrame(student_data)
+            df['created'] = datetime.now()
+            # TODO: Add arg for source_platform
+            df['source_platform'] = source_platform
+            df['program_code'] = program_code
+            write_type = 'append'
+
+            df.to_sql(name=LMS_ACTIVITY_TABLE,
+                    con=conn,
+                    if_exists=write_type,
+                    chunksize=1000)
