@@ -55,7 +55,6 @@ DEBUG = False
 DEFAULT_TEMPLATE_ENGINE['OPTIONS']['debug'] = False
 
 EMAIL_BACKEND = 'django_ses.SESBackend'
-SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
 
 # IMPORTANT: With this enabled, the server must always be behind a proxy that
 # strips the header HTTP_X_FORWARDED_PROTO from client requests. Otherwise,
@@ -181,7 +180,6 @@ EMAIL_USE_TLS = ENV_TOKENS.get('EMAIL_USE_TLS', False)  # django default is Fals
 EMAIL_USE_SSL = ENV_TOKENS.get('EMAIL_USE_SSL', False)  # django default is False
 SITE_NAME = ENV_TOKENS['SITE_NAME']
 HTTPS = ENV_TOKENS.get('HTTPS', HTTPS)
-SESSION_ENGINE = ENV_TOKENS.get('SESSION_ENGINE', SESSION_ENGINE)
 SESSION_COOKIE_DOMAIN = ENV_TOKENS.get('SESSION_COOKIE_DOMAIN')
 SESSION_COOKIE_HTTPONLY = ENV_TOKENS.get('SESSION_COOKIE_HTTPONLY', True)
 SESSION_COOKIE_SECURE = ENV_TOKENS.get('SESSION_COOKIE_SECURE', SESSION_COOKIE_SECURE)

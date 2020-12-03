@@ -591,7 +591,7 @@ STANDALONE_FRAGMENT_VIEW_TEMPLATE = 'fragment-view-chromeless.html'
 
 # use the ratelimit backend to prevent brute force attacks
 AUTHENTICATION_BACKENDS = (
-    'ratelimitbackend.backends.RateLimitModelBackend',
+    'django.contrib.auth.backends.ModelBackend',
 )
 STUDENT_FILEUPLOAD_MAX_SIZE = 4 * 1000 * 1000  # 4 MB
 MAX_FILEUPLOADS_PER_INPUT = 20
@@ -1178,12 +1178,10 @@ MIDDLEWARE_CLASSES = (
     'django_sites_extensions.middleware.RedirectMiddleware',
 
     # Instead of SessionMiddleware, we use a more secure version
-    # 'django.contrib.sessions.middleware.SessionMiddleware',
-    'openedx.core.djangoapps.safe_sessions.middleware.SafeSessionMiddleware',
+    'django.contrib.sessions.middleware.SessionMiddleware',
 
     # Instead of AuthenticationMiddleware, we use a cached backed version
-    #'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'openedx.core.djangoapps.cache_toolbox.middleware.CacheBackedAuthenticationMiddleware',
+    'django.contrib.auth.middleware.AuthenticationMiddleware',
     # Enable SessionAuthenticationMiddleware in order to invalidate
     # user sessions after a password change.
     'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
