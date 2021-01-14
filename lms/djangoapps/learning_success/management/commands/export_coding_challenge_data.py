@@ -1,38 +1,21 @@
 from datetime import datetime, timedelta
 import json
+import logging
 import pymongo
 import requests
 
 from django.conf import settings
-from django.core.management.base import BaseCommand, CommandError
+from django.core.management.base import BaseCommand
 
 from ci_program.api import get_program_by_program_code
+
+log = logging.getLogger(__name__)
 
 HOST = "127.0.0.1"
 PORT = "27017"
 
 HUBSPOT_CONTACTS_ENDPOINT = settings.HUBSPOT_CONTACTS_ENDPOINT 
 HUBSPOT_API_KEY = settings.HUBSPOT_API_KEY
-
-# key is challenge name in sandbox, value is field in HubSpot
-# appended OLD as agreed with Programme/Mktg to make the names consistent
-CODING_CHALLENGES_OLD = {
-    "1_Day_1_Challenge_1": "lesson_1_challenge_1",
-    "2_Day_1_Challenge_2": "lesson_1_challenge_1",   
-    "3_Day_2_Challenge_1": "lesson_2_challenge_1",
-    "4_Day_2_Challenge_2": "lesson_2_challenge_2",
-    "5_Day_2_Challenge_3": "lesson_2_challenge_3",
-    "6_Day_2_Challenge_4": "lesson_2_challenge_4",
-    "7_Day_3_Challenge_1": "lesson_3_challenge_1",
-    "8_Day_3_Challenge_2": "lesson_3_challenge_2",
-    "9_Day_3_Challenge_3": "lesson_3_challenge_3",
-    "10_Day_4_Challenge_1": "lesson_4_challenge_1",
-    "11_Day_4_Challenge_2": "lesson_4_challenge_2",
-    "12_Day_4_Challenge_3": "lesson_4_challenge_3",
-    "13_Day_5_Challenge_1": "lesson_5_challenge_1",
-    "14_Day_5_Challenge_2": "lesson_5_challenge_2",
-    "15_Lesson_5_Challenge_3": "lesson_5_challenge_3"
-}
 
 # Agreed list of names for coding challenges
 # Can remove this dict when we associate challenges with programme
@@ -118,9 +101,11 @@ def post_to_hubspot(endpoint, student, properties):
     })
     response = requests.post(
         data=data, url=url, headers=headers)
-    if response.status_code != 200:
-        print(response.json)
-    print("Challenge results recorded for: %s" % (student))
+    if response.status_code != 204:
+        log.info(
+            "Attempt to send challenge results for %s to HubSpot failed with following response %s: %s",
+            (student, response.status_code, response.json))
+    log.info("Challenge results recorded for: %s" % (student))
 
 def export_challenges_submitted(program_code):
     results_for_all_students = get_results_for_all_students(program_code)
