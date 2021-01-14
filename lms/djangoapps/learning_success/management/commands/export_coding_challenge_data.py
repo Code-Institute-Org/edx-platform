@@ -1,14 +1,18 @@
 from datetime import datetime, timedelta
+import json
 import pymongo
 import requests
-import json
+
+from django.conf import settings
+from django.core.management.base import BaseCommand, CommandError
 
 from ci_program.api import get_program_by_program_code
 
 HOST = "127.0.0.1"
 PORT = "27017"
 
-HUBSPOT_CONTACTS_ENDPOINT = settings.HUBSPOT_CONTACTS_ENDPOINT
+HUBSPOT_CONTACTS_ENDPOINT = settings.HUBSPOT_CONTACTS_ENDPOINT 
+HUBSPOT_API_KEY = settings.HUBSPOT_API_KEY
 
 # key is challenge name in sandbox, value is field in HubSpot
 # appended OLD as agreed with Programme/Mktg to make the names consistent
@@ -30,32 +34,32 @@ CODING_CHALLENGES_OLD = {
     "15_Lesson_5_Challenge_3": "lesson_5_challenge_3"
 }
 
-# Agreed list of names for coding challenges, will replace CODING_CHALLENGES_OLD
+# Agreed list of names for coding challenges
 # Can remove this dict when we associate challenges with programme
-CODING_CHALLENGES = {
-    "lesson_1_challenge_1"
-    "lesson_1_challenge_1"
-    "lesson_2_challenge_1"
-    "lesson_2_challenge_2"
-    "lesson_2_challenge_3"
-    "lesson_2_challenge_4"
-    "lesson_3_challenge_1"
-    "lesson_3_challenge_2"
-    "lesson_3_challenge_3"
-    "lesson_4_challenge_1"
-    "lesson_4_challenge_2"
-    "lesson_4_challenge_3"
-    "lesson_5_challenge_1"
-    "lesson_5_challenge_2"
+CODING_CHALLENGES = [
+    "lesson_1_challenge_1",
+    "lesson_1_challenge_1",
+    "lesson_2_challenge_1",
+    "lesson_2_challenge_2",
+    "lesson_2_challenge_3",
+    "lesson_2_challenge_4",
+    "lesson_3_challenge_1",
+    "lesson_3_challenge_2",
+    "lesson_3_challenge_3",
+    "lesson_4_challenge_1",
+    "lesson_4_challenge_2",
+    "lesson_4_challenge_3",
+    "lesson_5_challenge_1",
+    "lesson_5_challenge_2",
     "lesson_5_challenge_3"
-}
+]
 
 def connect_to_mongo():
     mongo_client = pymongo.MongoClient(HOST, int(PORT))
     return mongo_client["challenges"]
 
 def get_challenges(db):
-    challenges_query = db.challenges.find({"name": {"$in": CODING_CHALLENGES_OLD.keys()}})
+    challenges_query = db.challenges.find({"name": {"$in": CODING_CHALLENGES}})
     challenges = {challenge.get("_id"):challenge.get("name") for challenge in challenges_query}
     return challenges
 
@@ -105,7 +109,7 @@ def get_results_for_all_students(program_code):
 
 def post_to_hubspot(endpoint, student, properties):
     url = "%s/email/%s/profile?hapikey=%s" % (
-        endpoint, student, HUBSPOT_CONTACTS_ENDPOINT)
+        endpoint, student, HUBSPOT_API_KEY)
     headers = {
         "Content-Type": "application/json"
     }
@@ -128,7 +132,7 @@ def export_challenges_submitted(program_code):
         }]
         for challenge_name, result in results.items():
             properties.append({
-                "property": CODING_CHALLENGES_OLD[challenge_name],
+                "property": challenge_name,
                 "value": result
             })
         post_to_hubspot(HUBSPOT_CONTACTS_ENDPOINT, student, properties)
