@@ -128,5 +128,5 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument('program_code', type=str)
 
-    def handle(self, program_code):
+    def handle(self, program_code, **kwargs):
         export_challenges_submitted(program_code)
