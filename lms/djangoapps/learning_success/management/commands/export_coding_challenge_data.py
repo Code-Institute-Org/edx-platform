@@ -14,7 +14,7 @@ log = logging.getLogger(__name__)
 MONGO_HOST = "127.0.0.1"
 MONGO_PORT = "27017"
 
-HUBSPOT_CONTACTS_ENDPOINT = settings.HUBSPOT_CONTACTS_ENDPOINT 
+HUBSPOT_CONTACTS_ENDPOINT = settings.HUBSPOT_CONTACTS_ENDPOINT
 HUBSPOT_API_KEY = settings.HUBSPOT_API_KEY
 
 # Agreed list of names for coding challenges
@@ -37,67 +37,90 @@ CODING_CHALLENGES = [
     "lesson_5_challenge_3"
 ]
 
+
 def connect_to_mongo():
+    """Connect to challenges collection in mongo"""
     mongo_client = pymongo.MongoClient(MONGO_HOST, int(MONGO_PORT))
     return mongo_client["challenges"]
 
+
 def get_challenges(db):
+    """Return dict of challenges in following format {id: name}"""
     challenges_query = db.challenges.find({"name": {"$in": CODING_CHALLENGES}})
-    challenges = {challenge.get("_id"):challenge.get("name") for challenge in challenges_query}
+    challenges = {challenge.get("_id"): challenge.get("name") for challenge in challenges_query}
     return challenges
 
+
 def get_students(program_code):
+    """Get students enrolled in a particular program
+    Return dict in following format {id: email}
+    """
     program = get_program_by_program_code(program_code)
     enrolled_students = program.enrolled_students.all()
     return {student.id: student.email for student in enrolled_students}
 
+
 def get_submissions(db, challenges, students, submitted_since):
-    submissions_since_yday = db.submissions.find({
-        "submitted": {"$gte": submitted_since},
-        "challenge_id": {"$in": challenges.keys()},
-        "user_id": {"$in": students.keys()}
-        }).sort("submitted",pymongo.DESCENDING)
-    return submissions_since_yday    
+    """Get submissions for challenges submitted by enrolled students
+    within a particular time frame e.g. submitted_since_yesterday
+    """
+    submissions_since_yday = db.submissions.find(
+        {
+            "submitted": {"$gte": submitted_since},
+            "challenge_id": {"$in": challenges.keys()},
+            "user_id": {"$in": students.keys()}
+        }
+    ).sort("submitted", pymongo.DESCENDING)
+    return submissions_since_yday
+
 
 def get_results_for_all_students(program_code):
-    # Get all students enrolled in program
+    """Get results from challenge submissions for all students
+    enrolled in a given program.
+
+    The sequence of events are as follows:
+    1. Get all students enrolled in program
+    2. Get ids for all challenges in coding challenge program
+    3. Get all submissions for coding challenges,
+       submitted by an enrolled student in the last 25 hours.
+       Allowing an additional hour to account for any submissions that occur while script is running.
+    4. Submissions are returned sorted by submission date, latest submission first.
+       We only require the result of the latest submission of a particular challenge
+       i.e. first submission found in results (which is sorted by latest submission first)
+       Previous submissions are skipped
+    """
+
     students = get_students(program_code)
 
     db = connect_to_mongo()
-    # Get ids for all challenges in coding challenge program
     challenges = get_challenges(db)
 
-    # Get all submissions for coding challenges, submitted by an enrolled student in the last 25 hours
-    # Allowing an additional hour to account for any submissions that occur while script is running
-    # Submissions are sorted by submission date, latest submission first
     one_day_ago = datetime.today() - timedelta(days=1)
     submissions_since_yday = get_submissions(db, challenges, students, one_day_ago)
-    
+
     results = {}
     for submission in submissions_since_yday:
         email = students[submission.get("user_id")]
-        if email not in results:
-            results[email] = {}
-        
+        results.setdefault(email, {})
+
         challenge = challenges[submission.get("challenge_id")]
         result = 'Pass' if submission.get("passed") else 'Fail'
 
-        # We only require the result of the latest submission of a particular challenge
-        # i.e. first submission found in results (which is sorted by latest submission first)
-        # Previous submissions are skipped
         if challenge not in results[email]:
             results[email][challenge] = result
 
     return results
 
+
 def post_to_hubspot(endpoint, student, properties):
+    """Post results of challenge submissions to the student profiles on HubSpot"""
     url = "%s/email/%s/profile?hapikey=%s" % (
         endpoint, student, HUBSPOT_API_KEY)
     headers = {
         "Content-Type": "application/json"
     }
-    data=json.dumps({
-    "properties": properties
+    data = json.dumps({
+        "properties": properties
     })
     response = requests.post(
         data=data, url=url, headers=headers)
@@ -107,10 +130,13 @@ def post_to_hubspot(endpoint, student, properties):
             (student, response.status_code, response.json))
     log.info("Challenge results recorded for: %s" % (student))
 
+
 def export_challenges_submitted(program_code):
+    """Get results for all students and prepare those results in a format
+    that can be posted to HubSpot profiles
+    """
     results_for_all_students = get_results_for_all_students(program_code)
     for student, results in results_for_all_students.items():
-        # Create list of properties (i.e. fields) to be updated in HubSpot profile
         properties = [{
             "property": "email",
             "value": student
@@ -122,8 +148,9 @@ def export_challenges_submitted(program_code):
             })
         post_to_hubspot(HUBSPOT_CONTACTS_ENDPOINT, student, properties)
 
+
 class Command(BaseCommand):
-    help = 'Post the results of challenge submissions submitted in the last 24 hours for a given coding challenge program'
+    help = 'Post the results of challenge submissions submitted in the last day for a given coding challenge program'
 
     def add_arguments(self, parser):
         parser.add_argument('program_code', type=str)
