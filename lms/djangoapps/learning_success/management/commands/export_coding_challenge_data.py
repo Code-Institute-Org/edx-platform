@@ -101,7 +101,8 @@ def get_results_for_all_students(program_code):
     results = {}
     for submission in submissions_since_yday:
         email = students[submission.get("user_id")]
-        results.setdefault(email, {})
+        if email not in results:
+            results.setdefault(email, {})
 
         challenge = challenges[submission.get("challenge_id")]
         result = 'Pass' if submission.get("passed") else 'Fail'
