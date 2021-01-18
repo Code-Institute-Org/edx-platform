@@ -11,8 +11,8 @@ from ci_program.api import get_program_by_program_code
 
 log = logging.getLogger(__name__)
 
-HOST = "127.0.0.1"
-PORT = "27017"
+MONGO_HOST = "127.0.0.1"
+MONGO_PORT = "27017"
 
 HUBSPOT_CONTACTS_ENDPOINT = settings.HUBSPOT_CONTACTS_ENDPOINT 
 HUBSPOT_API_KEY = settings.HUBSPOT_API_KEY
@@ -38,7 +38,7 @@ CODING_CHALLENGES = [
 ]
 
 def connect_to_mongo():
-    mongo_client = pymongo.MongoClient(HOST, int(PORT))
+    mongo_client = pymongo.MongoClient(MONGO_HOST, int(MONGO_PORT))
     return mongo_client["challenges"]
 
 def get_challenges(db):
