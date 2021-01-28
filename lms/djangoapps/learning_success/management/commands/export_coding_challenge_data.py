@@ -21,7 +21,7 @@ CLIENT_ID = settings.LP_ZOHO_CLIENT_ID
 CLIENT_SECRET = settings.LP_ZOHO_CLIENT_SECRET
 REFRESH_TOKEN = settings.LP_ZOHO_REFRESH_TOKEN
 REFRESH_ENDPOINT = settigns.ZOHO_REFRESH_ENDPOINT
-CHALLENGE_ENDPOINT = settigns.ZOHO_CHALLENGE_ENDPOINT
+CHALLENGE_ENDPOINT = settigns.LP_ZOHO_CHALLENGE_ENDPOINT
 
 REFRESH_RETRIES = 5
 REFRESH_SLEEP_SECS = 1
@@ -142,8 +142,7 @@ def post_to_hubspot(endpoint, student, properties):
         data=data, url=url, headers=headers)
     if response.status_code != 204:
         log.info(
-            "Attempt to send challenge results for %s to HubSpot failed with following response %s: %s",
-            (student, response.status_code, response.json))
+            "Attempt to send challenge results for %s to HubSpot failed with following response %s: %s" % (student, response.status_code, response.json))
     log.info("Challenge results recorded for: %s" % (student))
 
 
@@ -160,11 +159,12 @@ def get_access_token():
                 "client_secret": CLIENT_SECRET,
                 "grant_type": "refresh_token"
             })
-            print("Successfully retrieved Zoho token")
+            log.info("Successfully retrieved Zoho token")
             return refresh_resp.json()['access_token']
         except KeyError as e:
-            print(f"ERROR: Getting Zoho token attempt {attempt} (out of "
-                  f"{REFRESH_RETRIES}) failed with the exception: {e}")
+            log.info(
+                "ERROR: Getting Zoho token attempt %s out of %s failed with the exception: %s" % (attempt, REFRESH_RETRIES, e)
+            )
             time.sleep(REFRESH_SLEEP_SECS)
 
 
@@ -174,7 +174,7 @@ def get_auth_headers():
     return {"Authorization": "Zoho-oauthtoken " + access_token}
 
 
-def post_to_learningpeople(CHALLENGE_ENDPOINT, auth_headers, json):
+def post_to_learningpeople(CHALLENGE_ENDPOINT, auth_headers, json, student):
     response = requests.post(
         CHALLENGE_ENDPOINT,
         headers=auth_headers,
@@ -182,8 +182,7 @@ def post_to_learningpeople(CHALLENGE_ENDPOINT, auth_headers, json):
     )
     if response.status_code != 200:
         log.info(
-            "Attempt to send challenge results for %s to Learning People failed with following response %s: %s",
-            (student, response.status_code, response.json))
+            "Attempt to send challenge results for %s to Learning People failed with following response %s: %s" % (student, response.status_code, response.json))
     log.info("Challenge results recorded for: %s" % (student))
 
 
@@ -208,21 +207,17 @@ def export_challenges_submitted(program_code):
         auth_headers_for_zoho = get_auth_headers()
         for student, results in results_for_all_students.items():
             json = {
-                "data": [
-                    {
-                        "Name": "CICC00001",
-                        "Email": student,
-                    }
-                ],
+                "data": [{"Email": student}],
                 "duplicate_check_fields": ["Email"],
             }
             for challenge_name, result in results.items():
-                json["data"][challenge_name]: result
+                json["data"][0][challenge_name] = result
 
             post_to_learningpeople(
                 CHALLENGE_ENDPOINT,
                 auth_headers_for_zoho,
-                data
+                json,
+                student
             )
 
 
