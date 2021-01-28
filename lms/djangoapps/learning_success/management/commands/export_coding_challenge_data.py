@@ -163,7 +163,8 @@ def get_access_token():
             return refresh_resp.json()['access_token']
         except KeyError as e:
             log.info(
-                "ERROR: Getting Zoho token attempt %s out of %s failed with the exception: %s" % (attempt, REFRESH_RETRIES, e)
+                "ERROR: Getting Zoho token attempt %s out of %s failed" \
+                " with the exception: %s" % (attempt, REFRESH_RETRIES, e)
             )
             time.sleep(REFRESH_SLEEP_SECS)
 
@@ -182,7 +183,8 @@ def post_to_learningpeople(CHALLENGE_ENDPOINT, auth_headers, json, student):
     )
     if response.status_code != 200:
         log.info(
-            "Attempt to send challenge results for %s to Learning People failed with following response %s: %s" % (student, response.status_code, response.json))
+            "Attempt to send challenge results for %s to LP failed " \
+            "with the following response %s: %s" % (student, response.status_code, response.json))
     log.info("Challenge results recorded for: %s" % (student))
 
 
@@ -219,7 +221,6 @@ def export_challenges_submitted(program_code):
                 json,
                 student
             )
-
 
 
 class Command(BaseCommand):
