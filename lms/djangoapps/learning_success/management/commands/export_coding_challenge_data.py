@@ -140,14 +140,13 @@ def post_to_hubspot(endpoint, student, properties):
     })
     response = requests.post(
         data=data, url=url, headers=headers)
-    if response.status_code != 204:
+    if response.status_code == 204:
+        log.info("Challenge results recorded for: %s" % (student))
+    else:
         log.info(
             "Attempt to send challenge results for %s to HubSpot " \
             "failed with following response %s: %s" % (
                 student, response.status_code, response.json))
-    else:
-        log.info("Challenge results recorded for: %s" % (student))
-
 
 def get_access_token():
     """Retrieve a Zoho CRM access token.
@@ -184,13 +183,14 @@ def post_to_learningpeople(CHALLENGE_ENDPOINT, auth_headers, json, student):
         headers=auth_headers,
         json=json
     )
-    if response.status_code != 200:
+    if response.status_code == 200:
+        log.info("Challenge results recorded for: %s" % (student))
+    else:
         log.info(
             "Attempt to send challenge results for %s to LP " \
             "failed with the following response %s: %s" % (
                 student, response.status_code, response.json))
-    else:
-        log.info("Challenge results recorded for: %s" % (student))
+        
 
 
 def export_challenges_submitted(program_code):
