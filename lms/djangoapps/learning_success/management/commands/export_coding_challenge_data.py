@@ -23,8 +23,8 @@ REFRESH_TOKEN = settings.LP_ZOHO_REFRESH_TOKEN
 REFRESH_ENDPOINT = settigns.ZOHO_REFRESH_ENDPOINT
 CHALLENGE_ENDPOINT = settings.LP_ZOHO_CHALLENGE_ENDPOINT
 
-REFRESH_RETRIES = 5
-REFRESH_SLEEP_SECS = 1
+REFRESH_RETRIES = settings.ZOHO_REFRESH_RETRIES
+REFRESH_SLEEP_SECS = settings.ZOHO_REFRESH_SLEEP_SECS
 
 # Agreed list of names for coding challenges
 # Can remove this dict when we associate challenges with programme
