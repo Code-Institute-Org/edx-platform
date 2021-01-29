@@ -194,22 +194,11 @@ def post_to_learningpeople(CHALLENGE_ENDPOINT, auth_headers, json, student):
 
 def export_challenges_submitted(program_code):
     """Get results for all students and prepare those results in a format
-    that can be posted to HubSpot profiles
+    that can be posted to Zoho if student is on an Learning People program,
+    else HubSpot profiles for all other students
     """
     results_for_all_students = get_results_for_all_students(program_code)
-    if program_code is not "CODEITLPCC":
-        for student, results in results_for_all_students.items():
-            properties = [{
-                "property": "email",
-                "value": student
-            }]
-            for challenge_name, result in results.items():
-                properties.append({
-                    "property": challenge_name,
-                    "value": result
-                })
-            post_to_hubspot(HUBSPOT_CONTACTS_ENDPOINT, student, properties)
-    else:
+    if program_code is "CODEITLPCC":
         auth_headers_for_zoho = get_auth_headers()
         for student, results in results_for_all_students.items():
             json_for_zoho = {
@@ -225,6 +214,18 @@ def export_challenges_submitted(program_code):
                 json_for_zoho,
                 student
             )
+    else:
+        for student, results in results_for_all_students.items():
+            properties = [{
+                "property": "email",
+                "value": student
+            }]
+            for challenge_name, result in results.items():
+                properties.append({
+                    "property": challenge_name,
+                    "value": result
+                })
+            post_to_hubspot(HUBSPOT_CONTACTS_ENDPOINT, student, properties)
 
 
 class Command(BaseCommand):
