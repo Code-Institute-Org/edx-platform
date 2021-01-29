@@ -142,7 +142,9 @@ def post_to_hubspot(endpoint, student, properties):
         data=data, url=url, headers=headers)
     if response.status_code != 204:
         log.info(
-            "Attempt to send challenge results for %s to HubSpot failed with following response %s: %s" % (student, response.status_code, response.json))
+            "Attempt to send challenge results for %s to HubSpot " \
+            "failed with following response %s: %s" % (
+                student, response.status_code, response.json))
     log.info("Challenge results recorded for: %s" % (student))
 
 
@@ -163,8 +165,8 @@ def get_access_token():
             return refresh_resp.json()['access_token']
         except KeyError as e:
             log.info(
-                "ERROR: Getting Zoho token attempt %s out of %s failed" \
-                " with the exception: %s" % (attempt, REFRESH_RETRIES, e)
+                "ERROR: Getting Zoho token attempt %s out of %s " \
+                "failed with the exception: %s" % (attempt, REFRESH_RETRIES, e)
             )
             time.sleep(REFRESH_SLEEP_SECS)
 
@@ -182,10 +184,12 @@ def post_to_learningpeople(CHALLENGE_ENDPOINT, auth_headers, json, student):
         json=json
     )
     if response.status_code != 200:
-        log.info(
-            "Attempt to send challenge results for %s to LP failed " \
-            "with the following response %s: %s" % (student, response.status_code, response.json))
-    log.info("Challenge results recorded for: %s" % (student))
+        log.info(failed
+            "Attempt to send challenge results for %s to LP " \
+            "failed with the following response %s: %s" % (
+                student, response.status_code, response.json))
+    else:
+        log.info("Challenge results recorded for: %s" % (student))
 
 
 def export_challenges_submitted(program_code):
@@ -208,17 +212,17 @@ def export_challenges_submitted(program_code):
     else:
         auth_headers_for_zoho = get_auth_headers()
         for student, results in results_for_all_students.items():
-            json = {
-                "data": [{"Email": student}],
+            json_for_zoho = {
+                "data": [{"Email": student, "Name": "CICC00001"}],
                 "duplicate_check_fields": ["Email"],
             }
             for challenge_name, result in results.items():
-                json["data"][0][challenge_name] = result
+                json_for_zoho["data"][0][challenge_name] = result
 
             post_to_learningpeople(
                 CHALLENGE_ENDPOINT,
                 auth_headers_for_zoho,
-                json,
+                json_for_zoho,
                 student
             )
 
