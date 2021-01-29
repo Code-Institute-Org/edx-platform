@@ -202,7 +202,7 @@ def export_challenges_submitted(program_code):
         auth_headers_for_zoho = get_auth_headers()
         for student, results in results_for_all_students.items():
             json_for_zoho = {
-                "data": [{"Email": student, "Name": "CICC00001"}],
+                "data": [{"Email": student}],
                 "duplicate_check_fields": ["Email"],
             }
             for challenge_name, result in results.items():
