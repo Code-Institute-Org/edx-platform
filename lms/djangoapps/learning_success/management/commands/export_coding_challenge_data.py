@@ -184,7 +184,7 @@ def post_to_learningpeople(CHALLENGE_ENDPOINT, auth_headers, json, student):
         json=json
     )
     if response.status_code != 200:
-        log.info(failed
+        log.info(
             "Attempt to send challenge results for %s to LP " \
             "failed with the following response %s: %s" % (
                 student, response.status_code, response.json))
