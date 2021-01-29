@@ -17,6 +17,15 @@ MONGO_PORT = "27017"
 HUBSPOT_CONTACTS_ENDPOINT = settings.HUBSPOT_CONTACTS_ENDPOINT
 HUBSPOT_API_KEY = settings.HUBSPOT_API_KEY
 
+CLIENT_ID = settings.LP_ZOHO_CLIENT_ID
+CLIENT_SECRET = settings.LP_ZOHO_CLIENT_SECRET
+REFRESH_TOKEN = settings.LP_ZOHO_REFRESH_TOKEN
+REFRESH_ENDPOINT = settings.ZOHO_REFRESH_ENDPOINT
+CHALLENGE_ENDPOINT = settings.LP_ZOHO_CHALLENGE_ENDPOINT
+
+REFRESH_RETRIES = settings.ZOHO_REFRESH_RETRIES
+REFRESH_SLEEP_SECS = settings.ZOHO_REFRESH_SLEEP_SECS
+
 # Agreed list of names for coding challenges
 # Can remove this dict when we associate challenges with programme
 CODING_CHALLENGES = [
@@ -88,6 +97,12 @@ def get_results_for_all_students(program_code):
        We only require the result of the latest submission of a particular challenge
        i.e. first submission found in results (which is sorted by latest submission first)
        Previous submissions are skipped
+    5. Format for HubSpot
+       results = [
+           "student@email.com" : {
+               "lesson_1_challenge_1" : "Pass"
+           }
+       ]
     """
 
     students = get_students(program_code)
@@ -125,29 +140,92 @@ def post_to_hubspot(endpoint, student, properties):
     })
     response = requests.post(
         data=data, url=url, headers=headers)
-    if response.status_code != 204:
+    if response.status_code == 204:
+        log.info("Challenge results recorded for: %s" % (student))
+    else:
         log.info(
-            "Attempt to send challenge results for %s to HubSpot failed with following response %s: %s",
-            (student, response.status_code, response.json))
-    log.info("Challenge results recorded for: %s" % (student))
+            "Attempt to send challenge results for %s to HubSpot " \
+            "failed with following response %s: %s" % (
+                student, response.status_code, response.json))
+
+def get_access_token():
+    """Retrieve a Zoho CRM access token.
+    This may fail due to various network/throttling issues, so we will
+    retry
+    """
+    for attempt in range(REFRESH_RETRIES):
+        try:
+            refresh_resp = requests.post(REFRESH_ENDPOINT, params={
+                "refresh_token": REFRESH_TOKEN,
+                "client_id": CLIENT_ID,
+                "client_secret": CLIENT_SECRET,
+                "grant_type": "refresh_token"
+            })
+            log.info("Successfully retrieved Zoho token")
+            return refresh_resp.json()['access_token']
+        except KeyError as e:
+            log.info(
+                "ERROR: Getting Zoho token attempt %s out of %s " \
+                "failed with the exception: %s" % (attempt, REFRESH_RETRIES, e)
+            )
+            time.sleep(REFRESH_SLEEP_SECS)
+
+
+def get_auth_headers():
+    """Return HTTP headers to authenticate against Zoho CRM."""
+    access_token = get_access_token()
+    return {"Authorization": "Zoho-oauthtoken " + access_token}
+
+
+def post_to_learningpeople(CHALLENGE_ENDPOINT, auth_headers, json, student):
+    response = requests.post(
+        CHALLENGE_ENDPOINT,
+        headers=auth_headers,
+        json=json
+    )
+    if response.status_code == 200:
+        log.info("Challenge results recorded for: %s" % (student))
+    else:
+        log.info(
+            "Attempt to send challenge results for %s to LP " \
+            "failed with the following response %s: %s" % (
+                student, response.status_code, response.json))  
 
 
 def export_challenges_submitted(program_code):
     """Get results for all students and prepare those results in a format
-    that can be posted to HubSpot profiles
+    that can be posted to Zoho if student is on an Learning People program,
+    else HubSpot profiles for all other students
     """
     results_for_all_students = get_results_for_all_students(program_code)
-    for student, results in results_for_all_students.items():
-        properties = [{
-            "property": "email",
-            "value": student
-        }]
-        for challenge_name, result in results.items():
-            properties.append({
-                "property": challenge_name,
-                "value": result
-            })
-        post_to_hubspot(HUBSPOT_CONTACTS_ENDPOINT, student, properties)
+    if program_code == "CODEITLPCC":
+        auth_headers_for_zoho = get_auth_headers()
+        for student, results in results_for_all_students.items():
+            json_for_zoho = {
+                "data": [{"Email": student}],
+                "duplicate_check_fields": ["Email"],
+            }
+            for challenge_name, result in results.items():
+                json_for_zoho["data"][0][challenge_name] = result
+
+            post_to_learningpeople(
+                CHALLENGE_ENDPOINT,
+                auth_headers_for_zoho,
+                json_for_zoho,
+                student
+            )
+    else:
+        for student, results in results_for_all_students.items():
+            properties = [{
+                "property": "email",
+                "value": student
+            }]
+            for challenge_name, result in results.items():
+                properties.append({
+                    "property": challenge_name,
+                    "value": result
+                })
+            post_to_hubspot(HUBSPOT_CONTACTS_ENDPOINT, student, properties)
 
 
 class Command(BaseCommand):
