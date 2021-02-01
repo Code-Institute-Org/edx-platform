@@ -1,3 +1,4 @@
+from django.core.management.base import BaseCommand
 from ci_program.models import Program
 
 
