@@ -2,6 +2,10 @@ from ci_program.models import Program
 
 
 def unenroll_all_enrolled_students(program_code):
+    """
+    For a given program code, unenroll all students
+    enrolled in said program.
+    """
     program = Program.objects.get(program_code=program_code)
     enrolled_students = program.enrolled_students.all()
     for student in enrolled_students:
