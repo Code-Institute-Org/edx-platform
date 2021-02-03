@@ -30,7 +30,7 @@ REFRESH_SLEEP_SECS = settings.ZOHO_REFRESH_SLEEP_SECS
 # Can remove this dict when we associate challenges with programme
 CODING_CHALLENGES = [
     "lesson_1_challenge_1",
-    "lesson_1_challenge_1",
+    "lesson_1_challenge_2",
     "lesson_2_challenge_1",
     "lesson_2_challenge_2",
     "lesson_2_challenge_3",
